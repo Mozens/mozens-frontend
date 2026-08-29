@@ -280,9 +280,10 @@ async function renderTarifPanel(content) {
 async function renderMitraPanel(content) {
     content.innerHTML = `<div class="text-center py-10 font-mono text-sm text-slate-500">⏳ Memuat data mitra...</div>`;
     try {
-        const [mitraList, payoutQueue] = await Promise.all([
+        const [mitraList, payoutQueue, mitraKurirList] = await Promise.all([
             apiFetch('/api/mitra'),
             apiFetch('/api/payout-queue'),
+            apiFetch('/api/mitra-kurir'),
         ]);
 
         content.innerHTML = `
@@ -295,6 +296,11 @@ async function renderMitraPanel(content) {
             <div class="bg-[#0b0f17] border border-slate-800 rounded-xl p-5">
                 <h3 class="font-bold text-white mb-3">🚐 Daftar Mitra Transportasi</h3>
                 <div id="mitra-rows" class="space-y-3"></div>
+            </div>
+            <div class="bg-[#0b0f17] border border-emerald-800/40 rounded-xl p-5">
+                <h3 class="font-bold text-white mb-1">🛵 Daftar Mitra Kurir (Sungai Barito)</h3>
+                <p class="text-xs text-slate-500 mb-4">Daftar mandiri lewat market/driver.html - data profil & rekening diisi mitra sendiri, di sini cuma approve/tolak.</p>
+                <div id="mitra-kurir-rows" class="space-y-3">${mitraKurirList.length === 0 ? '<p class="text-xs text-slate-500">Belum ada pendaftar.</p>' : ''}</div>
             </div>
         </div>`;
 
@@ -354,6 +360,37 @@ async function renderMitraPanel(content) {
                 renderMitraPanel(content);
             };
             mitraContainer.appendChild(row);
+        });
+
+        const mitraKurirContainer = document.getElementById('mitra-kurir-rows');
+        mitraKurirList.forEach(m => {
+            const statusColor = m.status_verifikasi === 'TERVERIFIKASI' ? 'text-emerald-400' : m.status_verifikasi === 'DITOLAK' ? 'text-red-400' : 'text-amber-400';
+            const row = document.createElement('div');
+            row.className = 'bg-[#080c14] border border-slate-800 rounded-lg p-3 text-xs space-y-1';
+            row.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-slate-200">${escapeHtml(m.nama)} <span class="text-slate-500 font-normal">(${escapeHtml(m.kendaraan)})</span></span>
+                    <span class="font-mono ${statusColor}">${escapeHtml(m.status_verifikasi)}</span>
+                </div>
+                <p class="text-slate-500 font-mono">WA: ${escapeHtml(m.wa || '-')} | Kota: ${escapeHtml(m.kota_domisili || '-')} | Radius: ${m.radius_layanan_km || '-'} km | Kapasitas: ${m.kapasitas_kg || '-'} kg</p>
+                <p class="text-slate-500 font-mono">Rekening: ${escapeHtml(m.nama_bank || '-')} ${escapeHtml(m.no_rekening || '-')} a/n ${escapeHtml(m.nama_pemilik_rekening || '-')} | Komisi platform: ${m.komisi_platform_persen}%</p>
+                ${m.catatan_verifikasi ? `<p class="text-slate-500 font-mono">Catatan: ${escapeHtml(m.catatan_verifikasi)}</p>` : ''}
+                <div class="flex gap-2 pt-1 items-center">
+                    <button class="btn-verify-kurir text-emerald-400 hover:underline">Set Terverifikasi</button>
+                    <button class="btn-reject-kurir text-red-400 hover:underline">Set Ditolak</button>
+                    <input type="text" class="catatan-kurir-input flex-1 bg-[#05070a] border border-slate-700 rounded px-2 py-1 font-mono" placeholder="Catatan (opsional, khusus saat tolak)">
+                </div>
+            `;
+            row.querySelector('.btn-verify-kurir').onclick = async () => {
+                await apiFetch('/api/mitra-kurir/verifikasi', { method: 'POST', body: JSON.stringify({ id: m.id, status_verifikasi: 'TERVERIFIKASI', catatan_verifikasi: '' }) });
+                renderMitraPanel(content);
+            };
+            row.querySelector('.btn-reject-kurir').onclick = async () => {
+                const catatan = row.querySelector('.catatan-kurir-input').value;
+                await apiFetch('/api/mitra-kurir/verifikasi', { method: 'POST', body: JSON.stringify({ id: m.id, status_verifikasi: 'DITOLAK', catatan_verifikasi: catatan }) });
+                renderMitraPanel(content);
+            };
+            mitraKurirContainer.appendChild(row);
         });
 
     } catch (e) {

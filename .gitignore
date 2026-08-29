@@ -9,6 +9,7 @@ supabase/.temp/
 # File catatan, draft, & dokumentasi lokal
 *.txt
 *.py
+*.zip
 
 # Server lokal / file testing yang tidak ikut dipublish
 Server_bich_payment.js

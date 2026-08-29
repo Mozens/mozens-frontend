@@ -1,0 +1,52 @@
+
+:root{
+  --mz-ink:#05090e;--mz-navy:#07131e;--mz-panel:rgba(7,19,30,.82);--mz-gold:#d99b32;--mz-gold2:#f0c46b;
+  --mz-cream:#f2eee6;--mz-muted:#9da8b1;--mz-line:rgba(217,155,50,.24);--mz-soft:rgba(255,255,255,.08);
+  --mz-serif:'Playfair Display','Cormorant Garamond',Georgia,serif;--mz-sans:'Plus Jakarta Sans','DM Sans',system-ui,sans-serif;--mz-mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body.mozens-theme{
+  background:
+    radial-gradient(circle at 82% 0%,rgba(33,88,111,.16),transparent 30rem),
+    radial-gradient(circle at 8% 35%,rgba(18,63,76,.11),transparent 28rem),
+    var(--mz-ink)!important;
+  color:var(--mz-cream)!important;
+  font-family:var(--mz-sans)!important;
+  overflow-x:hidden;
+}
+body.mozens-theme::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:64px 64px;mask-image:linear-gradient(to bottom,black,transparent 72%);opacity:.28}
+body.mozens-theme header{background:rgba(3,8,13,.86)!important;border-color:rgba(217,155,50,.16)!important;backdrop-filter:blur(18px);box-shadow:0 12px 35px rgba(0,0,0,.18)}
+body.mozens-theme header a,body.mozens-theme nav a{transition:color .2s,border-color .2s,background .2s,transform .2s}
+body.mozens-theme main{position:relative}
+body.mozens-theme h1,body.mozens-theme h2,body.mozens-theme h3,body.mozens-theme h4{font-family:var(--mz-serif)!important;letter-spacing:.02em}
+body.mozens-theme h1{font-weight:600}
+body.mozens-theme a:not([class]){color:var(--mz-gold2)}
+body.mozens-theme button,body.mozens-theme a[class*="btn"],body.mozens-theme a[class*="button"]{border-radius:9px!important}
+body.mozens-theme input,body.mozens-theme select,body.mozens-theme textarea{background:rgba(5,13,20,.78)!important;border-color:rgba(217,155,50,.18)!important;color:var(--mz-cream)!important;border-radius:9px!important;outline:none;box-shadow:inset 0 1px rgba(255,255,255,.025)}
+body.mozens-theme input:focus,body.mozens-theme select:focus,body.mozens-theme textarea:focus{border-color:rgba(240,196,107,.62)!important;box-shadow:0 0 0 3px rgba(217,155,50,.10)!important}
+body.mozens-theme table{border-color:rgba(217,155,50,.18)!important}
+body.mozens-theme th{font-family:var(--mz-mono)!important;letter-spacing:.06em;text-transform:uppercase;color:var(--mz-gold2)!important}
+body.mozens-theme tr{border-color:rgba(255,255,255,.07)!important}
+body.mozens-theme footer{border-color:rgba(217,155,50,.16)!important}
+body.mozens-theme footer a:hover{color:var(--mz-gold2)!important}
+/* Common premium surfaces across existing pages. */
+body.mozens-theme .card,body.mozens-theme .glass,body.mozens-theme .panel,body.mozens-theme .section-card,
+body.mozens-theme [class*="card"],body.mozens-theme [class*="panel"]{
+  border-color:rgba(217,155,50,.13)!important;
+}
+body.mozens-theme .card:hover,body.mozens-theme [class*="card"]:hover{border-color:rgba(217,155,50,.32)!important}
+/* Preserve Tailwind functional states while unifying the visual language. */
+body.mozens-theme .text-amber-400,body.mozens-theme .text-amber-300{color:var(--mz-gold2)!important}
+body.mozens-theme .text-amber-500{color:var(--mz-gold)!important}
+body.mozens-theme .border-amber-500,body.mozens-theme .border-amber-400{border-color:rgba(217,155,50,.5)!important}
+body.mozens-theme .bg-amber-500{background:linear-gradient(135deg,#f0c46b,#d18a20)!important;color:#171109!important}
+body.mozens-theme .bg-slate-950,body.mozens-theme .bg-\[\#05070a\],body.mozens-theme .bg-\[\#05070c\]{background-color:transparent!important}
+@media(max-width:760px){
+  body.mozens-theme{font-size:14px}
+  body.mozens-theme main{width:100%;max-width:100%;padding-left:14px;padding-right:14px}
+  body.mozens-theme header{position:sticky!important;top:0;z-index:1000}
+  body.mozens-theme h1{font-size:clamp(2rem,10vw,3.2rem)!important;line-height:1.02!important}
+  body.mozens-theme h2{font-size:clamp(1.45rem,7vw,2.2rem)!important}
+  body.mozens-theme h3{font-size:1.15rem!important}
+  body.mozens-theme .grid{min-width:0}
+}
