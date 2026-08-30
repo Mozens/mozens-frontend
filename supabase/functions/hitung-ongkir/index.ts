@@ -12,6 +12,12 @@ const KODE_POS: Record<string, number> = {
   'Pontianak': 78111, 'Tarakan': 77111,
 }
 
+// Batas wajar kuantitas per item - cegah qty negatif/nol/gila-gilaan
+// yang bisa manipulasi totalBeratGram jadi lebih kecil dari seharusnya.
+const QTY_MIN = 1
+const QTY_MAX = 500
+const BERAT_DEFAULT_GRAM = 1000 // konservatif ke atas kalau berat_gram kosong, bukan ke bawah
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -26,26 +32,64 @@ serve(async (req) => {
       Deno.env.get('MOZENS_SERVICE_ROLE_KEY')!
     )
 
-    const produkIds = items.map((i: { produk_id: number }) => i.produk_id)
+    // --- Validasi & normalisasi qty per item ---
+    // Number(-5) atau Number("abc") -> NaN masih bisa lolos truthy check lama,
+    // jadi qty divalidasi eksplisit: harus integer positif dalam batas wajar.
+    const qtyMap = new Map<number, number>()
+    for (const i of items as Array<{ produk_id: number; qty?: number; kuantitas?: number }>) {
+      const rawQty = i.qty ?? i.kuantitas ?? 1
+      const qty = Number(rawQty)
+
+      if (!Number.isFinite(qty) || !Number.isInteger(qty) || qty < QTY_MIN || qty > QTY_MAX) {
+        throw new Error(`Kuantitas tidak valid untuk produk_id ${i.produk_id}.`)
+      }
+      if (!Number.isFinite(Number(i.produk_id))) {
+        throw new Error('produk_id tidak valid.')
+      }
+      qtyMap.set(i.produk_id, qty)
+    }
+
+    const produkIds = [...qtyMap.keys()]
     const { data: produkList, error: errProduk } = await supabase
       .from('bich_produk')
       .select('id, lokasi, berat_gram')
       .in('id', produkIds)
 
-    if (errProduk) throw new Error(errProduk.message)
+    if (errProduk) {
+      // Jangan bocorin detail error Supabase (struktur tabel/kolom) ke klien.
+      console.error('Supabase error saat query bich_produk:', errProduk)
+      throw new Error('Gagal memuat data produk.')
+    }
 
-    const qtyMap = new Map<number, number>()
-    items.forEach((i: { produk_id: number; qty?: number; kuantitas?: number }) => {
-      qtyMap.set(i.produk_id, Number(i.qty || i.kuantitas || 1))
-    })
+    // Cross-check: semua produk_id yang dikirim klien harus ketemu di DB.
+    // Kalau ada yang hilang (dihapus/tidak ada), tolak - jangan diam-diam
+    // dianggap berat 0 karena itu bikin ongkir underestimate.
+    const produkIdsUnique = new Set(produkIds)
+    if (!produkList || produkList.length !== produkIdsUnique.size) {
+      const ditemukan = new Set((produkList || []).map(p => p.id))
+      const hilang = [...produkIdsUnique].filter(id => !ditemukan.has(id))
+      throw new Error(`Produk tidak ditemukan atau sudah tidak tersedia: ${hilang.join(', ')}`)
+    }
 
     const totalBeratGram = produkList.reduce((sum, p) => {
       const qty = qtyMap.get(p.id) || 1
-      const beratSatuan = p.berat_gram || 500
+      const beratSatuan = p.berat_gram || BERAT_DEFAULT_GRAM
       return sum + (beratSatuan * qty)
     }, 0)
 
     const lokasiAsalSet = new Set(produkList.map(p => p.lokasi).filter(Boolean))
+
+    // Kalau tidak ada satupun produk yang punya lokasi asal terisi,
+    // JANGAN nebak/fallback ke kota manapun - data lokasi asal itu wajib
+    // ada supaya ongkir akurat. Lebih baik gagal eksplisit daripada
+    // ngasih ongkir yang keliru berdasarkan asumsi.
+    if (lokasiAsalSet.size === 0) {
+      return new Response(JSON.stringify({
+        opsi: [],
+        error: 'ORIGIN_TIDAK_DIKETAHUI',
+        message: 'Lokasi asal produk tidak tersedia di data, ongkir tidak bisa dihitung. Hubungi redaksi/admin toko untuk melengkapi data lokasi produk.'
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 })
+    }
 
     // Keranjang berisi produk dari lebih dari 1 kota asal (penjual beda kota) -
     // JANGAN hitung ongkir dari 1 origin saja, pasti salah. Minta checkout.html
@@ -58,7 +102,8 @@ serve(async (req) => {
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 })
     }
 
-    const sekota = lokasiAsalSet.size === 1 && [...lokasiAsalSet][0] === kota_tujuan
+    const originKota = [...lokasiAsalSet][0]
+    const sekota = originKota === kota_tujuan
 
     const opsi: Array<{ kode: string; label: string; estimasi: string; harga: number; rekomendasi: boolean }> = []
 
@@ -102,11 +147,14 @@ serve(async (req) => {
       }
 
       if (BITESHIP_API_KEY) {
-        const originKota = [...lokasiAsalSet][0] || 'Banjarmasin'
-        const originPostal = KODE_POS[originKota] || 70111
+        const originPostal = KODE_POS[originKota]
         const destPostal = KODE_POS[kota_tujuan]
 
-        if (destPostal) {
+        if (!originPostal) {
+          console.warn(`Kode pos tidak dikenal untuk kota asal: ${originKota}`)
+        }
+
+        if (originPostal && destPostal) {
           const res = await fetch('https://api.biteship.com/v1/rates/couriers', {
             method: 'POST',
             headers: {
@@ -139,7 +187,8 @@ serve(async (req) => {
             }
             if (opsi.length > 0) opsi[0].rekomendasi = true
           } else {
-            console.error('Biteship API Error:', await res.text())
+            // Jangan expose body response Biteship mentah ke klien, cukup log server-side.
+            console.error('Biteship API Error:', res.status, await res.text())
           }
         }
       }
@@ -150,8 +199,10 @@ serve(async (req) => {
       status: 200,
     })
 
-  // ✅ Solusi Type-Safe untuk Deno
   } catch (error) {
+    // Pesan error dari Error() yang kita lempar sendiri di atas sudah aman
+    // ditampilkan ke klien (tidak bocorin detail internal). Error lain di luar
+    // itu (mis. exception tak terduga) dibalas generik.
     const message = error instanceof Error ? error.message : 'Terjadi kesalahan tidak diketahui'
     return new Response(JSON.stringify({ error: message, opsi: [] }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

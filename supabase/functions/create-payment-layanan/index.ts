@@ -29,6 +29,25 @@ const corsHeaders = {
 const IPAYMU_PAY_URL =
   IPAYMU_ENV === "production" ? "https://my.ipaymu.com/api/v2/payment" : "https://sandbox.ipaymu.com/api/v2/payment";
 
+// Batas wajar - cegah harga meledak/tidak masuk akal dari input pax yang absurd.
+const PAX_MAX = 30;
+const IDEMPOTENCY_WINDOW_MS = 60_000;
+
+// Pesan error yang aman ditampilkan ke klien, detail asli cuma di-log server.
+function safeError(clientMsg: string, status: number, internalErr?: unknown) {
+  if (internalErr !== undefined) {
+    console.error(`[create-payment-layanan] ${clientMsg} | detail:`, internalErr);
+  }
+  return json({ error: clientMsg }, status);
+}
+
+async function buatFingerprint(payload: object, timeBucket: number): Promise<string> {
+  const encoder = new TextEncoder();
+  const raw = JSON.stringify(payload) + ":" + timeBucket;
+  const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(raw));
+  return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 // ------------------------------------------------------------------
 // KATALOG HARGA RESMI — HARUS SAMA dengan yang tampil di UI (kalau
 // beda, itu bug, bukan fitur). Ini yang menentukan nominal ditagih,
@@ -69,7 +88,7 @@ async function hitungHargaTravel(origin: string, destination: string, serviceTyp
     .select("route_key, harga")
     .in("route_key", [`${origin}_${destination}`, "AIRPORT", "DEFAULT"]);
 
-  if (error) throw new Error("Gagal mengambil tarif rute: " + error.message);
+  if (error) throw new Error("Gagal mengambil tarif rute (internal): " + error.message);
 
   const rateMap = new Map((rows ?? []).map((r) => [r.route_key, r.harga]));
   let harga: number;
@@ -88,15 +107,25 @@ async function hitungHargaTravel(origin: string, destination: string, serviceTyp
     .eq("service_type", serviceType)
     .maybeSingle();
 
-  if (errLayanan) throw new Error("Gagal mengambil tarif layanan: " + errLayanan.message);
+  if (errLayanan) throw new Error("Gagal mengambil tarif layanan (internal): " + errLayanan.message);
 
   if (layanan) {
     unit = layanan.unit_label;
-    if (layanan.tipe === "flat") {
-      harga = Number(layanan.nilai);
-    } else {
-      harga = Math.round(harga * Number(layanan.nilai));
+    const nilai = Number(layanan.nilai);
+    if (!Number.isFinite(nilai)) {
+      throw new Error(`Data tarif layanan "${serviceType}" tidak valid (nilai bukan angka) - cek redaksi/admin panel.`);
     }
+    if (layanan.tipe === "flat") {
+      harga = nilai;
+    } else {
+      harga = Math.round(harga * nilai);
+    }
+  }
+
+  // Sanity check terakhir - jangan sampai harga 0/negatif/NaN lolos ke iPaymu
+  // gara-gara data tarif salah input di admin panel.
+  if (!Number.isFinite(harga) || harga <= 0) {
+    throw new Error(`Hasil kalkulasi harga travel tidak valid (${harga}) - cek data tarif di redaksi/admin panel.`);
   }
 
   return { harga, unit };
@@ -107,10 +136,10 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { service, planCode, customer, origin, destination, serviceType, billingMode, manualSubId, tourId, pax } = body;
+    const { service, planCode, customer, origin, destination, serviceType, billingMode, manualSubId, tourId, pax, idempotency_key: idemDariKlien } = body;
 
     if (!service || !customer) {
-      return json({ error: "Data tidak lengkap." }, 400);
+      return safeError("Data tidak lengkap.", 400);
     }
 
     let nama_produk: string;
@@ -118,20 +147,28 @@ Deno.serve(async (req) => {
 
     if (service === "travel") {
       if (!origin || !destination || !serviceType) {
-        return json({ error: "Rute/layanan travel tidak lengkap." }, 400);
+        return safeError("Rute/layanan travel tidak lengkap.", 400);
       }
-      const hasil = await hitungHargaTravel(origin, destination, serviceType);
-      harga = hasil.harga;
+      try {
+        const hasil = await hitungHargaTravel(origin, destination, serviceType);
+        harga = hasil.harga;
+      } catch (e) {
+        return safeError("Gagal menghitung tarif travel. Coba beberapa saat lagi.", 500, e);
+      }
       nama_produk = `Travel/Shuttle: ${origin} -> ${destination} (${serviceType})`;
     } else if (service === "tour") {
       const paket = TOUR_KATALOG[tourId];
-      if (!paket) return json({ error: `Paket tour "${tourId}" tidak dikenal.` }, 400);
-      const jumlahPax = Math.max(1, parseInt(pax, 10) || 1);
+      if (!paket) return safeError(`Paket tour "${tourId}" tidak dikenal.`, 400);
+      const jumlahPaxRaw = parseInt(pax, 10);
+      if (!Number.isFinite(jumlahPaxRaw) || jumlahPaxRaw < 1 || jumlahPaxRaw > PAX_MAX) {
+        return safeError(`Jumlah peserta tidak valid (maksimal ${PAX_MAX} pax per pemesanan).`, 400);
+      }
+      const jumlahPax = jumlahPaxRaw;
       harga = paket.hargaPerPax * jumlahPax;
       nama_produk = `Tour: ${paket.nama} (${jumlahPax} pax)`;
     } else {
       const item = KATALOG[planCode];
-      if (!item) return json({ error: `Kode paket "${planCode}" tidak dikenal.` }, 400);
+      if (!item) return safeError(`Kode paket "${planCode}" tidak dikenal.`, 400);
       harga = item.harga;
       nama_produk = item.nama;
     }
@@ -142,12 +179,27 @@ Deno.serve(async (req) => {
 
     let refId: string;
 
+    // Idempotency: dari klien kalau ada, atau fingerprint otomatis dari isi
+    // request + jendela 60 detik - cegah double-klik checkout bikin baris
+    // transaksi_atm/user_subscriptions ganda. Tidak berlaku untuk jalur
+    // perpanjangan (manualSubId) karena itu UPDATE ke baris yang sudah ada,
+    // bukan INSERT baru - double-submit di sana paling buruk cuma re-set
+    // status jadi 'pending' dua kali, tidak bikin baris duplikat.
+    let idempotencyKey: string;
+    if (typeof idemDariKlien === "string" && idemDariKlien.length >= 8 && idemDariKlien.length <= 200) {
+      idempotencyKey = idemDariKlien;
+    } else {
+      const timeBucket = Math.floor(Date.now() / IDEMPOTENCY_WINDOW_MS);
+      idempotencyKey = await buatFingerprint(
+        { service, planCode, tourId, pax, origin, destination, serviceType, customerEmail: customer?.email, customerPhone: customer?.whatsapp },
+        timeBucket
+      );
+    }
+
     if (isLangganan) {
       if (billingMode === "auto") {
         // Jalur kartu/auto-debit BELUM didukung integrasi iPaymu saat ini.
-        return json({
-          error: "Langganan otomatis via kartu belum tersedia saat ini. Silakan pilih metode QRIS/Transfer manual.",
-        }, 400);
+        return safeError("Langganan otomatis via kartu belum tersedia saat ini. Silakan pilih metode QRIS/Transfer manual.", 400);
       }
 
       const subId = manualSubId || `SUB-${service.toUpperCase()}-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
@@ -169,8 +221,8 @@ Deno.serve(async (req) => {
           .eq("sub_id", manualSubId)
           .maybeSingle();
 
-        if (errExisting) return json({ error: "Gagal memeriksa langganan: " + errExisting.message }, 500);
-        if (!existing) return json({ error: "Langganan yang mau diperpanjang tidak ditemukan." }, 404);
+        if (errExisting) return safeError("Gagal memeriksa langganan. Coba beberapa saat lagi.", 500, errExisting);
+        if (!existing) return safeError("Langganan yang mau diperpanjang tidak ditemukan.", 404);
 
         const emailCocok =
           typeof customer.email === "string" &&
@@ -178,14 +230,26 @@ Deno.serve(async (req) => {
           customer.email.trim().toLowerCase() === existing.customer_email.trim().toLowerCase();
 
         if (!emailCocok) {
-          return json({ error: "Email tidak cocok dengan pemilik langganan ini." }, 403);
+          return safeError("Email tidak cocok dengan pemilik langganan ini.", 403);
         }
 
         await supabaseAdmin.from("user_subscriptions")
           .update({ status: "pending" }).eq("sub_id", manualSubId);
       } else {
+        // Cek idempotency dulu sebelum insert baru.
+        const { data: subLama } = await supabaseAdmin
+          .from("user_subscriptions")
+          .select("sub_id, status")
+          .eq("idempotency_key", idempotencyKey)
+          .maybeSingle();
+
+        if (subLama) {
+          return json({ order_id: subLama.sub_id, status: subLama.status, catatan: "Permintaan yang sama sudah pernah dibuat sebelumnya." });
+        }
+
         const { error: errSub } = await supabaseAdmin.from("user_subscriptions").insert([{
           sub_id: subId,
+          idempotency_key: idempotencyKey,
           service,
           plan_code: planCode,
           billing_mode: "manual",
@@ -195,19 +259,37 @@ Deno.serve(async (req) => {
           status: "pending",
           expires_at: expiresAt.toISOString(),
         }]);
-        if (errSub) return json({ error: "Gagal membuat langganan: " + errSub.message }, 500);
+        if (errSub) {
+          if (String(errSub.message || "").toLowerCase().includes("idempotency_key")) {
+            return safeError("Permintaan yang sama sedang diproses. Cek status langgananmu.", 409, errSub);
+          }
+          return safeError("Gagal membuat langganan. Coba beberapa saat lagi.", 500, errSub);
+        }
       }
       refId = subId;
     } else {
       // loker, cv, travel -> masuk tabel transaksi_atm (sekali bayar)
       const prefix = service === "loker" ? "LK" : service === "cv" ? "CV" : "TR";
-      const idTransaksi = `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+
+      // Cek idempotency dulu sebelum insert baru.
+      const { data: trxLama } = await supabaseAdmin
+        .from("transaksi_atm")
+        .select("id_transaksi, status_pembayaran")
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+
+      if (trxLama) {
+        return json({ order_id: trxLama.id_transaksi, status: trxLama.status_pembayaran, catatan: "Permintaan yang sama sudah pernah dibuat sebelumnya." });
+      }
+
+      const idTransaksi = `${prefix}-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
 
       const namaPelanggan = customer.perusahaan || customer.nama || "-";
       const kontak = customer.whatsapp || customer.email || "-";
 
       const { error: errTx } = await supabaseAdmin.from("transaksi_atm").insert([{
         id_transaksi: idTransaksi,
+        idempotency_key: idempotencyKey,
         nama_pelanggan: namaPelanggan,
         kontak_pelanggan: kontak,
         nama_produk,
@@ -216,7 +298,12 @@ Deno.serve(async (req) => {
         meta_data: { service, planCode, customer, origin, destination, serviceType },
       }]);
 
-      if (errTx) return json({ error: "Gagal membuat transaksi: " + errTx.message }, 500);
+      if (errTx) {
+        if (String(errTx.message || "").toLowerCase().includes("idempotency_key")) {
+          return safeError("Permintaan yang sama sedang diproses. Cek status transaksimu.", 409, errTx);
+        }
+        return safeError("Gagal membuat transaksi. Coba beberapa saat lagi.", 500, errTx);
+      }
       refId = idTransaksi;
     }
 
@@ -267,6 +354,16 @@ Deno.serve(async (req) => {
     const pgData = await pgResponse.json();
 
     if (!pgResponse.ok || pgData.Status !== 200) {
+      // Jangan biarkan row yang sudah terlanjur di-insert nyangkut PENDING/pending
+      // selamanya kalau ternyata pembuatan sesi iPaymu gagal - sama seperti pola
+      // di create-payment (Mart).
+      if (isLangganan) {
+        await supabaseAdmin.from("user_subscriptions").update({ status: "gagal" }).eq("sub_id", refId);
+      } else {
+        await supabaseAdmin.from("transaksi_atm").update({ status_pembayaran: "GAGAL" }).eq("id_transaksi", refId);
+      }
+      // pgData.Message berasal dari iPaymu sendiri (pesan gateway ke pengguna),
+      // bukan detail internal kita - aman diteruskan apa adanya.
       return json({ error: pgData.Message || "Gagal membuat transaksi di iPaymu." }, 502);
     }
 
@@ -282,7 +379,7 @@ Deno.serve(async (req) => {
 
     return json({ checkout_url: pgData.Data?.Url, order_id: refId });
   } catch (err) {
-    return json({ error: String(err) }, 500);
+    return safeError("Terjadi kesalahan sistem. Silakan coba lagi.", 500, err);
   }
 });
 

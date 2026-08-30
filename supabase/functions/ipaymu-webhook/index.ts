@@ -211,26 +211,13 @@ async function prosesPesananMart(referenceId: string, berhasilBayar: boolean, tr
   const statusBaru = berhasilBayar ? "Success" : "Failed";
   await supabaseAdmin.from("bich_pesanan").update({ status: statusBaru, payment_gateway_ref: trxId }).eq("id", pesanan.id);
 
-  // Kurangi stok HANYA kalau pembayaran beneran sukses, pakai update atomik
-  // biar tidak oversell kalau ada 2 pesanan konkuren.
-  if (berhasilBayar && Array.isArray(pesanan.item_pesanan)) {
-    for (const item of pesanan.item_pesanan) {
-      // RPC ini SELALU sukses di level pemanggilan (tidak melempar exception) -
-      // status gagal/berhasil ditandai di dalam JSON balikannya, bukan lewat
-      // `error`. Jangan cuma cek `error` di sini, itu tidak akan pernah terisi.
-      const { data: hasilStok, error: errStok } = await supabaseAdmin.rpc(
-        "kurangi_stok_produk", { p_produk_id: item.id, p_qty: item.qty }
-      );
-
-      if (errStok || !hasilStok?.success) {
-        console.error(
-          "[ipaymu-webhook] GAGAL kurangi stok produk", item.id, "qty", item.qty,
-          "- pesanan tetap ditandai Success, tapi stok TIDAK berkurang. Perlu koreksi manual.",
-          "error:", errStok?.message, "| hasil RPC:", JSON.stringify(hasilStok)
-        );
-      }
-    }
-  }
+  // CATATAN: stok TIDAK dipotong di sini. Stok sudah direservasi atomic
+  // (dipotong) di create-payment.ts saat pesanan dibuat status Pending,
+  // lewat RPC reserve_stok_produk - lihat migration_stok_dan_idempotency.sql.
+  // Kalau di sini dipotong lagi, stok akan berkurang 2x untuk 1 pesanan.
+  // Kalau pembayaran gagal/kedaluwarsa, stok dikembalikan oleh
+  // release_stok_produk (dipanggil dari expirasi_pesanan_pending / jalur
+  // gagal di create-payment) - bukan tugas webhook ini.
   return { table: "bich_pesanan", statusBaru };
 }
 
@@ -265,11 +252,20 @@ async function prosesTransaksiAtm(idTransaksi: string, berhasilBayar: boolean, t
 async function prosesLangganan(subId: string, berhasilBayar: boolean, trxId: string) {
   const { data: sub, error } = await supabaseAdmin
     .from("user_subscriptions")
-    .select("sub_id, status, expires_at")
+    .select("sub_id, status, expires_at, payment_gateway_ref")
     .eq("sub_id", subId)
     .single();
 
   if (error || !sub) throw new Error("Langganan tidak ditemukan: " + subId);
+
+  // Idempotency: kalau trxId ini sudah pernah tercatat sebagai pembayaran
+  // yang diproses untuk langganan ini, jangan perpanjang lagi. Tanpa ini,
+  // webhook yang terpanggil lebih dari sekali untuk pembayaran yang SAMA
+  // (retry dari gateway saat respons pertama lambat/timeout) akan
+  // memperpanjang expires_at berkali-kali dari satu kali bayar.
+  if (sub.payment_gateway_ref === trxId) {
+    return { table: "user_subscriptions", statusBaru: "already_processed" };
+  }
 
   const statusBaru = berhasilBayar ? "active" : "pending";
   const update: Record<string, unknown> = { status: statusBaru, payment_gateway_ref: trxId };
