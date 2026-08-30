@@ -280,19 +280,48 @@ async function renderTarifPanel(content) {
 async function renderMitraPanel(content) {
     content.innerHTML = `<div class="text-center py-10 font-mono text-sm text-slate-500">⏳ Memuat data mitra...</div>`;
     try {
-        const [mitraList, payoutQueue, mitraKurirList] = await Promise.all([
+        const [mitraList, payoutQueue, mitraKurirList, menungguAssign, sedangBerjalan, disputeAktif] = await Promise.all([
             apiFetch('/api/mitra'),
             apiFetch('/api/payout-queue'),
             apiFetch('/api/mitra-kurir'),
+            apiFetch('/api/transaksi-menunggu-assign'),
+            apiFetch('/api/transaksi-berjalan'),
+            apiFetch('/api/transaksi-dispute-aktif'),
         ]);
+
+        const mitraTerverifikasi = mitraList.filter(m => m.status_verifikasi === 'TERVERIFIKASI');
+        const rupiah = (n) => 'Rp' + Number(n || 0).toLocaleString('id-ID');
 
         content.innerHTML = `
         <div class="space-y-6">
+
+            <div class="bg-[#0b0f17] border border-red-800/40 rounded-xl p-5">
+                <h3 class="font-bold text-white mb-1">⚠️ Dispute Aktif</h3>
+                <p class="text-xs text-slate-500 mb-4">Transaksi dengan sengketa yang menunggu diselesaikan. Payout diblokir otomatis sampai ini diselesaikan.</p>
+                <div id="dispute-rows" class="space-y-2">${disputeAktif.length === 0 ? '<p class="text-xs text-slate-500">Tidak ada dispute aktif.</p>' : ''}</div>
+            </div>
+
+            <div class="bg-[#0b0f17] border border-slate-800 rounded-xl p-5">
+                <h3 class="font-bold text-white mb-1">🧾 Menunggu Assign Mitra</h3>
+                <p class="text-xs text-slate-500 mb-4">Pembayaran sudah SUCCESS, belum ditugaskan ke mitra manapun.</p>
+                <div id="assign-rows" class="space-y-2">${menungguAssign.length === 0 ? '<p class="text-xs text-slate-500">Tidak ada transaksi menunggu assign.</p>' : ''}</div>
+            </div>
+
+            <div class="bg-[#0b0f17] border border-slate-800 rounded-xl p-5">
+                <h3 class="font-bold text-white mb-1">🚦 Sedang Berjalan</h3>
+                <p class="text-xs text-slate-500 mb-4">Sudah ditugaskan ke mitra, atau sudah selesai tapi masih dalam jendela sengketa 18 jam.</p>
+                <div id="berjalan-rows" class="space-y-2">${sedangBerjalan.length === 0 ? '<p class="text-xs text-slate-500">Tidak ada transaksi berjalan.</p>' : ''}</div>
+            </div>
+
             <div class="bg-[#0b0f17] border border-amber-800/40 rounded-xl p-5">
-                <h3 class="font-bold text-white mb-1">💸 Antrean Pencairan (T+1)</h3>
-                <p class="text-xs text-slate-500 mb-4">Layanan sudah SELESAI, menunggu ditransfer manual ke rekening mitra. Cek dispute_deadline sebelum transfer.</p>
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="font-bold text-white">💸 Antrean Pencairan (T+1)</h3>
+                    <button id="btn-hitung-ulang" class="text-xs font-mono border border-slate-700 hover:border-emerald-500 rounded-lg px-3 py-1.5 transition">🔄 Hitung Ulang Sekarang</button>
+                </div>
+                <p class="text-xs text-slate-500 mb-4">Layanan sudah SELESAI dan lewat jendela sengketa 18 jam - nominal sudah dihitung otomatis (fee sesuai komisi masing-masing mitra), siap ditransfer manual ke rekening mitra.</p>
                 <div id="payout-rows" class="space-y-2">${payoutQueue.length === 0 ? '<p class="text-xs text-slate-500">Tidak ada antrean pencairan saat ini.</p>' : ''}</div>
             </div>
+
             <div class="bg-[#0b0f17] border border-slate-800 rounded-xl p-5">
                 <h3 class="font-bold text-white mb-3">🚐 Daftar Mitra Transportasi</h3>
                 <div id="mitra-rows" class="space-y-3"></div>
@@ -304,32 +333,154 @@ async function renderMitraPanel(content) {
             </div>
         </div>`;
 
+        // --- DISPUTE AKTIF ---
+        const disputeContainer = document.getElementById('dispute-rows');
+        disputeAktif.forEach(d => {
+            const row = document.createElement('div');
+            row.className = 'bg-[#080c14] border border-red-900/60 rounded-lg p-3 text-xs space-y-2';
+            row.innerHTML = `
+                <p class="font-bold text-slate-200">${escapeHtml(d.id_transaksi)} — ${escapeHtml(d.nama_produk || '')}</p>
+                <p class="text-slate-500 font-mono">${rupiah(d.total_harga)} | Selesai: ${d.selesai_at ? new Date(d.selesai_at).toLocaleString('id-ID') : '- (belum selesai)'}</p>
+                <p class="text-red-300">Alasan: ${escapeHtml(d.dispute_alasan || '-')}</p>
+                <div class="flex gap-2 pt-1">
+                    <button class="btn-lanjut-bayar bg-emerald-700 hover:bg-emerald-600 rounded px-3 py-1.5 font-bold">✓ Lanjut Bayar</button>
+                    <button class="btn-batalkan-payout bg-red-950/40 border border-red-900 hover:border-red-500 rounded px-3 py-1.5">🗑️ Batalkan Payout</button>
+                </div>
+            `;
+            row.querySelector('.btn-lanjut-bayar').onclick = async () => {
+                if (!confirm(`Selesaikan dispute ${d.id_transaksi} dan lanjutkan proses payout normal?`)) return;
+                try {
+                    await apiFetch('/api/transaksi/dispute-selesai', { method: 'POST', body: JSON.stringify({ id_transaksi: d.id_transaksi, hasil: 'LANJUT_BAYAR' }) });
+                    renderMitraPanel(content);
+                } catch (e) { alert('Gagal: ' + e.message); }
+            };
+            row.querySelector('.btn-batalkan-payout').onclick = async () => {
+                if (!confirm(`Batalkan payout untuk ${d.id_transaksi} secara PERMANEN? Mitra tidak akan menerima pembayaran untuk transaksi ini.`)) return;
+                try {
+                    await apiFetch('/api/transaksi/dispute-selesai', { method: 'POST', body: JSON.stringify({ id_transaksi: d.id_transaksi, hasil: 'BATALKAN_PAYOUT' }) });
+                    renderMitraPanel(content);
+                } catch (e) { alert('Gagal: ' + e.message); }
+            };
+            disputeContainer.appendChild(row);
+        });
+
+        // --- MENUNGGU ASSIGN MITRA ---
+        const assignContainer = document.getElementById('assign-rows');
+        menungguAssign.forEach(t => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between text-xs bg-[#080c14] border border-slate-800 rounded-lg p-3 gap-3 flex-wrap';
+            const opsiMitra = mitraTerverifikasi.map(m => `<option value="${m.id}">${escapeHtml(m.nama)} (komisi ${m.komisi_platform_persen}%)</option>`).join('');
+            row.innerHTML = `
+                <div>
+                    <p class="font-bold text-slate-200">${escapeHtml(t.id_transaksi)} — ${escapeHtml(t.nama_produk || '')}</p>
+                    <p class="text-slate-500 font-mono">${escapeHtml(t.nama_pelanggan || '-')} | ${rupiah(t.total_harga)}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select class="assign-mitra-select bg-[#05070a] border border-slate-700 rounded px-2 py-1.5">
+                        <option value="">${mitraTerverifikasi.length === 0 ? '(belum ada mitra terverifikasi)' : '-- pilih mitra --'}</option>
+                        ${opsiMitra}
+                    </select>
+                    <button class="btn-assign bg-emerald-600 hover:bg-emerald-500 rounded px-3 py-1.5 font-bold" ${mitraTerverifikasi.length === 0 ? 'disabled' : ''}>Tugaskan</button>
+                </div>
+            `;
+            row.querySelector('.btn-assign').onclick = async () => {
+                const mitraId = row.querySelector('.assign-mitra-select').value;
+                if (!mitraId) { alert('Pilih mitra dulu.'); return; }
+                try {
+                    await apiFetch('/api/transaksi/assign-mitra', { method: 'POST', body: JSON.stringify({ id_transaksi: t.id_transaksi, mitra_id: mitraId }) });
+                    renderMitraPanel(content);
+                } catch (e) { alert('Gagal: ' + e.message); }
+            };
+            assignContainer.appendChild(row);
+        });
+
+        // --- SEDANG BERJALAN (DITUGASKAN, atau SELESAI tapi belum DIJADWALKAN) ---
+        const berjalanContainer = document.getElementById('berjalan-rows');
+        sedangBerjalan.forEach(t => {
+            const sudahSelesai = t.status_layanan === 'SELESAI';
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between text-xs bg-[#080c14] border border-slate-800 rounded-lg p-3 gap-3 flex-wrap';
+            row.innerHTML = `
+                <div>
+                    <p class="font-bold text-slate-200">${escapeHtml(t.id_transaksi)} — ${escapeHtml(t.nama_produk || '')}</p>
+                    <p class="text-slate-500 font-mono">Status: ${escapeHtml(t.status_layanan)}${sudahSelesai ? ` | Batas sengketa: ${new Date(t.dispute_deadline).toLocaleString('id-ID')}` : ''}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${!sudahSelesai ? '<button class="btn-tandai-selesai bg-emerald-600 hover:bg-emerald-500 rounded px-3 py-1.5 font-bold">✓ Tandai Selesai</button>' : '<span class="text-slate-500 font-mono text-[11px]">Menunggu jendela sengketa lewat</span>'}
+                    <button class="btn-ajukan-dispute bg-red-950/40 border border-red-900 hover:border-red-500 rounded px-3 py-1.5">⚠ Ajukan Dispute</button>
+                </div>
+            `;
+            const selesaiBtn = row.querySelector('.btn-tandai-selesai');
+            if (selesaiBtn) {
+                selesaiBtn.onclick = async () => {
+                    if (!confirm(`Tandai ${t.id_transaksi} sebagai selesai? Jendela sengketa 18 jam akan mulai berjalan sejak sekarang.`)) return;
+                    try {
+                        await apiFetch('/api/transaksi/selesai', { method: 'POST', body: JSON.stringify({ id_transaksi: t.id_transaksi }) });
+                        renderMitraPanel(content);
+                    } catch (e) { alert('Gagal: ' + e.message); }
+                };
+            }
+            row.querySelector('.btn-ajukan-dispute').onclick = async () => {
+                const alasan = prompt(`Alasan dispute untuk ${t.id_transaksi} (mis. laporan dari pelanggan lewat WA):`);
+                if (!alasan || !alasan.trim()) return;
+                try {
+                    await apiFetch('/api/transaksi/dispute', { method: 'POST', body: JSON.stringify({ id_transaksi: t.id_transaksi, alasan: alasan.trim() }) });
+                    renderMitraPanel(content);
+                } catch (e) { alert('Gagal: ' + e.message); }
+            };
+            berjalanContainer.appendChild(row);
+        });
+
+        // --- TOMBOL HITUNG ULANG ANTREAN PENCAIRAN (manual trigger, jaga-jaga kalau pg_cron belum aktif) ---
+        document.getElementById('btn-hitung-ulang').onclick = async () => {
+            const btn = document.getElementById('btn-hitung-ulang');
+            btn.disabled = true; btn.textContent = '⏳ Menghitung...';
+            try {
+                const res = await apiFetch('/api/transaksi/hitung-dijadwalkan', { method: 'POST' });
+                alert(`Selesai. ${(res.diproses || []).length} transaksi dipindah ke antrean pencairan.`);
+                renderMitraPanel(content);
+            } catch (e) {
+                alert('Gagal: ' + e.message);
+                btn.disabled = false; btn.textContent = '🔄 Hitung Ulang Sekarang';
+            }
+        };
+
+        // --- ANTREAN PENCAIRAN ---
+        // DIPERBAIKI: dulu ada input nominal payout bebas diisi admin manual,
+        // lalu dikirim apa adanya ke server (server versi lama percaya angka
+        // ini mentah-mentah). Sekarang nominal SUDAH dihitung & dikunci
+        // server-side (payout_amount, fee_persen_dipakai) - di sini cuma
+        // ditampilkan, tidak bisa diedit. Admin cuma mengisi bukti transfer
+        // sebagai jejak audit.
         const payoutContainer = document.getElementById('payout-rows');
         payoutQueue.forEach(p => {
             const deadline = new Date(p.dispute_deadline);
             const belumLewatDeadline = deadline > new Date();
             const row = document.createElement('div');
-            row.className = 'flex items-center justify-between text-xs bg-[#080c14] border border-slate-800 rounded-lg p-3';
+            row.className = 'bg-[#080c14] border border-slate-800 rounded-lg p-3 text-xs space-y-2';
             row.innerHTML = `
-                <div>
+                <div class="flex items-center justify-between">
                     <p class="font-bold text-slate-200">${escapeHtml(p.id_transaksi)} — ${escapeHtml(p.nama_produk || '')}</p>
-                    <p class="text-slate-500 font-mono">Selesai: ${new Date(p.selesai_at).toLocaleString('id-ID')} | Batas sengketa: ${deadline.toLocaleString('id-ID')}
-                        ${belumLewatDeadline ? '<span class="text-amber-400">⚠ Belum lewat jendela sengketa</span>' : '<span class="text-emerald-400">✓ Aman dicairkan</span>'}
-                    </p>
+                    <p class="font-mono text-emerald-400 font-bold">${rupiah(p.payout_amount)} <span class="text-slate-500 font-normal">(fee ${p.fee_persen_dipakai}%)</span></p>
                 </div>
+                <p class="text-slate-500 font-mono">Selesai: ${new Date(p.selesai_at).toLocaleString('id-ID')} | Batas sengketa: ${deadline.toLocaleString('id-ID')}
+                    ${belumLewatDeadline ? '<span class="text-amber-400">⚠ Belum lewat jendela sengketa</span>' : '<span class="text-emerald-400">✓ Aman dicairkan</span>'}
+                </p>
                 <div class="flex items-center gap-2">
-                    <input type="number" placeholder="Nominal payout" class="payout-amount-input w-32 bg-[#05070a] border border-slate-700 rounded px-2 py-1.5">
+                    <input type="text" placeholder="Bukti transfer (mis. BCA ref 12345)" class="bukti-transfer-input flex-1 bg-[#05070a] border border-slate-700 rounded px-2 py-1.5">
                     <button class="btn-payout-selesai bg-emerald-600 hover:bg-emerald-500 rounded px-3 py-1.5 font-bold" ${belumLewatDeadline ? 'title="Masih dalam jendela sengketa, disarankan tunggu"' : ''}>
                         ${belumLewatDeadline ? '⚠ Tandai Dibayar' : '✓ Tandai Dibayar'}
                     </button>
                 </div>
             `;
             row.querySelector('.btn-payout-selesai').onclick = async () => {
-                const amount = parseInt(row.querySelector('.payout-amount-input').value) || 0;
-                if (!amount) { alert('Isi nominal yang benar-benar ditransfer.'); return; }
+                const bukti = row.querySelector('.bukti-transfer-input').value.trim();
+                if (!bukti) { alert('Isi bukti transfer dulu (mis. nomor referensi transfer bank).'); return; }
                 if (belumLewatDeadline && !confirm('Jendela sengketa 18 jam belum lewat. Tetap tandai sudah dibayar?')) return;
-                await apiFetch('/api/payout-selesai', { method: 'POST', body: JSON.stringify({ id_transaksi: p.id_transaksi, payout_amount: amount }) });
-                renderMitraPanel(content);
+                try {
+                    await apiFetch('/api/payout-selesai', { method: 'POST', body: JSON.stringify({ id_transaksi: p.id_transaksi, bukti_transfer: bukti }) });
+                    renderMitraPanel(content);
+                } catch (e) { alert('Gagal: ' + e.message); }
             };
             payoutContainer.appendChild(row);
         });
