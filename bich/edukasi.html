@@ -1,336 +1,237 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- ==================== SEO UTAMA ==================== -->
-    <title>Portal Edukasi & Peer-Teaching — Sungai Melawi Desk | BICH</title>
-    <meta name="description" content="Ruang belajar, materi edukasi, dan program kaderisasi mentor sebaya BICH untuk generasi Banua di sepanjang Daerah Aliran Sungai Melawi, Kalimantan Barat.">
-    <meta name="keywords" content="Portal Edukasi BICH, Peer Teaching Melawi, Kaderisasi Mentor Sebaya, Edukasi Kalimantan Barat, Sungai Melawi Desk, Mozens Alqadrie, BICH Education">
-    <meta name="author" content="Mozens Alqadrie">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://mozensalqadrie.com/bich/edukasi-melawi.html">
-
-    <!-- Open Graph / Facebook / WhatsApp -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://mozensalqadrie.com/bich/edukasi-melawi.html">
-    <meta property="og:title" content="Portal Edukasi & Peer-Teaching — Sungai Melawi Desk | BICH">
-    <meta property="og:description" content="Akses materi pembelajaran terverifikasi dan jalur kaderisasi mentor sebaya untuk penguatan kapasitas pemuda di kawasan Sungai Melawi.">
-    <meta property="og:image" content="https://mozensalqadrie.com/profile.jpg">
-    <meta property="og:site_name" content="Mozens Alqadrie Sovereign Hub">
-
-    <!-- Twitter Cards -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Portal Edukasi & Peer-Teaching — Sungai Melawi Desk | BICH">
-    <meta name="twitter:description" content="Akses materi pembelajaran terverifikasi dan jalur kaderisasi mentor sebaya BICH untuk kawasan Sungai Melawi.">
-    <meta name="twitter:image" content="https://mozensalqadrie.com/profile.jpg">
-
-    <!-- Preconnect Asset & Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- JSON-LD Structured Data (Schema.org) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "WebPage",
-          "@id": "https://mozensalqadrie.com/bich/edukasi-melawi.html",
-          "url": "https://mozensalqadrie.com/bich/edukasi-melawi.html",
-          "name": "Portal Edukasi & Peer-Teaching — Sungai Melawi Desk | BICH",
-          "description": "Ruang belajar dan materi edukasi terverifikasi untuk generasi Banua di wilayah Sungai Melawi.",
-          "isPartOf": {
-            "@type": "WebSite",
-            "name": "Mozens Alqadrie — Sovereign Hub",
-            "url": "https://mozensalqadrie.com/"
-          }
-        },
-        {
-          "@type": "EducationalOrganization",
-          "name": "BICH Education Desk - Sungai Melawi",
-          "url": "https://mozensalqadrie.com/bich/edukasi-melawi.html",
-          "parentOrganization": {
-            "@type": "Organization",
-            "name": "Mozens Inc."
-          }
-        },
-        {
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "Muara Utama",
-              "item": "https://mozensalqadrie.com/"
-            },
-            {
-              "@type": "ListItem",
-              "position": 2,
-              "name": "BICH Portal",
-              "item": "https://mozensalqadrie.com/bich/index.html"
-            },
-            {
-              "@type": "ListItem",
-              "position": 3,
-              "name": "Sungai Melawi Desk",
-              "item": "https://mozensalqadrie.com/bich/melawi.html"
-            },
-            {
-              "@type": "ListItem",
-              "position": 4,
-              "name": "Portal Edukasi",
-              "item": "https://mozensalqadrie.com/bich/edukasi-melawi.html"
-            }
-          ]
-        }
-      ]
-    }
-    </script>
-
-    <style>
-        :root {
-            --bg-dark: #05070a;
-            --violet-accent: #a855f7;
-            --font-serif: 'Playfair Display', Georgia, serif;
-            --font-sans: 'Plus Jakarta Sans', sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
-        }
-
-        body {
-            font-family: var(--font-sans);
-            background-color: var(--bg-dark);
-            color: #f8fafc;
-        }
-
-        .font-serif { font-family: var(--font-serif); }
-        .font-mono { font-family: var(--font-mono); }
-
-        .violet-gradient {
-            background: linear-gradient(135deg, #c084fc 0%, #e879f9 50%, #8b5cf6 100%);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #080c14 25%, #0f172a 37%, #080c14 63%);
-            background-size: 400% 100%;
-            animation: skeleton-loading 1.4s ease infinite;
-        }
-        @keyframes skeleton-loading {
-            0% { background-position: 100% 50%; }
-            100% { background-position: 0 50%; }
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #080c14;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #1e1b4b;
-            border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #8b5cf6;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BICH Edukasi — Ruang Melawi</title>
+  <meta name="description" content="Pintu masuk BICH Edukasi dan Ruang Melawi: belajar, praktik, dan bertumbuh menjadi mentor.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'DM Sans',sans-serif;background:#f7f7f4;color:#18201c}
+    .serif{font-family:'Playfair Display',serif}
+    .grain:before{content:"";position:absolute;inset:0;opacity:.04;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E")}
+    .card{transition:.25s ease}
+    .card:hover{transform:translateY(-3px);box-shadow:0 18px 45px rgba(24,32,28,.10)}
+    .modal{display:none}
+    .modal.show{display:flex}
+    button:focus-visible,a:focus-visible{outline:3px solid #6b8f71;outline-offset:3px}
+  </style>
 </head>
-<body class="bg-[#05070a] text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-violet-500 selection:text-white">
+<body>
 
-    <!-- Header Navigation -->
-    <header class="border-b border-violet-500/10 bg-[#080c14]/90 backdrop-blur-md px-6 py-4 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3">
-            <a href="/bich/index.html" class="text-xs font-mono text-violet-400 hover:text-violet-300 transition flex items-center gap-2">
-                <span>&larr;</span> Portal Utama BICH
-            </a>
-            <span class="text-[10px] font-mono text-violet-400 border border-violet-500/30 px-3 py-1 rounded-full bg-violet-950/30 font-semibold tracking-wide">
-                SUNGAI 06 · MELAWI — ANAK SUNGAI MENUJU PEDALAMAN
-            </span>
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 bg-[#f7f7f4]/90 backdrop-blur border-b border-black/5">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+      <a href="/bich/index.html" class="text-sm font-semibold tracking-wide">BICH <span class="text-[#64806a]">/ EDUKASI</span></a>
+      <a href="/bich/melawi.html" class="text-sm font-semibold text-[#64806a] hover:text-[#3f5d45]">Ruang Melawi →</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="relative grain overflow-hidden">
+      <div class="max-w-6xl mx-auto px-5 sm:px-8 pt-20 pb-16 sm:pt-28 sm:pb-24 grid lg:grid-cols-[1.15fr_.85fr] gap-12 items-end">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[.22em] text-[#64806a] mb-5">Sungai 06 · Melawi</p>
+          <h1 class="serif text-5xl sm:text-7xl leading-[.98] tracking-tight max-w-3xl">Tempat belajar yang akhirnya <em class="font-normal">menghasilkan.</em></h1>
+          <p class="mt-7 text-lg leading-8 text-[#53605a] max-w-2xl">Bukan sekadar mengumpulkan materi. Kita belajar, mengerjakan, membuktikan kemampuan, lalu menyiapkan orang berikutnya untuk tumbuh.</p>
+          <div class="mt-9 flex flex-wrap gap-3">
+            <a href="/bich/melawi.html" class="inline-flex items-center justify-center rounded-full bg-[#18201c] text-white px-6 py-3.5 font-semibold hover:bg-[#304039] transition">Masuk Ruang Melawi <span class="ml-2">→</span></a>
+            <a href="#materi" class="inline-flex items-center justify-center rounded-full border border-black/10 bg-white px-6 py-3.5 font-semibold hover:bg-[#f0f0eb] transition">Lihat materi</a>
+          </div>
         </div>
-    </header>
+        <div class="rounded-[2rem] bg-[#dfe9df] p-7 sm:p-9 min-h-[300px] flex flex-col justify-between border border-[#cbd9cc]">
+          <div class="text-5xl">🌊</div>
+          <div>
+            <p class="text-sm font-semibold text-[#64806a]">RUANG MELAWI</p>
+            <p class="serif text-3xl mt-2">Belajar → Praktik → Mentor</p>
+            <p class="text-sm text-[#53605a] mt-3 leading-6">3× seminggu · 30–50 menit · akses peserta gratis</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Main Container -->
-    <main class="max-w-6xl mx-auto px-6 py-10 flex-grow w-full space-y-10">
+    <!-- PILAR EDAN -->
+    <section class="border-y border-black/5 bg-white">
+      <div class="max-w-6xl mx-auto px-5 sm:px-8 py-9 grid sm:grid-cols-3 gap-8">
+        <div>
+          <p class="text-2xl">01</p>
+          <p class="font-semibold mt-2">Belajar</p>
+          <p class="text-sm text-[#68736d] mt-1">Materi ringkas dan terarah.</p>
+        </div>
+        <div>
+          <p class="text-2xl">02</p>
+          <p class="font-semibold mt-2">Praktik</p>
+          <p class="text-sm text-[#68736d] mt-1">Kemampuan dibuktikan lewat pekerjaan.</p>
+        </div>
+        <div>
+          <p class="text-2xl">03</p>
+          <p class="font-semibold mt-2">Menjadi mentor</p>
+          <p class="text-sm text-[#68736d] mt-1">Bibit terbaik mulai membimbing orang lain.</p>
+        </div>
+      </div>
+    </section>
 
-        <!-- Hero Section -->
-        <section class="text-center space-y-4 max-w-3xl mx-auto">
-            <div class="inline-flex items-center gap-2 border border-violet-500/40 bg-violet-950/60 px-4 py-1.5 rounded-full text-xs font-mono text-violet-300 font-bold shadow-lg shadow-violet-950/50">
-                <span class="w-2 h-2 rounded-full bg-violet-400 animate-pulse"></span>
-                <span>SUNGAI MELAWI DESK · EDISI MINGGUAN</span>
-            </div>
+    <!-- KATALOG MATERI DARI SUPABASE -->
+    <section id="materi" class="max-w-6xl mx-auto px-5 sm:px-8 py-20">
+      <div class="flex items-end justify-between gap-6 mb-8">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[.2em] text-[#64806a]">Perpustakaan hidup</p>
+          <h2 class="serif text-4xl mt-2">Materi yang bisa langsung dibuka</h2>
+        </div>
+        <span id="status" class="text-xs text-[#7a837e]">Memuat…</span>
+      </div>
 
-            <h1 class="text-3xl sm:text-5xl font-extrabold font-serif tracking-tight text-white leading-tight">
-                PORTAL <span class="violet-gradient">EDUKASI</span>
-            </h1>
+      <!-- SKELETON LOADER -->
+      <div id="skeleton" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="h-56 rounded-3xl bg-[#e9e9e4] animate-pulse"></div>
+        <div class="h-56 rounded-3xl bg-[#e9e9e4] animate-pulse"></div>
+        <div class="h-56 rounded-3xl bg-[#e9e9e4] animate-pulse"></div>
+      </div>
 
-            <p class="text-xs sm:text-sm text-slate-400 font-mono max-w-2xl mx-auto leading-relaxed">
-                Ruang belajar dan berbagi pengetahuan untuk generasi Banua. Seluruh materi edukasi dan modul pelatihan bersumber langsung dari verifikasi tim BICH.
-            </p>
-        </section>
+      <!-- CONTENT CONTAINER -->
+      <div id="content" class="hidden grid md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
-        <!-- Main Content Grid Section -->
-        <section class="space-y-4" aria-label="Materi Edukasi Available">
-            <div class="flex items-center justify-between border-l-2 border-violet-500 pl-3">
-                <h2 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-300">MATERI EDUKASI TERSEDIA</h2>
-                <span id="status" class="text-[10px] font-mono text-slate-500">Memuat data...</span>
-            </div>
+      <!-- EMPTY STATE -->
+      <div id="empty" class="hidden rounded-3xl border border-dashed border-black/10 bg-white p-10 text-center">
+        <p class="font-semibold">Belum ada materi yang dipublikasikan.</p>
+        <p class="text-sm text-[#68736d] mt-2">Ruang kelas tetap bisa dibuka dari kartu Sungai Melawi.</p>
+      </div>
 
-            <!-- Content Grid Container -->
-            <div id="content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      <!-- ERROR STATE -->
+      <div id="error" class="hidden rounded-3xl border border-red-200 bg-red-50 p-8">
+        <p class="font-semibold text-red-800">Materi belum dapat dimuat.</p>
+        <button onclick="loadContent()" class="mt-4 rounded-full bg-white border border-red-200 px-4 py-2 text-sm font-semibold">Coba lagi</button>
+      </div>
+    </section>
 
-            <!-- Skeleton Loading State -->
-            <div id="skeleton" class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="skeleton h-48 rounded-xl border border-slate-800/80"></div>
-                <div class="skeleton h-48 rounded-xl border border-slate-800/80"></div>
-                <div class="skeleton h-48 rounded-xl border border-slate-800/80"></div>
-            </div>
+    <!-- KADERISASI CTA -->
+    <section class="max-w-6xl mx-auto px-5 sm:px-8 pb-20">
+      <div class="rounded-[2rem] bg-[#18201c] text-white p-8 sm:p-12 grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+        <div>
+          <p class="text-xs uppercase tracking-[.2em] text-[#b9cdbb]">Jalur regenerasi</p>
+          <h2 class="serif text-4xl mt-3">Peserta hari ini. Mentor esok hari.</h2>
+          <p class="mt-4 text-white/65 max-w-2xl leading-7">Perintis → Penjelajah → Pewaris Sungai. Kaderisasi dilakukan melalui praktik, konsistensi, kemampuan menjelaskan, dan tanggung jawab.</p>
+        </div>
+        <a href="/bich/kaderisasi-melawi.html" class="rounded-full bg-white text-[#18201c] px-6 py-3.5 font-semibold whitespace-nowrap hover:bg-[#f0f0eb] transition">Lihat kaderisasi →</a>
+      </div>
+    </section>
+  </main>
 
-            <!-- Empty State -->
-            <div id="empty" class="hidden text-center py-16 border border-dashed border-slate-800 rounded-xl space-y-2 bg-[#080c14]/40">
-                <p class="text-sm font-mono text-slate-300 font-semibold">Belum ada materi edukasi yang dipublikasikan.</p>
-                <p class="text-xs font-mono text-slate-500">Materi peer-teaching sedang disiapkan oleh tim Melawi.</p>
-            </div>
+  <footer class="border-t border-black/5 py-8 text-center text-xs text-[#7a837e]">
+    © 2026 BICH Education Desk · Sungai Melawi
+  </footer>
 
-            <!-- Error State -->
-            <div id="error" class="hidden text-center py-12 border border-red-500/30 bg-red-500/5 rounded-xl space-y-3">
-                <p class="text-sm font-mono text-red-400 font-bold">Materi edukasi belum dapat dimuat.</p>
-                <button onclick="loadContent()" class="text-xs font-mono text-violet-300 bg-violet-950/40 hover:bg-violet-900/60 border border-violet-500/40 px-5 py-2 rounded-lg transition">
-                    🔄 Coba lagi
-                </button>
-            </div>
-        </section>
+  <!-- MODAL BACA MATERI -->
+  <div id="modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="w-full max-w-3xl max-h-[88vh] overflow-auto rounded-[2rem] bg-[#f7f7f4] shadow-2xl">
+      <div class="p-6 sm:p-8 border-b border-black/5 flex justify-between gap-5">
+        <div>
+          <p id="modalMeta" class="text-xs uppercase tracking-[.18em] text-[#64806a]"></p>
+          <h3 id="modalTitle" class="serif text-3xl mt-2"></h3>
+        </div>
+        <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-white border border-black/10 text-xl hover:bg-black/5 transition" aria-label="Tutup">×</button>
+      </div>
+      <div id="modalBody" class="p-6 sm:p-8 text-[#53605a] leading-8 whitespace-pre-wrap"></div>
+    </div>
+  </div>
 
-        <!-- Banner Kaderisasi -->
-        <section class="bg-violet-950/20 border border-violet-500/20 rounded-2xl p-6 sm:p-8 space-y-5 relative overflow-hidden">
-            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-violet-500/10 rounded-full blur-2xl pointer-events-none"></div>
-            
-            <div class="space-y-2">
-                <h2 class="text-lg font-serif font-bold text-white">Jalur Kaderisasi Mentor Sebaya</h2>
-                <p class="text-xs text-slate-400 font-mono">Program berjenjang penguatan kapasitas pemuda Banua berbasis komunitas pedalaman.</p>
-            </div>
+  <script>
+    const URL_BICH = 'https://gehbuhuevfxfjyytmrht.supabase.co';
+    const KEY_BICH = 'sb_publishable_yPGSsXXIoc_wfn_Kkq8xzA_lGi7zEEn';
 
-            <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono text-slate-400 bg-[#080c14]/80 p-3 rounded-xl border border-slate-800/80">
-                <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">1. Perintis</span>
-                <span class="text-violet-400">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">2. Penjelajah</span>
-                <span class="text-violet-400">&rarr;</span>
-                <span class="px-2.5 py-1 rounded bg-violet-500/20 border border-violet-500/40 text-violet-300 font-bold">3. Pewaris Sungai</span>
-                <span class="text-slate-500 ml-auto italic text-[10px]">(Verifikasi manual tim BICH)</span>
-            </div>
+    const esc = v => {
+      const d = document.createElement('div');
+      d.textContent = v ?? '';
+      return d.innerHTML;
+    };
 
-            <div>
-                <a href="/bich/kaderisasi-melawi.html" class="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs px-6 py-3 rounded-xl transition shadow-lg shadow-violet-950/50">
-                    <span>Daftar Kaderisasi</span>
-                    <span>&rarr;</span>
-                </a>
-            </div>
-        </section>
+    function openModal(row) {
+      document.getElementById('modalMeta').textContent = (row.kategori || 'Materi BICH') + (row.lokasi ? ' · ' + row.lokasi : '');
+      document.getElementById('modalTitle').textContent = row.judul || 'Materi Edukasi';
+      document.getElementById('modalBody').textContent = row.artikel_ai || row.info_tambahan || 'Materi belum memiliki isi yang dapat ditampilkan.';
+      document.getElementById('modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
 
-    </main>
+    function closeModal() {
+      document.getElementById('modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-900 py-6 text-center text-xs font-mono text-slate-600 space-y-1">
-        <p>&copy; 2026 BICH Education Desk &bull; Mozens Inc. (<a href="https://mozensalqadrie.com" class="hover:underline text-slate-500">www.mozensalqadrie.com</a>)</p>
-        <p class="text-[10px] text-slate-700">Sungai Melawi Desk &middot; Jalur Peer-Teaching Pedalaman</p>
-    </footer>
+    document.getElementById('modal').addEventListener('click', e => {
+      if (e.target.id === 'modal') closeModal();
+    });
 
-    <!-- Script Integrasi Data -->
-    <script>
-        const URL_BICH = 'https://gehbuhuevfxfjyytmrht.supabase.co';
-        const KEY_BICH = 'sb_publishable_yPGSsXXIoc_wfn_Kkq8xzA_lGi7zEEn';
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
 
-        function escapeHtml(value) {
-            const div = document.createElement('div');
-            div.textContent = value == null ? '' : String(value);
-            return div.innerHTML;
+    async function loadContent() {
+      const box = document.getElementById('content'),
+            sk = document.getElementById('skeleton'),
+            empty = document.getElementById('empty'),
+            error = document.getElementById('error'),
+            status = document.getElementById('status');
+
+      sk.classList.remove('hidden');
+      box.classList.add('hidden');
+      empty.classList.add('hidden');
+      error.classList.add('hidden');
+      status.textContent = 'Memuat…';
+
+      const p = new URLSearchParams({
+        select: '*',
+        kategori: 'eq.Edukasi',
+        status: 'eq.Ready',
+        status_verifikasi: 'eq.TERVERIFIKASI',
+        order: 'created_at.desc',
+        limit: '24'
+      });
+
+      try {
+        const r = await fetch(URL_BICH + '/rest/v1/master_konten?' + p, {
+          headers: {
+            apikey: KEY_BICH,
+            Authorization: 'Bearer ' + KEY_BICH
+          }
+        });
+
+        if (!r.ok) throw Error('Status ' + r.status);
+        const rows = await r.json();
+
+        sk.classList.add('hidden');
+
+        if (!rows.length) {
+          empty.classList.remove('hidden');
+          status.textContent = '0 materi';
+          return;
         }
 
-        async function loadContent() {
-            const box = document.getElementById('content');
-            const empty = document.getElementById('empty');
-            const error = document.getElementById('error');
-            const status = document.getElementById('status');
-            const skeleton = document.getElementById('skeleton');
+        box.innerHTML = '';
+        rows.forEach(row => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'card text-left rounded-3xl bg-white border border-black/5 p-6 min-h-56 flex flex-col justify-between';
+          b.innerHTML = '<div><span class="text-[11px] font-bold uppercase tracking-[.15em] text-[#64806a]">' + esc(row.kategori || 'Materi BICH') + '</span><h3 class="serif text-2xl mt-3 leading-tight">' + esc(row.judul || 'Materi Edukasi') + '</h3><p class="text-sm text-[#68736d] mt-3 line-clamp-3">' + esc(row.artikel_ai || row.info_tambahan || 'Ringkasan belum tersedia.') + '</p></div><span class="mt-6 text-sm font-semibold text-[#64806a]">Buka materi →</span>';
+          b.onclick = () => openModal(row);
+          box.appendChild(b);
+        });
 
-            box.innerHTML = '';
-            empty.classList.add('hidden');
-            error.classList.add('hidden');
-            skeleton.classList.remove('hidden');
-            status.textContent = 'Memuat...';
+        box.classList.remove('hidden');
+        status.textContent = rows.length + ' materi terverifikasi';
+      } catch (e) {
+        console.error(e);
+        sk.classList.add('hidden');
+        error.classList.remove('hidden');
+        status.textContent = 'Gagal memuat';
+      }
+    }
 
-            const params = new URLSearchParams({
-                select: '*',
-                kategori: 'eq.Edukasi',
-                status: 'eq.Ready',
-                status_verifikasi: 'eq.TERVERIFIKASI',
-                order: 'created_at.desc',
-                limit: '24'
-            });
-
-            try {
-                const response = await fetch(`${URL_BICH}/rest/v1/master_konten?${params}`, {
-                    headers: {
-                        apikey: KEY_BICH,
-                        Authorization: `Bearer ${KEY_BICH}`
-                    }
-                });
-
-                if (!response.ok) throw new Error(`Status ${response.status}`);
-                const rows = await response.json();
-
-                skeleton.classList.add('hidden');
-
-                if (!rows.length) {
-                    empty.classList.remove('hidden');
-                    status.textContent = '0 materi';
-                    return;
-                }
-
-                rows.forEach(row => {
-                    const card = document.createElement('article');
-                    card.className = 'bg-[#080c14] border border-slate-800 hover:border-violet-500/50 rounded-xl p-5 space-y-3 transition flex flex-col justify-between group shadow-lg';
-                    card.innerHTML = `
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="bg-violet-500/10 border border-violet-500/30 text-violet-400 text-[9px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                    ${escapeHtml(row.kategori || 'Materi BICH')}
-                                </span>
-                                ${row.lokasi ? `<span class="text-[10px] font-mono text-slate-500">📍 ${escapeHtml(row.lokasi)}</span>` : ''}
-                            </div>
-                            <h3 class="text-lg font-serif font-bold text-white group-hover:text-violet-300 transition leading-snug">
-                                ${escapeHtml(row.judul || 'Materi Edukasi')}
-                            </h3>
-                            <p class="text-xs text-slate-400 leading-relaxed font-sans line-clamp-3">
-                                ${escapeHtml(row.artikel_ai || row.info_tambahan || 'Ringkasan materi belum tersedia.')}
-                            </p>
-                        </div>
-                        <div class="pt-3 border-t border-slate-900 flex justify-between items-center text-[10px] font-mono text-slate-500">
-                            <span>Verifikasi BICH</span>
-                            <span class="text-violet-400 group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                                Pelajari &rarr;
-                            </span>
-                        </div>
-                    `;
-                    box.appendChild(card);
-                });
-
-                status.textContent = `${rows.length} materi terverifikasi`;
-            } catch (err) {
-                skeleton.classList.add('hidden');
-                error.classList.remove('hidden');
-                status.textContent = 'Gagal memuat';
-                console.error('BICH Edukasi Load Error:', err);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadContent);
-    </script>
+    loadContent();
+  </script>
 </body>
 </html>

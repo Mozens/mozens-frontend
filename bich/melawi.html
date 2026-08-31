@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ruang Melawi — BICH Edukasi</title>
+  <meta name="description" content="Ruang belajar BICH Edukasi Sungai Melawi: kelas, materi, praktik, kehadiran, dan jalur menuju Mentor Seed.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://meet.jit.si/external_api.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body{font-family:'DM Sans',sans-serif;background:#f7f7f4;color:#18201c}
+    .serif{font-family:'Playfair Display',serif}
+    .session{transition:.22s ease}.session:hover{transform:translateY(-2px);box-shadow:0 14px 35px rgba(24,32,28,.09)}
+    .modal{display:none}.modal.show{display:flex}
+    .auth-card{box-shadow:0 24px 80px rgba(24,32,28,.16)}
+  </style>
+</head>
+<body>
+<header class="sticky top-0 z-40 bg-[#f7f7f4]/90 backdrop-blur border-b border-black/5">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between gap-4">
+    <a href="/bich/edukasi.html" class="text-sm font-semibold">← BICH Edukasi</a>
+    <div class="flex items-center gap-3">
+      <span id="user-badge" class="hidden text-xs text-[#53605a]"></span>
+      <button id="auth-button" onclick="openAuth()" class="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold">Masuk / Daftar</button>
+      <button id="logout-button" onclick="logout()" class="hidden rounded-full bg-[#18201c] text-white px-4 py-2 text-xs font-bold">Keluar</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="bg-[#dfe9df] border-b border-[#cbd9cc]">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24 grid lg:grid-cols-[1fr_.8fr] gap-12 items-end">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[.22em] text-[#64806a]">Sungai Melawi · Cohort 01</p>
+      <h1 class="serif text-5xl sm:text-7xl leading-[.98] mt-5">Ruang untuk<br><em class="font-normal">menjadi mampu.</em></h1>
+      <p class="mt-6 text-lg leading-8 text-[#53605a] max-w-2xl">Kelas online yang sederhana: 30–50 menit, tiga kali seminggu. Belajar sedikit, praktik banyak, lalu buktikan kemampuanmu.</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <button onclick="startLiveFlow()" class="rounded-full bg-[#18201c] text-white px-6 py-3.5 font-semibold hover:bg-[#304039] transition">Masuk kelas live →</button>
+        <a href="#kurikulum" class="rounded-full bg-white/70 border border-black/10 px-6 py-3.5 font-semibold hover:bg-white transition">Lihat perjalanan</a>
+      </div>
+      <p id="live-note" class="text-xs text-[#68736d] mt-4">Kelas dibuka untuk peserta terdaftar. Kehadiran dicatat sebelum masuk ruang live.</p>
+    </div>
+    <div class="rounded-[2rem] bg-white/70 p-7 border border-white">
+      <div class="text-5xl">🌊</div>
+      <p class="text-xs font-bold uppercase tracking-[.18em] text-[#64806a] mt-10">Prinsip ruang</p>
+      <p class="serif text-3xl mt-2">Gratis untuk peserta.</p>
+      <p class="text-sm text-[#68736d] mt-2">Kecuali perangkat dan koneksi internet yang digunakan peserta.</p>
+    </div>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-5 sm:px-8 pt-10">
+  <div class="rounded-[2rem] bg-white border border-black/5 p-6 sm:p-8 grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[.2em] text-[#64806a]">Identitas belajar</p>
+      <h2 class="serif text-3xl mt-2">Satu akun untuk perjalanan Melawi.</h2>
+      <p class="text-sm text-[#68736d] mt-3 max-w-2xl leading-6">Login membuat BICH dapat mencatat kehadiran dan perkembangan peserta secara konsisten. Data yang diminta dibuat seminimal mungkin.</p>
+    </div>
+    <div class="flex gap-3 flex-col items-end">
+      <div class="flex gap-3">
+        <button onclick="openAuth('login')" class="rounded-full bg-[#18201c] text-white px-5 py-3 text-sm font-semibold">Masuk</button>
+        <button onclick="openAuth('signup')" class="rounded-full border border-black/10 bg-[#f7f7f4] px-5 py-3 text-sm font-semibold">Daftar</button>
+      </div>
+      <p id="kuota-badge" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#dfe9df] text-[#3c4f40] border border-[#cbd9cc]">Memuat info kuota…</p>
+    </div>
+  </div>
+</section>
+
+<section id="live-section" class="hidden max-w-6xl mx-auto px-5 sm:px-8 pt-10">
+  <div class="rounded-[2rem] bg-white border border-black/10 p-4 sm:p-6 shadow-lg">
+    <div class="flex items-center justify-between mb-4 px-2 gap-4">
+      <div class="flex items-center gap-2"><span class="inline-block w-3 h-3 rounded-full bg-red-500 animate-pulse"></span><span class="text-xs font-bold uppercase tracking-widest text-[#64806a]">Ruang Live</span></div>
+      <button onclick="closeClass()" class="text-xs font-semibold text-red-600 hover:text-red-800 transition">Tutup Ruang Kelas ✕</button>
+    </div>
+    <div id="jitsi-container" class="w-full h-[520px] rounded-2xl overflow-hidden bg-black/5"></div>
+  </div>
+</section>
+
+<section class="max-w-6xl mx-auto px-5 sm:px-8 py-14">
+  <div class="grid md:grid-cols-4 gap-4">
+    <div class="rounded-2xl bg-white border border-black/5 p-5"><p class="text-2xl">36</p><p class="text-sm text-[#68736d] mt-1">sesi / 12 minggu</p></div>
+    <div class="rounded-2xl bg-white border border-black/5 p-5"><p class="text-2xl">3×</p><p class="text-sm text-[#68736d] mt-1">per minggu</p></div>
+    <div class="rounded-2xl bg-white border border-black/5 p-5"><p class="text-2xl">30–50</p><p class="text-sm text-[#68736d] mt-1">menit / sesi</p></div>
+    <div class="rounded-2xl bg-[#18201c] text-white p-5"><p class="text-2xl">20 → 3–5</p><p class="text-sm text-white/60 mt-1">target Mentor Seed</p></div>
+  </div>
+</section>
+
+<section id="kurikulum" class="max-w-6xl mx-auto px-5 sm:px-8 pb-20">
+  <div class="mb-9">
+    <p class="text-xs font-bold uppercase tracking-[.2em] text-[#64806a]">Peta perjalanan</p>
+    <h2 class="serif text-4xl mt-2">Kurikulum yang mengarah pada praktik</h2>
+    <p class="text-[#68736d] mt-3 max-w-2xl">Klik sesi untuk melihat tujuan dan challenge. Peserta yang sudah login dapat menandai kehadiran pada sesi yang dipilih.</p>
+  </div>
+  <div id="progress-panel" class="hidden mb-8 rounded-[2rem] bg-[#18201c] text-white p-6 sm:p-8">
+    <div class="flex flex-wrap items-end justify-between gap-4"><div><p class="text-xs uppercase tracking-[.2em] text-white/50">Perjalanan saya</p><h3 class="serif text-3xl mt-2">Kehadiran Melawi</h3></div><div class="text-right"><p id="attendance-count" class="text-3xl font-bold">0 / 36</p><p class="text-xs text-white/50">sesi tercatat</p></div></div>
+    <div class="mt-5 h-2 bg-white/10 rounded-full overflow-hidden"><div id="attendance-bar" class="h-full bg-white rounded-full" style="width:0%"></div></div>
+  </div>
+  <div id="sessions" class="grid md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+</section>
+
+<section class="max-w-6xl mx-auto px-5 sm:px-8 pb-20">
+  <div class="rounded-[2rem] bg-white border border-black/5 p-8 sm:p-10 grid lg:grid-cols-[1fr_auto] gap-8 items-center">
+    <div><p class="text-xs font-bold uppercase tracking-[.2em] text-[#64806a]">Jalur kaderisasi</p><h2 class="serif text-3xl mt-2">Perintis → Penjelajah → Pewaris Sungai</h2><p class="text-sm text-[#68736d] mt-3 max-w-2xl leading-6">Status bukan hadiah otomatis. Ia lahir dari konsistensi, kemampuan praktik, kemampuan menjelaskan, dan tanggung jawab terhadap peserta lain.</p></div>
+    <a href="/bich/kaderisasi-melawi.html" class="rounded-full bg-[#18201c] text-white px-6 py-3.5 font-semibold whitespace-nowrap">Buka kaderisasi →</a>
+  </div>
+</section>
+</main>
+
+<footer class="border-t border-black/5 py-8 text-center text-xs text-[#7a837e]">© 2026 BICH Education Desk · Ruang Melawi</footer>
+
+<div id="modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4">
+  <div class="w-full max-w-2xl max-h-[88vh] overflow-auto rounded-[2rem] bg-[#f7f7f4] shadow-2xl">
+    <div class="p-6 sm:p-8 border-b border-black/5 flex justify-between gap-5"><div><p id="mWeek" class="text-xs uppercase tracking-[.18em] text-[#64806a]"></p><h3 id="mTitle" class="serif text-3xl mt-2"></h3></div><button onclick="closeSession()" class="w-10 h-10 rounded-full bg-white border border-black/10 text-xl">×</button></div>
+    <div class="p-6 sm:p-8"><div id="mBody" class="text-[#53605a] leading-7 whitespace-pre-wrap"></div><div class="mt-8 rounded-2xl bg-[#dfe9df] p-5"><p class="text-xs font-bold uppercase tracking-[.16em] text-[#64806a]">Challenge</p><p id="mChallenge" class="mt-2 font-semibold"></p></div><button id="attendance-button" onclick="markAttendanceFromModal()" class="mt-5 w-full rounded-2xl bg-[#18201c] text-white px-5 py-3.5 font-semibold">Tandai kehadiran sesi ini</button><p id="attendance-message" class="text-xs text-[#68736d] mt-3 text-center"></p></div>
+  </div>
+</div>
+
+<div id="auth-modal" class="modal fixed inset-0 z-[60] items-center justify-center bg-black/50 p-4">
+  <div class="auth-card w-full max-w-md rounded-[2rem] bg-[#f7f7f4] p-7 sm:p-9">
+    <div class="flex justify-between items-start gap-5"><div><p class="text-xs font-bold uppercase tracking-[.2em] text-[#64806a]">Ruang Melawi</p><h3 id="auth-title" class="serif text-3xl mt-2">Masuk</h3></div><button onclick="closeAuth()" class="w-10 h-10 rounded-full bg-white border border-black/10 text-xl">×</button></div>
+    <form id="auth-form" class="mt-7 space-y-4" onsubmit="submitAuth(event)">
+      <div id="name-wrap" class="hidden"><label class="text-xs font-bold text-[#53605a]">Nama</label><input id="auth-name" class="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-[#9eb4a2]" autocomplete="name"></div>
+      <div><label class="text-xs font-bold text-[#53605a]">Email</label><input id="auth-email" type="email" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-[#9eb4a2]" autocomplete="email"></div>
+      <div><label class="text-xs font-bold text-[#53605a]">Password</label><input id="auth-password" type="password" minlength="6" required class="mt-1 w-full rounded-xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-[#9eb4a2]" autocomplete="current-password"></div>
+      <button id="auth-submit" class="w-full rounded-xl bg-[#18201c] text-white px-5 py-3.5 font-semibold">Masuk</button>
+    </form>
+    <p id="auth-message" class="text-xs mt-4 text-center text-[#68736d]"></p>
+    <button id="auth-switch" onclick="toggleAuthMode()" class="mt-4 w-full text-xs font-semibold text-[#64806a]">Belum punya akun? Daftar</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://gehbuhuevfxfjyytmrht.supabase.co';
+const SUPABASE_KEY='sb_publishable_yPGSsXXIoc_wfn_Kkq8xzA_lGi7zEEn';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const JITSI_ROOM_NAME='BICH_RuangMelawi_Cohort01_SesuaiNamaUnik99';
+const LIVE_CLASS_URL='';
+let jitsiApi=null, selectedSession=null, authMode='login', currentUser=null, terdaftar=false;
+const KUOTA_MAKS=20;
+const sessions=[
+['01','Melihat Masalah Sebelum Menawarkan Solusi','Belajar membedakan fakta, asumsi, pertanyaan, dan opini. Peserta membawa satu masalah nyata dari lingkungannya.','Ambil satu masalah nyata. Tulis 5 fakta yang benar-benar bisa diamati. Jangan berikan solusi dulu.'],
+['02','Berpikir Terstruktur','Menyusun masalah menjadi bagian-bagian kecil agar dapat dikerjakan.','Pilih satu masalah dari sesi 01 dan pecah menjadi sebab, gejala, pihak terdampak, dan bukti yang dibutuhkan.'],
+['03','Mencari dan Memeriksa Informasi','Latihan mencari sumber, membandingkan klaim, dan menandai informasi yang belum terverifikasi.','Temukan tiga sumber untuk satu klaim. Tandai mana yang fakta, interpretasi, dan bagian yang masih perlu diverifikasi.'],
+['04','Komunikasi yang Bisa Dipahami','Mengubah gagasan menjadi penjelasan singkat yang dapat dipahami orang lain.','Jelaskan masalahmu dalam 60 detik seolah-olah berbicara kepada seseorang yang baru pertama kali mendengarnya.'],
+['05','Bekerja dengan Data Sederhana','Membaca angka, tabel, dan pola tanpa melompat ke kesimpulan.','Ambil satu data publik atau data lapangan sederhana dan tuliskan tiga hal yang benar-benar ditunjukkan data tersebut.'],
+['06','Digital dan AI sebagai Alat','Memahami teknologi sebagai alat bantu kerja, bukan pengganti kemampuan berpikir.','Pilih satu pekerjaan rutin yang bisa dipercepat dengan alat digital. Jelaskan manfaat dan risikonya.'],
+['07','Mengenal Pengguna dan Kebutuhannya','Belajar mendengar sebelum membuat produk atau layanan.','Wawancarai minimal dua orang tentang satu kebutuhan nyata. Jangan menjual apa pun; hanya dengarkan.'],
+['08','Dasar Perdagangan dan Nilai','Memahami hubungan kebutuhan, nilai, biaya, harga, dan kepercayaan.','Petakan perjalanan satu produk dari produsen sampai konsumen dan identifikasi titik nilai yang tercipta.'],
+['09','Membuat Solusi Kecil','Mengubah temuan menjadi eksperimen yang sederhana dan terukur.','Rancang solusi versi paling kecil yang dapat diuji dalam tujuh hari.'],
+['10','Eksekusi dan Operasi','Menyusun langkah kerja, pembagian tugas, dan indikator selesai.','Buat SOP satu halaman untuk eksperimenmu: siapa melakukan apa, kapan, dengan alat apa, dan bukti selesainya.'],
+['11','Mengukur dan Belajar dari Kegagalan','Menggunakan hasil untuk memperbaiki tindakan berikutnya.','Tuliskan apa yang berhasil, apa yang gagal, mengapa, dan satu perubahan yang akan diuji berikutnya.'],
+['12','Capstone dan Mengajar Kembali','Mempresentasikan hasil proyek dan mulai mengajarkan proses kepada orang lain.','Ajarkan satu bagian dari proyekmu selama 10 menit kepada peserta lain. Fokus pada kejelasan, bukan menunjukkan kepintaran.']
+];
+function escapeHtml(v){const d=document.createElement('div');d.textContent=v??'';return d.innerHTML}
+function renderSessions(){const box=document.getElementById('sessions');box.innerHTML='';sessions.forEach((s,i)=>{const b=document.createElement('button');b.className='session text-left rounded-3xl bg-white border border-black/5 p-6 min-h-52 flex flex-col justify-between';b.innerHTML=`<div><p class="text-xs font-bold uppercase tracking-[.16em] text-[#64806a]">Sesi ${s[0]} · Minggu ${Math.floor(i/3)+1}</p><h3 class="serif text-2xl mt-3 leading-tight">${escapeHtml(s[1])}</h3></div><span class="text-sm font-semibold text-[#64806a] mt-5">Buka sesi →</span>`;b.onclick=()=>openSession(s);box.appendChild(b)})}
+function openSession(s){selectedSession=s;document.getElementById('mWeek').textContent=`Sesi ${s[0]} · Ruang Melawi`;document.getElementById('mTitle').textContent=s[1];document.getElementById('mBody').textContent=`Tujuan dan alur:\n\n${s[2]}\n\nFormat:\n10 menit pembuka → 15 menit pemaparan → 15 menit diskusi → 10 menit praktik/penugasan.`;document.getElementById('mChallenge').textContent=s[3];document.getElementById('attendance-message').textContent=currentUser?'':'Masuk terlebih dahulu untuk mencatat kehadiran.';document.getElementById('attendance-button').disabled=!currentUser;document.getElementById('attendance-button').classList.toggle('opacity-50',!currentUser);document.getElementById('modal').classList.add('show');document.body.style.overflow='hidden'}
+function closeSession(){document.getElementById('modal').classList.remove('show');document.body.style.overflow=''}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeSession()});
+function openAuth(mode='login'){authMode=mode;renderAuthMode();document.getElementById('auth-modal').classList.add('show');document.body.style.overflow='hidden'}
+function closeAuth(){document.getElementById('auth-modal').classList.remove('show');document.body.style.overflow='';document.getElementById('auth-message').textContent=''}
+function toggleAuthMode(){authMode=authMode==='login'?'signup':'login';renderAuthMode()}
+function renderAuthMode(){const signup=authMode==='signup';document.getElementById('auth-title').textContent=signup?'Daftar peserta':'Masuk';document.getElementById('name-wrap').classList.toggle('hidden',!signup);document.getElementById('auth-name').required=signup;document.getElementById('auth-submit').textContent=signup?'Buat akun':'Masuk';document.getElementById('auth-switch').textContent=signup?'Sudah punya akun? Masuk':'Belum punya akun? Daftar';document.getElementById('auth-message').textContent=''}
+async function submitAuth(e){e.preventDefault();const email=document.getElementById('auth-email').value.trim();const password=document.getElementById('auth-password').value;const message=document.getElementById('auth-message');message.textContent='Memproses...';try{if(authMode==='signup'){const name=document.getElementById('auth-name').value.trim();const {data,error}=await sb.auth.signUp({email,password,options:{data:{full_name:name}}});if(error)throw error;if(data.session){message.textContent='Akun dibuat. Anda sudah masuk.';closeAuth()}else{message.textContent='Akun dibuat. Jika konfirmasi email aktif di Supabase, cek email Anda lalu masuk.'}}else{const {error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;closeAuth()}}catch(err){message.textContent=err.message||'Terjadi kesalahan.'}}
+async function logout(){await sb.auth.signOut()}
+async function refreshUser(){const {data}=await sb.auth.getUser();currentUser=data.user||null;const badge=document.getElementById('user-badge');const authBtn=document.getElementById('auth-button');const logoutBtn=document.getElementById('logout-button');if(currentUser){const name=currentUser.user_metadata?.full_name||currentUser.email;badge.textContent=name;badge.classList.remove('hidden');authBtn.classList.add('hidden');logoutBtn.classList.remove('hidden');await daftarKelasCohort();document.getElementById('progress-panel').classList.remove('hidden');await loadAttendance()}else{terdaftar=false;badge.classList.add('hidden');authBtn.classList.remove('hidden');logoutBtn.classList.add('hidden');document.getElementById('progress-panel').classList.add('hidden');await refreshKuotaBadge()}}
+
+// Dipanggil sekali tiap kali user berhasil login - inilah lapisan pertahanan
+// kuota 20 peserta yang sebenarnya. Login SENDIRIAN tidak membatasi apa pun;
+// yang membatasi adalah RPC ini, yang menolak kalau kuota Cohort 01 sudah
+// penuh, sebelum user diizinkan menandai kehadiran atau masuk ruang live.
+async function daftarKelasCohort(){
+  if(!currentUser){terdaftar=false;return}
+  const {data,error}=await sb.rpc('daftar_peserta_melawi',{p_kuota_maks:KUOTA_MAKS});
+  if(error){console.error('daftar_peserta_melawi:',error);terdaftar=false;await refreshKuotaBadge();return}
+  const hasil=Array.isArray(data)?data[0]:data;
+  terdaftar=!!hasil?.diterima;
+  const badge=document.getElementById('kuota-badge');
+  if(terdaftar){
+    badge.textContent=`✓ Kamu terdaftar di Cohort 01 · sisa ${hasil.sisa_kuota}/${KUOTA_MAKS} kursi`;
+    badge.className='text-xs font-semibold px-3 py-1.5 rounded-full bg-[#dfe9df] text-[#3c4f40] border border-[#cbd9cc]';
+  }else{
+    badge.textContent=`Cohort 01 penuh (${KUOTA_MAKS}/${KUOTA_MAKS} peserta). Nantikan cohort berikutnya.`;
+    badge.className='text-xs font-semibold px-3 py-1.5 rounded-full bg-red-50 text-red-700 border border-red-200';
+  }
+  syncAksesKelas();
+}
+
+async function refreshKuotaBadge(){
+  const {data,error}=await sb.rpc('cek_kuota_melawi',{p_kuota_maks:KUOTA_MAKS});
+  const badge=document.getElementById('kuota-badge');
+  if(error){
+    console.warn('cek_kuota_melawi:',error);
+    badge.textContent='Info kuota belum tersedia (cek SQL setup sudah dijalankan?)';
+    return;
+  }
+  const hasil=Array.isArray(data)?data[0]:data;
+  if(!hasil){badge.textContent='Info kuota belum tersedia.';return}
+  const sisa=Math.max(0,hasil.kuota_maks-hasil.terisi);
+  badge.textContent=sisa>0?`${sisa}/${hasil.kuota_maks} kursi Cohort 01 tersisa`:`Cohort 01 penuh (${hasil.kuota_maks}/${hasil.kuota_maks} peserta).`;
+}
+
+// Update semua tombol yang bergantung pada status "terdaftar di cohort ini"
+// (bukan cuma status login) - dipanggil tiap kali status pendaftaran berubah.
+function syncAksesKelas(){
+  const note=document.getElementById('live-note');
+  if(currentUser&&!terdaftar){
+    note.textContent='Cohort 01 sudah penuh (20 peserta). Kamu login tapi belum terdaftar di cohort ini.';
+  }else{
+    note.textContent='Kelas dibuka untuk peserta terdaftar. Kehadiran dicatat sebelum masuk ruang live.';
+  }
+}
+async function markAttendanceFromModal(){if(!selectedSession){return}if(!currentUser){closeSession();openAuth('login');return}if(!terdaftar){document.getElementById('attendance-message').textContent='Cohort 01 penuh - kehadiran tidak dapat dicatat.';return}const btn=document.getElementById('attendance-button');const msg=document.getElementById('attendance-message');btn.disabled=true;msg.textContent='Mencatat kehadiran...';const {error}=await sb.from('melawi_attendance').upsert({user_id:currentUser.id,session_code:selectedSession[0],session_title:selectedSession[1],marked_at:new Date().toISOString()},{onConflict:'user_id,session_code'});if(error){console.error(error);msg.textContent='Kehadiran belum dapat dicatat. Pastikan SQL setup sudah dijalankan.';btn.disabled=false;return}msg.textContent='✓ Kehadiran sesi ini sudah tercatat.';await loadAttendance()}
+async function loadAttendance(){if(!currentUser)return;const {data,error}=await sb.from('melawi_attendance').select('session_code').eq('user_id',currentUser.id);if(error){console.warn('Attendance load:',error);return}const count=new Set((data||[]).map(x=>x.session_code)).size;document.getElementById('attendance-count').textContent=`${count} / 36`;document.getElementById('attendance-bar').style.width=`${Math.min(100,count/36*100)}%`}
+async function startLiveFlow(){if(!currentUser){openAuth('login');return}if(!terdaftar){alert('Cohort 01 sudah penuh (20 peserta). Kamu login tapi belum terdaftar di cohort ini.');return}if(!LIVE_CLASS_URL){enterClass();return}window.open(LIVE_CLASS_URL,'_blank','noopener,noreferrer')}
+function enterClass(){const liveSection=document.getElementById('live-section');const container=document.getElementById('jitsi-container');liveSection.classList.remove('hidden');liveSection.scrollIntoView({behavior:'smooth'});if(jitsiApi)return;if(typeof JitsiMeetExternalAPI!=='function'){container.innerHTML='<div class="p-8 text-center text-sm text-red-700">Ruang live belum dapat dimuat. Periksa koneksi internet atau integrasi Jitsi.</div>';return}jitsiApi=new JitsiMeetExternalAPI('meet.jit.si',{roomName:JITSI_ROOM_NAME,width:'100%',height:'100%',parentNode:container,userInfo:{displayName:currentUser?.user_metadata?.full_name||currentUser?.email||'Peserta Melawi'},configOverwrite:{startWithAudioMuted:true,disableDeepLinking:true}})}
+function closeClass(){document.getElementById('live-section').classList.add('hidden');if(jitsiApi){jitsiApi.dispose();jitsiApi=null}}
+sb.auth.onAuthStateChange(()=>{setTimeout(refreshUser,0)});
+document.addEventListener('DOMContentLoaded',()=>{renderSessions();refreshUser()});
+</script>
+</body>
+</html>
