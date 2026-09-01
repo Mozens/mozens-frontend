@@ -7,7 +7,8 @@
   <meta name="description" content="Ruang belajar BICH Edukasi Sungai Melawi: kelas, materi, praktik, kehadiran, dan jalur menuju Mentor Seed.">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://meet.jit.si/external_api.js"></script>
+  <!-- Script Jitsi di-load lazy pas mau masuk kelas (lihat loadJitsiScript()) -
+       bukan meet.jit.si publik yang tidak boleh dipakai production. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -138,6 +139,10 @@ const SUPABASE_URL='https://gehbuhuevfxfjyytmrht.supabase.co';
 const SUPABASE_KEY='sb_publishable_yPGSsXXIoc_wfn_Kkq8xzA_lGi7zEEn';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const JITSI_ROOM_NAME='BICH_RuangMelawi_Cohort01_SesuaiNamaUnik99';
+// AppID JaaS - ini BUKAN rahasia (dipakai terbuka di frontend, sesuai pola
+// resmi 8x8: AppID muncul di URL script & nama room). Yang rahasia cuma
+// Private Key, itu cuma ada di server (Edge Function melawi-jitsi-token).
+const JAAS_APP_ID='vpaas-magic-cookie-9294277bbe574925bcea508ce1e237ce';
 const LIVE_CLASS_URL='';
 let jitsiApi=null, selectedSession=null, authMode='login', currentUser=null, terdaftar=false;
 const KUOTA_MAKS=20;
@@ -216,7 +221,75 @@ function syncAksesKelas(){
 async function markAttendanceFromModal(){if(!selectedSession){return}if(!currentUser){closeSession();openAuth('login');return}if(!terdaftar){document.getElementById('attendance-message').textContent='Cohort 01 penuh - kehadiran tidak dapat dicatat.';return}const btn=document.getElementById('attendance-button');const msg=document.getElementById('attendance-message');btn.disabled=true;msg.textContent='Mencatat kehadiran...';const {error}=await sb.from('melawi_attendance').upsert({user_id:currentUser.id,session_code:selectedSession[0],session_title:selectedSession[1],marked_at:new Date().toISOString()},{onConflict:'user_id,session_code'});if(error){console.error(error);msg.textContent='Kehadiran belum dapat dicatat. Pastikan SQL setup sudah dijalankan.';btn.disabled=false;return}msg.textContent='✓ Kehadiran sesi ini sudah tercatat.';await loadAttendance()}
 async function loadAttendance(){if(!currentUser)return;const {data,error}=await sb.from('melawi_attendance').select('session_code').eq('user_id',currentUser.id);if(error){console.warn('Attendance load:',error);return}const count=new Set((data||[]).map(x=>x.session_code)).size;document.getElementById('attendance-count').textContent=`${count} / 36`;document.getElementById('attendance-bar').style.width=`${Math.min(100,count/36*100)}%`}
 async function startLiveFlow(){if(!currentUser){openAuth('login');return}if(!terdaftar){alert('Cohort 01 sudah penuh (20 peserta). Kamu login tapi belum terdaftar di cohort ini.');return}if(!LIVE_CLASS_URL){enterClass();return}window.open(LIVE_CLASS_URL,'_blank','noopener,noreferrer')}
-function enterClass(){const liveSection=document.getElementById('live-section');const container=document.getElementById('jitsi-container');liveSection.classList.remove('hidden');liveSection.scrollIntoView({behavior:'smooth'});if(jitsiApi)return;if(typeof JitsiMeetExternalAPI!=='function'){container.innerHTML='<div class="p-8 text-center text-sm text-red-700">Ruang live belum dapat dimuat. Periksa koneksi internet atau integrasi Jitsi.</div>';return}jitsiApi=new JitsiMeetExternalAPI('meet.jit.si',{roomName:JITSI_ROOM_NAME,width:'100%',height:'100%',parentNode:container,userInfo:{displayName:currentUser?.user_metadata?.full_name||currentUser?.email||'Peserta Melawi'},configOverwrite:{startWithAudioMuted:true,disableDeepLinking:true}})}
+let jitsiScriptPromise=null;
+function loadJitsiScript(){
+  if(jitsiScriptPromise)return jitsiScriptPromise;
+  jitsiScriptPromise=new Promise((resolve,reject)=>{
+    const s=document.createElement('script');
+    s.src=`https://8x8.vc/${JAAS_APP_ID}/external_api.js`;
+    s.async=true;
+    s.onload=()=>resolve();
+    s.onerror=()=>reject(new Error('Gagal memuat script JaaS'));
+    document.head.appendChild(s);
+  });
+  return jitsiScriptPromise;
+}
+
+async function enterClass(){
+  const liveSection=document.getElementById('live-section');
+  const container=document.getElementById('jitsi-container');
+  liveSection.classList.remove('hidden');
+  liveSection.scrollIntoView({behavior:'smooth'});
+  if(jitsiApi)return;
+
+  container.innerHTML='<div class="p-8 text-center text-sm text-[#68736d]">Menyiapkan ruang live…</div>';
+
+  // Ambil JWT dari server - Edge Function ini re-verifikasi status
+  // pendaftaran Cohort 01 server-side (bukan cuma percaya state JS di
+  // sini), dan JWT-nya di-lock cuma buat room ini doang.
+  const {data:sess}=await sb.auth.getSession();
+  const accessToken=sess?.session?.access_token;
+  if(!accessToken){
+    container.innerHTML='<div class="p-8 text-center text-sm text-red-700">Sesi login tidak ditemukan. Coba login ulang.</div>';
+    return;
+  }
+
+  let tokenResp;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/melawi-jitsi-token`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${accessToken}`,'Content-Type':'application/json'},
+    });
+    tokenResp=await res.json();
+    if(!res.ok)throw new Error(tokenResp?.error||'Gagal mendapatkan akses ruang live.');
+  }catch(e){
+    console.error(e);
+    container.innerHTML=`<div class="p-8 text-center text-sm text-red-700">${e.message||'Ruang live belum dapat dimuat.'}</div>`;
+    return;
+  }
+
+  try{
+    await loadJitsiScript();
+  }catch(e){
+    container.innerHTML='<div class="p-8 text-center text-sm text-red-700">Ruang live belum dapat dimuat. Periksa koneksi internet.</div>';
+    return;
+  }
+
+  if(typeof JitsiMeetExternalAPI!=='function'){
+    container.innerHTML='<div class="p-8 text-center text-sm text-red-700">Integrasi Jitsi/JaaS gagal dimuat.</div>';
+    return;
+  }
+  container.innerHTML='';
+  jitsiApi=new JitsiMeetExternalAPI('8x8.vc',{
+    roomName:`${tokenResp.app_id}/${tokenResp.room}`,
+    jwt:tokenResp.jwt,
+    width:'100%',
+    height:'100%',
+    parentNode:container,
+    userInfo:{displayName:currentUser?.user_metadata?.full_name||currentUser?.email||'Peserta Melawi'},
+    configOverwrite:{startWithAudioMuted:true,disableDeepLinking:true}
+  });
+}
 function closeClass(){document.getElementById('live-section').classList.add('hidden');if(jitsiApi){jitsiApi.dispose();jitsiApi=null}}
 sb.auth.onAuthStateChange(()=>{setTimeout(refreshUser,0)});
 document.addEventListener('DOMContentLoaded',()=>{renderSessions();refreshUser()});
