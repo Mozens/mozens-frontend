@@ -183,6 +183,15 @@
                         <input type="url" x-model="toko.live_url" :required="toko.is_live" placeholder="https://tiktok.com/@lapakmu/live" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-red-500 transition">
                         <p class="text-[10px] text-slate-500 mt-1.5">Badge 🔴 LIVE akan muncul di semua produk kamu selama toggle ini menyala. Jangan lupa matikan setelah selesai live.</p>
                     </div>
+
+                    <!-- LIVE SHOPPING DI DALAM BICH MART SENDIRI (bukan TikTok/IG) -->
+                    <div x-show="isTokoSaved" x-cloak class="border-t border-slate-800 pt-3">
+                        <a :href="'live.html?toko=' + toko.id + '&host=1'" target="_blank"
+                           class="w-full bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-extrabold py-2.5 rounded-xl border border-emerald-600/40 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-video"></i> Mulai Live Shopping di BICH Mart
+                        </a>
+                        <p class="text-[10px] text-slate-500 mt-1.5">Penonton nonton & checkout langsung di web BICH Mart, tanpa pindah ke aplikasi lain. Bagikan link: <span class="text-slate-400 select-all" x-text="window.location.origin + '/market/live.html?toko=' + toko.id"></span></p>
+                    </div>
                 </div>
 
                 <div class="pt-2 flex justify-end">
@@ -268,7 +277,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-400 mb-1.5">Asal / Lokasi Lapak *</label>
-                        <input type="text" x-model="produk.lokasi" placeholder="Contoh: Banjarmasin, Kalsel" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition">
+                        <select x-model="produk.lokasi" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition">
+                            <option value="" disabled>Pilih kota asal produk</option>
+                            <template x-for="kota in daftarKotaAsal" :key="kota">
+                                <option :value="kota" x-text="kota"></option>
+                            </template>
+                        </select>
+                        <p class="text-[10px] text-slate-500 mt-1.5">Wajib sama persis dengan kota di sistem ongkir — jangan ketik manual, supaya penghitungan ongkir & pengelompokan pesanan tidak meleset.</p>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-400 mb-1.5">URL Foto Produk</label>
@@ -341,6 +356,92 @@
             </div>
         </div>
 
+        <!-- STEP 4: PESANAN MASUK (per-toko, hasil migrasi split-pesanan) -->
+        <div x-show="isLoggedIn && isTokoSaved" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center font-black text-xs">4</span>
+                    <h2 class="text-sm font-bold text-slate-100">Pesanan Masuk</h2>
+                </div>
+                <button @click="muatPesananSaya()" title="Muat ulang"
+                        class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-400 flex items-center justify-center transition">
+                    <i class="fa-solid fa-arrows-rotate text-xs" :class="loadingPesanan ? 'fa-spin' : ''"></i>
+                </button>
+            </div>
+
+            <!-- Filter status - default sembunyikan yang belum dibayar/dibatalkan biar tidak
+                 bikin bingung penjual dengan pesanan yang belum pasti jadi -->
+            <div class="flex flex-wrap gap-1.5">
+                <template x-for="f in ['Diproses', 'Dikirim', 'Selesai', 'Semua']" :key="f">
+                    <button @click="filterPesanan = f"
+                            :class="filterPesanan === f ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400 hover:text-slate-200'"
+                            class="px-3 py-1.5 rounded-full text-[10px] font-bold transition capitalize"
+                            x-text="f"></button>
+                </template>
+            </div>
+
+            <div x-show="loadingPesanan" x-cloak class="text-center py-8 text-xs text-slate-500">
+                <i class="fa-solid fa-spinner fa-spin"></i> Memuat pesanan...
+            </div>
+
+            <div x-show="!loadingPesanan && pesananTampil.length === 0" x-cloak class="text-center py-8 text-xs text-slate-500">
+                Belum ada pesanan di status ini.
+            </div>
+
+            <div class="space-y-2.5">
+                <template x-for="p in pesananTampil" :key="p.id">
+                    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 space-y-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <p class="text-[11px] font-bold text-slate-100" x-text="'#' + p.id"></p>
+                                <p class="text-[10px] text-slate-500" x-text="new Date(p.created_at).toLocaleString('id-ID')"></p>
+                            </div>
+                            <span class="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 capitalize"
+                                  :class="{
+                                      'bg-amber-500/10 text-amber-400 border border-amber-500/30': p.status === 'Diproses',
+                                      'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30': p.status === 'Dikirim',
+                                      'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30': p.status === 'Selesai',
+                                      'bg-slate-800 text-slate-400 border border-slate-700': p.status === 'Pending',
+                                      'bg-rose-500/10 text-rose-400 border border-rose-500/30': p.status === 'Gagal',
+                                  }" x-text="p.status"></span>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-2.5 space-y-1">
+                            <template x-for="it in (p.item_pesanan || [])" :key="it.id">
+                                <p class="text-[11px] text-slate-300 flex justify-between">
+                                    <span x-text="it.qty + 'x ' + it.nama_produk"></span>
+                                    <span class="text-slate-500" x-text="'Rp ' + Number((it.harga || 0) * it.qty).toLocaleString('id-ID')"></span>
+                                </p>
+                            </template>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-2.5 flex justify-between text-[11px]">
+                            <span class="text-slate-500">Subtotal + Ongkir</span>
+                            <span class="font-bold text-amber-400" x-text="'Rp ' + Number(p.total_harga || 0).toLocaleString('id-ID')"></span>
+                        </div>
+
+                        <!-- Tombol aksi lanjut status - hanya tampil kalau langkah berikutnya valid,
+                             mengikuti alur yang sama dengan yang dikunci trigger DB (lihat
+                             migration_rls_pesanan_grup.sql: menunggu_pembayaran -> diproses (otomatis
+                             oleh webhook) -> diproses -> dikirim -> selesai, penjual TIDAK bisa
+                             mundur atau lompat). -->
+                        <div class="flex gap-2 pt-1" x-show="p.status === 'Diproses' || p.status === 'Dikirim'">
+                            <button x-show="p.status === 'Diproses'" @click="updateStatusPesanan(p, 'Dikirim')"
+                                    :disabled="updatingPesananId === p.id"
+                                    class="flex-1 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 py-2 rounded-xl text-[11px] font-bold transition">
+                                <i class="fa-solid fa-truck-fast text-[10px]"></i> Tandai Dikirim
+                            </button>
+                            <button x-show="p.status === 'Dikirim'" @click="updateStatusPesanan(p, 'Selesai')"
+                                    :disabled="updatingPesananId === p.id"
+                                    class="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 py-2 rounded-xl text-[11px] font-bold transition">
+                                <i class="fa-solid fa-circle-check text-[10px]"></i> Tandai Selesai
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
     </main>
 
     <!-- FOOTER SIMPLE -->
@@ -359,6 +460,10 @@
                 otpCode: '',
                 userId: null,
 
+                daftarKotaAsal: [
+                    'Banjarmasin', 'Banjarbaru', 'Martapura', 'Palangka Raya',
+                    'Samarinda', 'Balikpapan', 'Pontianak', 'Tarakan'
+                ],
                 toko: {
                     id: null,
                     nama_toko: '',
@@ -373,7 +478,7 @@
                     harga: '',
                     stok: '',
                     kategori: 'Kuliner Banua',
-                    lokasi: 'Banjarmasin, Kalsel',
+                    lokasi: 'Banjarmasin',
                     gambar_url: '',
                     video_demo_url: ''
                 },
@@ -383,6 +488,15 @@
                 daftarProduk: [],
                 loadingProduk: false,
                 editingProdukId: null,
+                // --- STATE PESANAN MASUK (per-toko) ---
+                daftarPesanan: [],
+                loadingPesanan: false,
+                filterPesanan: 'Diproses',
+                updatingPesananId: null,
+                get pesananTampil() {
+                    if (this.filterPesanan === 'Semua') return this.daftarPesanan;
+                    return this.daftarPesanan.filter(p => p.status === this.filterPesanan);
+                },
                 toast: {
                     show: false,
                     message: '',
@@ -500,6 +614,7 @@
                             this.toko = data;
                             this.isTokoSaved = true;
                             await this.muatProdukSaya();
+                            await this.muatPesananSaya();
                         }
                     } catch (err) {
                         console.error('Gagal memuat toko:', err.message);
@@ -536,7 +651,15 @@
                         this.isTokoSaved = true;
                         this.showToast('Profil Lapak berhasil disimpan, Bolo! Silakan tambah produk.');
                     } catch (err) {
-                        this.showToast('Gagal menyimpan profil lapak: ' + err.message, 'error');
+                        // Kode 23505 = unique_violation di Postgres. Kalau constraint yang
+                        // kena adalah bich_toko_wa_unique (lihat migration_cegah_toko_kembar.sql),
+                        // ini kemungkinan besar sesi/akun ganda dari OTP yang di-retry -
+                        // kasih pesan yang jelas, bukan error mentah Postgres yang membingungkan.
+                        if (err.code === '23505' && (err.message || '').includes('bich_toko_wa_unique')) {
+                            this.showToast('Nomor WA ini sudah terdaftar sebagai toko lain. Kalau ini toko kamu yang sebelumnya sempat gagal disimpan, coba login ulang pakai WA yang sama persis (jangan minta OTP baru kalau sesi sebelumnya masih aktif).', 'error');
+                        } else {
+                            this.showToast('Gagal menyimpan profil lapak: ' + err.message, 'error');
+                        }
                     } finally {
                         this.loading = false;
                     }
@@ -649,10 +772,55 @@
                         harga: '',
                         stok: '',
                         kategori: 'Kuliner Banua',
-                        lokasi: 'Banjarmasin, Kalsel',
+                        lokasi: 'Banjarmasin',
                         gambar_url: '',
                         video_demo_url: '',
                     };
+                },
+
+                // --- PESANAN MASUK: muat semua baris bich_pesanan (anak) milik toko ini ---
+                // RLS di database (migration_rls_pesanan_grup.sql) sudah membatasi ini ke
+                // toko_id milik auth.uid() saat ini - .eq('toko_id', this.toko.id) di
+                // bawah ini lapis pertahanan tambahan sisi klien, bukan satu-satunya.
+                async muatPesananSaya() {
+                    this.loadingPesanan = true;
+                    try {
+                        const { data, error } = await db
+                            .from('bich_pesanan')
+                            .select('*')
+                            .eq('toko_id', this.toko.id)
+                            .neq('status', 'Pending')
+                            .order('created_at', { ascending: false });
+                        if (error) throw error;
+                        this.daftarPesanan = data || [];
+                    } catch (err) {
+                        console.error('Gagal memuat pesanan:', err.message);
+                        this.showToast('Gagal memuat pesanan masuk: ' + err.message, 'error');
+                    } finally {
+                        this.loadingPesanan = false;
+                    }
+                },
+
+                // Update status pesanan satu tingkat maju saja (diproses -> dikirim ->
+                // selesai). Trigger DB (trg_cegah_seller_ubah_kolom_terlarang) menolak
+                // lompat status atau mundur, jadi validasi di sini murni untuk UX cepat -
+                // bukan satu-satunya lapis keamanan.
+                async updateStatusPesanan(p, statusBaru) {
+                    this.updatingPesananId = p.id;
+                    try {
+                        const { error } = await db
+                            .from('bich_pesanan')
+                            .update({ status: statusBaru })
+                            .eq('id', p.id)
+                            .eq('toko_id', this.toko.id);
+                        if (error) throw error;
+                        p.status = statusBaru;
+                        this.showToast('Pesanan #' + p.id + ' ditandai "' + statusBaru + '".');
+                    } catch (err) {
+                        this.showToast('Gagal update status: ' + err.message, 'error');
+                    } finally {
+                        this.updatingPesananId = null;
+                    }
                 },
 
                 async hapusProduk(p) {

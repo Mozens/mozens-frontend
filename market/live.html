@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Shopping — BICH Mart</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="/market/supabase.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; letter-spacing: -0.2px; }
+        h1, h2, h3, .font-black, .font-extrabold { font-family: 'Poppins', sans-serif; }
+        [x-cloak] { display: none !important; }
+        .gold-glow { text-shadow: 0 0 16px rgba(245, 158, 11, 0.45); }
+        #jitsi-container iframe { width: 100%; height: 100%; border: 0; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-amber-500 selection:text-slate-950"
+      x-data="liveShoppingApp()" x-init="initLive()">
+
+    <!-- HEADER MINIMAL (sengaja tidak ada link keluar selain balik ke BICH Mart) -->
+    <header class="bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/80 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center gap-3">
+            <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+                <span class="font-black text-sm text-slate-100 gold-glow" x-text="toko.nama_toko || 'Live Shopping'"></span>
+                <span class="bg-red-600/90 text-white text-[10px] font-black px-2 py-0.5 rounded-full">LIVE</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] text-slate-400 hidden sm:inline" x-show="isHost">
+                    <i class="fa-solid fa-crown text-amber-400"></i> Mode Penjual
+                </span>
+                <a href="mart.html" class="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-amber-400 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition">
+                    <i class="fa-solid fa-store text-amber-400"></i>
+                    <span class="hidden sm:inline">BICH Mart</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto w-full px-4 py-6 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        <!-- KOLOM VIDEO -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden aspect-video relative">
+                <div id="jitsi-container" class="w-full h-full"></div>
+
+                <!-- HOST: belum mulai live sama sekali - tombol eksplisit, tidak lagi
+                     auto-connect saat halaman kebuka (itu yang menyebabkan MAU boros
+                     & rawan spoofing lewat host=1 sebelumnya). -->
+                <div x-show="isHost && !toko.is_live && !jitsiReady" x-cloak class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/95 gap-3 text-center px-4">
+                    <i class="fa-solid fa-video text-4xl text-amber-400"></i>
+                    <p class="text-xs text-slate-300">Live belum dimulai. Penonton belum bisa gabung sampai kamu klik mulai.</p>
+                    <button @click="mulaiLive()" :disabled="startingLive"
+                            class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black px-5 py-2.5 rounded-xl transition disabled:opacity-50">
+                        <i class="fa-solid fa-circle-play" :class="startingLive ? 'fa-spin' : ''"></i>
+                        <span x-text="startingLive ? 'Menyiapkan...' : 'Mulai Live Sekarang'"></span>
+                    </button>
+                </div>
+
+                <div x-show="!jitsiReady && !waitingToJoin && (!isHost || toko.is_live)" x-cloak class="absolute inset-0 flex items-center justify-center bg-slate-950/80">
+                    <p class="text-xs text-slate-400"><i class="fa-solid fa-spinner fa-spin"></i> Menyambungkan siaran...</p>
+                </div>
+                <!-- Gerbang klik-untuk-gabung: video baru konek (mulai kepakai MAU) setelah pengunjung benar-benar mau nonton -->
+                <div x-show="waitingToJoin" x-cloak class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/95 gap-3 text-center px-4">
+                    <i class="fa-solid fa-circle-play text-4xl text-amber-400"></i>
+                    <p class="text-xs text-slate-300">Live sedang berlangsung di <span class="font-bold text-slate-100" x-text="toko.nama_toko"></span></p>
+                    <button @click="gabungLive()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black px-5 py-2.5 rounded-xl transition">
+                        <i class="fa-solid fa-video"></i> Gabung Live Sekarang
+                    </button>
+                </div>
+            </div>
+
+            <!-- KONTROL HOST: PILIH PRODUK YANG DISOROT -->
+            <div x-show="isHost && toko.is_live" x-cloak class="bg-slate-900/90 border border-amber-500/20 rounded-2xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-bullhorn"></i> Sorot Produk ke Penonton
+                    </h3>
+                    <button @click="akhiriLive()" class="text-[10px] font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1">
+                        <i class="fa-solid fa-stop"></i> Akhiri Live
+                    </button>
+                </div>
+                <div class="flex gap-2 overflow-x-auto pb-1">
+                    <template x-for="p in produkList" :key="p.id">
+                        <button @click="sorotProduk(p)"
+                                :class="produkAktif?.id === p.id ? 'border-amber-500 bg-amber-500/10' : 'border-slate-800 bg-slate-950'"
+                                class="shrink-0 w-28 border rounded-xl p-2 text-left hover:border-amber-500/60 transition">
+                            <img :src="p.gambar_url || 'https://placehold.co/100x100/020617/F59E0B?text=BICH'" class="w-full h-16 object-cover rounded-lg mb-1">
+                            <p class="text-[10px] font-bold text-slate-100 line-clamp-1" x-text="p.nama_produk"></p>
+                            <p class="text-[10px] text-amber-400 font-bold" x-text="formatRupiah(p.harga)"></p>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- KOLOM PRODUK & CHECKOUT (tetap di web kita, tidak pindah halaman) -->
+        <div class="space-y-4">
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sticky top-20">
+                <template x-if="produkAktif">
+                    <div class="space-y-3">
+                        <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wide">Lagi Dibahas Sekarang</span>
+                        <img :src="produkAktif.gambar_url || 'https://placehold.co/400x400/020617/F59E0B?text=BICH+Mart'" class="w-full aspect-square object-cover rounded-xl">
+                        <h2 class="text-sm font-bold text-slate-100 leading-snug" x-text="produkAktif.nama_produk"></h2>
+                        <div class="text-xl font-black text-amber-400" x-text="formatRupiah(produkAktif.harga)"></div>
+                        <p class="text-[11px]" :class="produkAktif.stok > 0 ? 'text-slate-400' : 'text-rose-400 font-bold'"
+                           x-text="produkAktif.stok > 0 ? ('Stok: ' + produkAktif.stok) : 'Stok habis'"></p>
+
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <button @click="tambahKeranjang(produkAktif)"
+                                    class="bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-200 text-xs font-extrabold py-2.5 rounded-xl border border-slate-700/80 hover:border-amber-500 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-plus text-xs"></i> Keranjang
+                            </button>
+                            <button @click="checkoutLangsung(produkAktif)"
+                                    class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black py-2.5 rounded-xl transition">
+                                Checkout
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <template x-if="!produkAktif">
+                    <div class="text-center py-10 space-y-2">
+                        <i class="fa-solid fa-basket-shopping text-slate-700 text-3xl"></i>
+                        <p class="text-xs text-slate-400">Menunggu penjual menyorot produk...</p>
+                    </div>
+                </template>
+            </div>
+
+            <!-- DAFTAR PRODUK LAIN DARI LAPAK INI -->
+            <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 space-y-2">
+                <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Produk Lain di Lapak Ini</h3>
+                <div class="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto pr-1">
+                    <template x-for="p in produkList" :key="'mini-'+p.id">
+                        <button @click="produkAktif = p" class="bg-slate-950 border border-slate-800 rounded-xl p-1.5 hover:border-amber-500/50 transition text-left">
+                            <img :src="p.gambar_url || 'https://placehold.co/100x100/020617/F59E0B?text=BICH'" class="w-full aspect-square object-cover rounded-lg mb-1">
+                            <p class="text-[9px] text-slate-300 line-clamp-1" x-text="p.nama_produk"></p>
+                            <p class="text-[9px] text-amber-400 font-bold" x-text="formatRupiah(p.harga)"></p>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function liveShoppingApp() {
+            return {
+                tokoId: null,
+                isHost: false,
+                toko: {},
+                produkList: [],
+                produkAktif: null,
+                jitsiReady: false,
+                waitingToJoin: false,
+                channel: null,
+                jaasAppId: null,          // diisi dari respons Edge Function pilih-akun-jaas
+                startingLive: false,
+                visitorUid: null,
+
+                JITSI_DOMAIN: '8x8.vc',
+                // JWT dikosongkan untuk tahap uji coba (room tetap relatif privat
+                // selama nama room tidak ditebak orang lain, karena mengandung
+                // toko_id acak). Untuk produksi, JWT harus digenerate di backend
+                // (fungsi terpisah dari pilih-akun-jaas, mirip pola
+                // melawi-jitsi-token yang sudah terbukti jalan) - BELUM dibuat,
+                // ini technical debt yang perlu ditutup sebelum trafik besar.
+                JAAS_JWT: '',
+
+                async initLive() {
+                    const params = new URLSearchParams(window.location.search);
+                    this.tokoId = params.get('toko');
+
+                    if (!this.tokoId) {
+                        alert('Sesi live tidak valid, Bolo (toko tidak ditemukan).');
+                        return;
+                    }
+
+                    await this.muatToko();
+
+                    // ‼️ PERBAIKAN KEAMANAN: status host TIDAK LAGI ditentukan dari
+                    // parameter URL (?host=1) - itu bisa ditulis siapa saja di address
+                    // bar, artinya siapapun bisa mengaku jadi penjual. Sekarang
+                    // ditentukan dari sesi login Supabase Auth yang sebenarnya,
+                    // dicocokkan ke owner_id toko ini di database - sama seperti pola
+                    // otorisasi yang sudah dipakai seller.html.
+                    const { data: { session } } = await db.auth.getSession();
+                    this.isHost = !!(session && this.toko && session.user.id === this.toko.owner_id);
+
+                    await this.muatProduk();
+                    this.setupRealtime();
+
+                    if (this.isHost) {
+                        if (this.toko.is_live) {
+                            // Sesi live toko ini sudah aktif (mis. seller reload
+                            // halaman di tengah live) - resume ke akun JaaS yang
+                            // sama, jangan pilih baru.
+                            await this.mulaiLive();
+                        }
+                        // Kalau belum live, tunggu penjual klik tombol "Mulai Live"
+                        // (lihat tombol baru di UI) - tidak auto-connect lagi.
+                    } else {
+                        // Penonton: tunda konek video sampai benar-benar diklik, supaya yang cuma numpang lewat tidak makan kuota MAU.
+                        this.waitingToJoin = true;
+                    }
+                },
+
+                _getVisitorUid() {
+                    if (this.visitorUid) return this.visitorUid;
+                    let uid = localStorage.getItem('bich_visitor_uid');
+                    if (!uid) {
+                        uid = crypto.randomUUID();
+                        localStorage.setItem('bich_visitor_uid', uid);
+                    }
+                    this.visitorUid = uid;
+                    return uid;
+                },
+
+                // Dipanggil HOST saat klik "Mulai Live" (atau otomatis saat resume
+                // sesi yang sudah aktif). Minta akun JaaS lewat Edge Function -
+                // App Secret tidak pernah menyentuh browser, JWT generation
+                // (kalau nanti dibuat) tetap 100% server-side.
+                async mulaiLive() {
+                    this.startingLive = true;
+                    try {
+                        const { data: { session } } = await db.auth.getSession();
+                        if (!session) {
+                            alert('Sesi login sudah habis, silakan login ulang lewat seller.html.');
+                            return;
+                        }
+                        const { data, error } = await db.functions.invoke('pilih-akun-jaas', {
+                            headers: { Authorization: `Bearer ${session.access_token}` },
+                        });
+                        if (error) throw new Error(error.message);
+                        if (data?.error) throw new Error(data.error);
+
+                        this.jaasAppId = data.app_id;
+                        this.toko.is_live = true;
+                        this.setupJitsi();
+                    } catch (err) {
+                        alert('Gagal memulai live: ' + err.message);
+                    } finally {
+                        this.startingLive = false;
+                    }
+                },
+
+                async akhiriLive() {
+                    if (!confirm('Akhiri sesi live sekarang?')) return;
+                    await db.from('bich_toko').update({ is_live: false }).eq('id', this.tokoId);
+                    window.location.href = 'seller.html';
+                },
+
+                async gabungLive() {
+                    this.waitingToJoin = false;
+                    // Log kunjungan ke jaas_usage_log SEBELUM konek video - dedup
+                    // otomatis lewat primary key (account_id, visitor_uid, bulan) di
+                    // database, jadi aman dipanggil ulang tiap gabung.
+                    if (this.toko.jaas_account_id) {
+                        try {
+                            await db.from('jaas_usage_log').insert({
+                                account_id: this.toko.jaas_account_id,
+                                visitor_uid: this._getVisitorUid(),
+                                bulan: new Date().toISOString().slice(0, 7),
+                                toko_id: this.tokoId,
+                            });
+                        } catch (err) {
+                            // Baris sudah ada (dedup) atau gagal log - jangan sampai ini
+                            // memblokir penonton nonton video, cukup catat di console.
+                            console.warn('Gagal mencatat jaas_usage_log:', err.message);
+                        }
+                    }
+                    this.setupJitsi();
+                },
+
+                async muatToko() {
+                    const { data, error } = await db.from('bich_toko').select('*').eq('id', this.tokoId).single();
+                    if (!error && data) this.toko = data;
+                },
+
+                async muatProduk() {
+                    const { data, error } = await db.from('bich_produk').select('*').eq('toko_id', this.tokoId).order('created_at', { ascending: false });
+                    if (!error && data) {
+                        this.produkList = data;
+                        if (this.isHost && data.length > 0) this.sorotProduk(data[0]);
+                    }
+                },
+
+                setupRealtime() {
+                    // Semua penonton & host di sesi live yang sama nyambung ke channel ini,
+                    // supaya sorotan produk berpindah real-time tanpa reload halaman.
+                    this.channel = db.channel(`live-room-${this.tokoId}`);
+                    this.channel
+                        .on('broadcast', { event: 'highlight' }, ({ payload }) => {
+                            if (!this.isHost) {
+                                const p = this.produkList.find(x => x.id === payload.produk_id);
+                                if (p) this.produkAktif = p;
+                            }
+                        })
+                        .subscribe();
+                },
+
+                sorotProduk(p) {
+                    this.produkAktif = p;
+                    if (this.channel) {
+                        this.channel.send({ type: 'broadcast', event: 'highlight', payload: { produk_id: p.id } });
+                    }
+                },
+
+                setupJitsi() {
+                    // App ID sekarang dinamis (hasil rolling multi-akun JaaS), bukan
+                    // hardcoded satu App ID untuk semua toko:
+                    //   - Host: dari this.jaasAppId (respons Edge Function pilih-akun-jaas).
+                    //   - Penonton: dari this.toko.jaas_app_id_cache (dibaca lewat
+                    //     select bich_toko biasa - lihat migration_jaas_rolling.sql).
+                    const appId = this.isHost ? this.jaasAppId : this.toko.jaas_app_id_cache;
+                    if (!appId) {
+                        alert('Sesi live belum siap (akun JaaS belum ditetapkan). Coba muat ulang halaman.');
+                        return;
+                    }
+                    // Di JaaS, nama room WAJIB diprefix dengan App ID tenant.
+                    const roomName = `${appId}/bichmart-live-${this.tokoId}`;
+                    const start = () => {
+                        const options = {
+                            roomName,
+                            parentNode: document.getElementById('jitsi-container'),
+                            width: '100%',
+                            height: '100%',
+                            configOverwrite: {
+                                prejoinPageEnabled: false,
+                                startWithVideoMuted: !this.isHost,
+                                startWithAudioMuted: !this.isHost,
+                                disableInviteFunctions: true
+                            },
+                            interfaceConfigOverwrite: {
+                                MOBILE_APP_PROMO: false
+                            },
+                            userInfo: {
+                                displayName: this.isHost ? (this.toko.nama_toko || 'Penjual') : 'Penonton BICH Mart'
+                            }
+                        };
+                        if (this.JAAS_JWT) options.jwt = this.JAAS_JWT;
+
+                        new JitsiMeetExternalAPI(this.JITSI_DOMAIN, options);
+                        this.jitsiReady = true;
+                    };
+
+                    if (window.JitsiMeetExternalAPI) {
+                        start();
+                    } else {
+                        const script = document.createElement('script');
+                        script.src = `https://${this.JITSI_DOMAIN}/external_api.js`;
+                        script.onload = start;
+                        document.head.appendChild(script);
+                    }
+                },
+
+                tambahKeranjang(p) {
+                    const cart = JSON.parse(localStorage.getItem('bich_cart') || '[]');
+                    const existing = cart.find(i => i.id === p.id);
+                    if (existing) {
+                        existing.qty++;
+                    } else {
+                        cart.push({ ...p, qty: 1 });
+                    }
+                    localStorage.setItem('bich_cart', JSON.stringify(cart));
+                    alert(`"${p.nama_produk}" masuk Keranjang Emas, Bolo!`);
+                },
+
+                checkoutLangsung(p) {
+                    this.tambahKeranjang(p);
+                    window.location.href = '/market/checkout.html';
+                },
+
+                formatRupiah(angka) {
+                    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka || 0);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

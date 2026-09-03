@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kasir Pembayaran — BICH Mart</title>
-    
+
     <!-- FONTS & STYLES -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <script src="/market/supabase.js"></script>
 
     <style>
@@ -27,7 +27,7 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen py-8 px-4" x-data="checkoutApp()" x-init="init()">
 
     <div class="max-w-3xl mx-auto space-y-6">
-        
+
         <!-- HEADER KASIR -->
         <div class="flex items-center justify-between border-b border-slate-800 pb-4">
             <a href="/market/mart.html" class="text-amber-400 text-xs font-bold flex items-center gap-2 hover:underline">
@@ -45,9 +45,17 @@
             <a href="/market/" class="inline-block bg-amber-500 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl">Mulai Belanja</a>
         </div>
 
+        <!-- PERINGATAN: ada item tanpa toko_id (data lama/korup) - tidak bisa
+             dihitung ongkirnya per toko, harus dibersihkan dulu (lihat
+             bersihkan_data_produk.sql) sebelum bisa checkout. -->
+        <div x-show="cart.length > 0 && adaItemTanpaToko" x-cloak class="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-5 text-xs text-rose-300 space-y-2">
+            <p class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Ada produk di keranjangmu yang datanya belum lengkap (belum terhubung ke toko manapun).</p>
+            <p>Hapus produk itu dari keranjang dan coba lagi, atau hubungi tim BICH lewat <a href="legal.html#kontak" class="underline font-bold">Kontak Usaha</a>.</p>
+        </div>
+
         <!-- FORM & RINGKASAN (JIKA ISI ADA) -->
-        <div x-show="cart.length > 0" class="grid grid-cols-1 md:grid-cols-12 gap-6">
-            
+        <div x-show="cart.length > 0 && !adaItemTanpaToko" class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
             <!-- FORM PENGIRIMAN & DATA PEMBELI (LEFT - 7 COLS) -->
             <div class="md:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
                 <h1 class="text-lg font-black text-slate-100 flex items-center gap-2">
@@ -73,7 +81,7 @@
 
                     <div>
                         <label class="block text-xs font-bold text-slate-300 mb-1">Kota/Kabupaten Tujuan *</label>
-                        <select x-model="form.kota_tujuan" @change="hitungOngkirDinamis()" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
+                        <select x-model="form.kota_tujuan" @change="hitungOngkirSemuaToko()" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500">
                             <option value="" disabled selected>Pilih kota/kabupaten</option>
                             <template x-for="kota in daftarKota" :key="kota">
                                 <option :value="kota" x-text="kota"></option>
@@ -87,36 +95,60 @@
                         <textarea x-model="form.alamat" rows="2" required placeholder="Jl. Ahmad Yani Km..., No. Rumah, Patokan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
                     </div>
 
-                    <!-- OPSI KURIR — DINAMIS BERDASARKAN KOTA TUJUAN, BUKAN HARGA TETAP -->
+                    <!-- OPSI KURIR — SEKARANG PER TOKO, BUKAN 1 ONGKIR GABUNGAN.
+                         Keranjang bisa berisi barang dari beberapa toko sekaligus
+                         (itu wajar, bukan bug) - tapi tiap toko punya kota asal,
+                         kurir, dan estimasi sendiri, jadi ongkirnya dihitung dan
+                         ditampilkan terpisah per toko di sini. Preferensi kurir
+                         (di bawah) dicoba ke SEMUA toko; kalau tidak tersedia di
+                         toko tertentu, toko itu otomatis pakai kurir rekomendasinya
+                         sendiri - dan itu langsung terlihat di rincian per toko,
+                         BUKAN disembunyikan di balik 1 angka gabungan seperti
+                         sebelumnya. Apa yang tampil di sini = apa yang ditagih. -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-300 mb-2">Metode Pengiriman</label>
+                        <label class="block text-xs font-bold text-slate-300 mb-2">Pengiriman per Toko</label>
 
                         <p x-show="!form.kota_tujuan" class="text-[11px] text-slate-500 bg-slate-950 border border-dashed border-slate-800 rounded-xl p-3">
-                            Pilih kota/kabupaten tujuan dulu di atas — opsi kurir & ongkir baru muncul setelah itu.
+                            Pilih kota/kabupaten tujuan dulu di atas — ongkir tiap toko baru muncul setelah itu.
                         </p>
 
-                        <p x-show="form.kota_tujuan && isLoadingOngkir" x-cloak class="text-[11px] text-slate-500 font-mono">Menghitung ongkir & mencari kurir terbaik...</p>
+                        <p x-show="form.kota_tujuan && isLoadingOngkir" x-cloak class="text-[11px] text-slate-500 font-mono">Menghitung ongkir tiap toko & mencari kurir terbaik...</p>
 
-                        <div x-show="form.kota_tujuan && !isLoadingOngkir" x-cloak class="space-y-2">
-                            <template x-for="opsi in opsiKurir" :key="opsi.kode">
-                                <label class="flex items-center justify-between p-3 bg-slate-950 border rounded-xl cursor-pointer transition"
-                                       :class="form.metode_pengiriman === opsi.kode ? 'border-amber-500' : 'border-slate-800 hover:border-amber-500/50'">
-                                    <div class="flex items-center gap-2 text-xs">
-                                        <input type="radio" name="pengiriman" :value="opsi.kode" x-model="form.metode_pengiriman" @change="ongkir = opsi.harga" class="accent-amber-500">
-                                        <div>
-                                            <span x-text="opsi.label"></span>
-                                            <span x-show="opsi.rekomendasi" x-cloak class="ml-1.5 text-[9px] bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full font-bold">TERBAIK UTK TUJUAN INI</span>
-                                            <p class="text-[10px] text-slate-500" x-text="opsi.estimasi"></p>
-                                        </div>
+                        <div x-show="form.kota_tujuan && !isLoadingOngkir" x-cloak class="space-y-3">
+
+                            <!-- Preferensi kurir global - dicoba per toko, dengan fallback otomatis -->
+                            <div x-show="opsiPreferensi.length > 0" class="flex flex-wrap gap-1.5 pb-1">
+                                <template x-for="opsi in opsiPreferensi" :key="opsi.kode">
+                                    <button type="button" @click="preferensiKurir = opsi.kode"
+                                            :class="preferensiKurir === opsi.kode ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-amber-500/50'"
+                                            class="px-3 py-1.5 rounded-full text-[10px] font-bold border transition"
+                                            x-text="opsi.label"></button>
+                                </template>
+                            </div>
+
+                            <!-- Rincian per toko -->
+                            <template x-for="grup in ongkirPerToko" :key="grup.toko_id">
+                                <div class="bg-slate-950 border rounded-xl p-3 space-y-1.5"
+                                     :class="grup.error ? 'border-rose-500/40' : 'border-slate-800'">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-[11px] font-bold text-slate-200" x-text="grup.nama_toko"></p>
+                                        <span x-show="grup.dipakaiFallback && !grup.error" class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full">otomatis: kurir toko ini beda</span>
                                     </div>
-                                    <span class="text-xs font-bold text-amber-400" x-text="formatRupiah(opsi.harga)"></span>
-                                </label>
+
+                                    <template x-if="!grup.error">
+                                        <div class="flex items-center justify-between text-[11px]">
+                                            <span class="text-slate-400" x-text="grup.opsiDipakai.label + ' · ' + grup.opsiDipakai.estimasi"></span>
+                                            <span class="font-bold text-amber-400" x-text="formatRupiah(grup.opsiDipakai.harga)"></span>
+                                        </div>
+                                    </template>
+                                    <template x-if="grup.error">
+                                        <p class="text-[10px] text-rose-400" x-text="grup.pesanError"></p>
+                                    </template>
+                                </div>
                             </template>
 
-                            <p x-show="pesanOngkirKhusus" x-cloak class="text-[11px] text-amber-300 bg-amber-950/20 border border-amber-500/20 rounded-xl p-3 mb-2" x-text="pesanOngkirKhusus"></p>
-
-                        <p x-show="opsiKurir.length === 0 && !pesanOngkirKhusus" x-cloak class="text-[11px] text-amber-400 bg-amber-950/20 border border-amber-500/20 rounded-xl p-3">
-                                Sistem pengiriman sedang tidak bisa memberi opsi otomatis untuk kota ini. Kalau pesananmu barang besar/berat (mis. furnitur, hasil panen dalam jumlah besar), coba <a href="../bich/pariwisata.html" target="_blank" class="underline font-bold">Kargo Multimoda BICH</a>. Untuk paket biasa, muat ulang halaman atau hubungi tim BICH lewat <a href="legal.html#kontak" class="underline font-bold">Kontak Usaha</a>.
+                            <p x-show="adaGrupError" x-cloak class="text-[11px] text-amber-400 bg-amber-950/20 border border-amber-500/20 rounded-xl p-3">
+                                Salah satu toko di keranjangmu tidak punya opsi pengiriman otomatis ke kota ini. Untuk barang besar/berat, coba <a href="../bich/pariwisata.html" target="_blank" class="underline font-bold">Kargo Multimoda BICH</a>, atau hubungi <a href="legal.html#kontak" class="underline font-bold">Kontak Usaha</a>. Pesanan tidak bisa dilanjutkan sampai ini beres.
                             </p>
                         </div>
                     </div>
@@ -130,7 +162,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" :disabled="loading" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer">
+                    <button type="submit" :disabled="loading || !bisaBayar" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs py-3.5 rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                         <i x-show="loading" class="fa-solid fa-circle-notch fa-spin"></i>
                         <span x-text="loading ? 'Memproses Pesanan...' : 'Bayar / Konfirmasi Pesanan Sekarang'"></span>
                     </button>
@@ -141,30 +173,42 @@
             <div class="md:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 h-fit">
                 <h2 class="text-sm font-bold border-b border-slate-800 pb-3">Rincian Belanja</h2>
 
-                <div class="space-y-3 max-h-48 overflow-y-auto pr-1">
-                    <template x-for="(item, index) in cart" :key="index">
-                        <div class="flex justify-between items-center text-xs border-b border-slate-800/50 pb-2">
-                            <div>
-                                <p class="font-bold text-slate-200" x-text="item.nama_produk"></p>
-                                <p class="text-[10px] text-slate-400" x-text="formatRupiah(item.harga)"></p>
-                            </div>
-                            <span class="font-bold text-amber-400" x-text="formatRupiah(item.harga)"></span>
+                <!-- Dikelompokkan per toko - biar jelas barang siapa dikirim
+                     dengan kurir & ongkir yang mana. -->
+                <div class="space-y-4 max-h-64 overflow-y-auto pr-1">
+                    <template x-for="grup in cartPerToko" :key="grup.toko_id">
+                        <div class="space-y-1.5">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wide" x-text="grup.nama_toko"></p>
+                            <template x-for="item in grup.items" :key="item.id">
+                                <div class="flex justify-between items-center text-xs border-b border-slate-800/50 pb-2">
+                                    <div>
+                                        <p class="font-bold text-slate-200" x-text="item.nama_produk"></p>
+                                        <p class="text-[10px] text-slate-400" x-text="(item.qty || 1) + 'x ' + formatRupiah(item.harga)"></p>
+                                    </div>
+                                    <span class="font-bold text-amber-400" x-text="formatRupiah(item.harga * (item.qty || 1))"></span>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
 
-                <!-- RINCIAN BIAYA & FEE BANUA 2.5% -->
+                <!-- RINCIAN BIAYA & FEE BANUA - dijumlah dari SEMUA toko, memakai
+                     tier fee YANG SAMA dengan server (2.5% di bawah Rp 5jt omzet
+                     bulan berjalan toko, 5% di atasnya - lihat
+                     migration_tier_fee_dan_omzet_bulanan.sql). Persentase tiap
+                     toko diambil lewat RPC get_tier_fee_publik() supaya akurat,
+                     bukan diasumsikan flat 2.5% seperti sebelumnya. -->
                 <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-3.5 space-y-2 text-xs">
                     <div class="flex justify-between text-slate-400">
                         <span>Subtotal Produk</span>
                         <span class="text-slate-200 font-bold" x-text="formatRupiah(cartTotal)"></span>
                     </div>
                     <div class="flex justify-between text-amber-400">
-                        <span>Ongkos Kirim</span>
-                        <span class="font-bold" x-text="formatRupiah(ongkir)"></span>
+                        <span>Ongkos Kirim (semua toko)</span>
+                        <span class="font-bold" x-text="formatRupiah(totalOngkir)"></span>
                     </div>
                     <div class="flex justify-between text-emerald-400 font-semibold border-t border-slate-800/80 pt-2">
-                        <span>Dukungan Ekonomi Banua (2.5%)</span>
+                        <span>Dukungan Ekonomi Banua</span>
                         <span x-text="formatRupiah(feeBich)"></span>
                     </div>
                     <div class="flex justify-between text-sm font-black text-slate-100 border-t border-slate-800 pt-2">
@@ -182,87 +226,67 @@
         function checkoutApp() {
             return {
                 cart: [],
-                ongkir: 0,
                 loading: false,
                 isLoadingOngkir: false,
-                opsiKurir: [],
-                pesanOngkirKhusus: '',
-                // CATATAN: daftar kota ini sementara statis di frontend supaya dropdown
-                // langsung bisa dipakai. Idealnya diambil dari cakupan wilayah mitra_kurir
-                // aktif di database, supaya kota yang belum ada kurirnya tidak muncul di
-                // pilihan. Sesuaikan/ganti jadi fetch dinamis begitu tabel mitra_kurir ada.
+                preferensiKurir: '',
+                ongkirPerToko: [],   // [{ toko_id, nama_toko, opsiDipakai, dipakaiFallback, error, pesanError }]
+                tierFeePerToko: {},  // { [toko_id]: persenFee } - hasil get_tier_fee_publik() per toko
                 daftarKota: [
                     'Banjarmasin', 'Banjarbaru', 'Martapura', 'Palangka Raya',
                     'Samarinda', 'Balikpapan', 'Pontianak', 'Tarakan'
                 ],
-                form: { 
-                    name: '', 
-                    email: '', 
-                    phone: '', 
-                    alamat: '', 
+                form: {
+                    name: '',
+                    email: '',
+                    phone: '',
+                    alamat: '',
                     kota_tujuan: '',
-                    metode_pengiriman: '',
                     tipe_bayar: 'pg'
                 },
 
                 init() {
                     const savedCart = localStorage.getItem('bich_cart');
                     if (savedCart) this.cart = JSON.parse(savedCart);
+                    this._muatTierFeeSemuaToko();
                 },
 
-                // Hitung ongkir & rekomendasi kurir SETELAH kota tujuan dipilih.
-                // Harga akhir tetap ditentukan server saat prosesBayar() - nilai di
-                // sini hanya estimasi tampilan, sama seperti pola di pariwisata.html
-                // (jangan pernah percaya harga dari client untuk penagihan final).
-                async hitungOngkirDinamis() {
-                    if (!this.form.kota_tujuan || this.cart.length === 0) return;
-
-                    this.isLoadingOngkir = true;
-                    this.opsiKurir = [];
-                    this.form.metode_pengiriman = '';
-                    this.ongkir = 0;
-
-                    try {
-                        // BELUM ADA DI BACKEND - edge function 'hitung-ongkir' perlu dibuat.
-                        // Kontrak yang diharapkan:
-                        //   input : { kota_tujuan, items: [{ produk_id, qty }] }
-                        //   proses: ambil lokasi asal tiap produk dari bich_produk.lokasi,
-                        //           tentukan sekota (mitra_kurir) vs antar-kota (arahkan ke
-                        //           Kargo Multimoda Kayan), hitung ongkir dari tarif_kurir_zona
-                        //   output: { opsi: [{ kode, label, estimasi, harga, rekomendasi }] }
-                        const { data, error } = await db.functions.invoke('hitung-ongkir', {
-                            body: {
-                                kota_tujuan: this.form.kota_tujuan,
-                                items: this.cart.map(item => ({ produk_id: item.id, qty: 1 }))
-                            }
-                        });
-
-                        if (error) throw new Error(error.message);
-
-                        if (data?.error === 'MULTI_ORIGIN') {
-                            this.opsiKurir = [];
-                            this.pesanOngkirKhusus = data.message;
-                            return;
+                // Ambil persentase fee platform yang SEBENARNYA berlaku untuk tiap
+                // toko di keranjang (2.5% atau 5%, tergantung omzet bulan berjalan
+                // toko itu - lihat migration_tier_fee_dan_omzet_bulanan.sql). RPC
+                // ini publik tapi HANYA mengembalikan persentase, bukan angka omzet
+                // asli toko, jadi aman dipanggil dari browser pembeli.
+                async _muatTierFeeSemuaToko() {
+                    const hasil = await Promise.all(this.cartPerToko.map(async (grup) => {
+                        try {
+                            const { data, error } = await db.rpc('get_tier_fee_publik', { p_toko_id: Number(grup.toko_id) });
+                            if (error || typeof data !== 'number') return [grup.toko_id, 2.5];
+                            return [grup.toko_id, data];
+                        } catch (_e) {
+                            return [grup.toko_id, 2.5]; // fallback aman ke tier terendah kalau RPC gagal
                         }
-                        this.pesanOngkirKhusus = '';
+                    }));
+                    this.tierFeePerToko = Object.fromEntries(hasil);
+                },
 
-                        if (!data || !Array.isArray(data.opsi) || data.opsi.length === 0) {
-                            this.opsiKurir = [];
-                            return;
+                // Item tanpa toko_id tidak bisa dikelompokkan/dihitung ongkirnya -
+                // ini biasanya data produk lama yang belum kena migrasi
+                // bersihkan_data_produk.sql (toko_id null). Blokir checkout
+                // daripada salah hitung / salah kirim ke toko yang salah.
+                get adaItemTanpaToko() {
+                    return this.cart.some(i => i && (i.toko_id === undefined || i.toko_id === null));
+                },
+
+                get cartPerToko() {
+                    const map = new Map();
+                    for (const item of this.cart) {
+                        if (!item || item.toko_id === undefined || item.toko_id === null) continue;
+                        const key = String(item.toko_id);
+                        if (!map.has(key)) {
+                            map.set(key, { toko_id: key, nama_toko: item.nama_toko || ('Toko #' + key), items: [] });
                         }
-
-                        this.opsiKurir = data.opsi;
-                        const rekomendasi = data.opsi.find(o => o.rekomendasi) || data.opsi[0];
-                        this.form.metode_pengiriman = rekomendasi.kode;
-                        this.ongkir = rekomendasi.harga;
-
-                    } catch (err) {
-                        console.error('Gagal hitung ongkir:', err);
-                        // Fallback jujur - JANGAN diam-diam pasang harga tebakan.
-                        this.opsiKurir = [];
-                    } finally {
-                        this.isLoadingOngkir = false;
+                        map.get(key).items.push(item);
                     }
+                    return [...map.values()];
                 },
 
                 get cartTotal() {
@@ -274,11 +298,123 @@
                 },
 
                 get feeBich() {
-                    return Math.floor(this.cartTotal * 0.025);
+                    // Tier fee per toko (2.5% atau 5%, tergantung omzet bulan
+                    // berjalan toko itu) - diambil lewat RPC get_tier_fee_publik()
+                    // di _muatTierFeeSemuaToko(), dicache di this.tierFeePerToko.
+                    // Kalau belum ke-load (mis. masih fetching), fallback ke 2.5%
+                    // untuk estimasi sementara - akan diperbarui otomatis begitu
+                    // hasil RPC datang (getter ini re-evaluate karena Alpine
+                    // reaktif terhadap perubahan this.tierFeePerToko).
+                    return this.cartPerToko.reduce((sum, grup) => {
+                        const subtotalGrup = grup.items.reduce((s, i) => s + Number(i.harga) * Number(i.qty || 1), 0);
+                        const persen = this.tierFeePerToko[grup.toko_id] ?? 2.5;
+                        return sum + Math.floor(subtotalGrup * (persen / 100));
+                    }, 0);
+                },
+
+                get totalOngkir() {
+                    return this.ongkirPerToko.reduce((sum, g) => sum + (g.error ? 0 : (g.opsiDipakai?.harga || 0)), 0);
+                },
+
+                get adaGrupError() {
+                    return this.ongkirPerToko.some(g => g.error);
                 },
 
                 get grandTotal() {
-                    return this.cartTotal + this.ongkir + this.feeBich;
+                    return this.cartTotal + this.totalOngkir + this.feeBich;
+                },
+
+                // Boleh bayar hanya kalau semua toko sudah punya opsi kurir valid
+                // (tidak ada grup error) dan ongkir sudah selesai dihitung.
+                get bisaBayar() {
+                    return this.form.kota_tujuan
+                        && !this.isLoadingOngkir
+                        && this.ongkirPerToko.length > 0
+                        && !this.adaGrupError;
+                },
+
+                // Daftar tombol preferensi kurir - diambil dari toko dengan opsi
+                // TERBANYAK, supaya menampilkan variasi kurir paling lengkap yang
+                // tersedia (bukan cuma dari 1 toko yang mungkin opsinya sedikit).
+                get opsiPreferensi() {
+                    let terbanyak = [];
+                    for (const g of this._rawOpsiPerToko || []) {
+                        if (g.opsi && g.opsi.length > terbanyak.length) terbanyak = g.opsi;
+                    }
+                    return terbanyak;
+                },
+
+                // Hitung ongkir TERPISAH untuk tiap toko dalam keranjang. Preferensi
+                // kurir (preferensiKurir) dicoba di tiap toko; kalau kode itu tidak
+                // ada di opsi toko tersebut, otomatis pakai opsi rekomendasi TOKO
+                // ITU - persis logika fallback yang dipakai create-payment_index.ts
+                // (opsiDipakai = find by kode, else find rekomendasi, else opsi[0]).
+                // Karena logikanya disalin persis, angka yang tampil di sini selalu
+                // sama dengan yang akan ditagih server - tidak ada celah selisih.
+                async hitungOngkirSemuaToko() {
+                    if (!this.form.kota_tujuan || this.cartPerToko.length === 0) return;
+
+                    this.isLoadingOngkir = true;
+                    this.ongkirPerToko = [];
+                    this._rawOpsiPerToko = [];
+
+                    try {
+                        const hasil = await Promise.all(this.cartPerToko.map(async (grup) => {
+                            try {
+                                const { data, error } = await db.functions.invoke('hitung-ongkir', {
+                                    body: {
+                                        kota_tujuan: this.form.kota_tujuan,
+                                        // qty asli (dulu di sini selalu dikirim 1, terlepas dari
+                                        // qty asli di keranjang - dibenarkan supaya estimasi
+                                        // ongkir konsisten dengan berat/jumlah barang sebenarnya).
+                                        items: grup.items.map(i => ({ produk_id: i.id, qty: Number(i.qty || 1) })),
+                                    }
+                                });
+                                if (error) throw new Error(error.message);
+
+                                if (data?.error) {
+                                    return { toko_id: grup.toko_id, nama_toko: grup.nama_toko, error: true, pesanError: data.message || data.error, opsi: [] };
+                                }
+                                if (!data?.opsi || data.opsi.length === 0) {
+                                    return { toko_id: grup.toko_id, nama_toko: grup.nama_toko, error: true, pesanError: 'Tidak ada opsi pengiriman untuk toko ini ke kota tujuan.', opsi: [] };
+                                }
+                                return { toko_id: grup.toko_id, nama_toko: grup.nama_toko, error: false, opsi: data.opsi };
+                            } catch (err) {
+                                return { toko_id: grup.toko_id, nama_toko: grup.nama_toko, error: true, pesanError: 'Gagal menghitung ongkir toko ini, coba muat ulang.', opsi: [] };
+                            }
+                        }));
+
+                        this._rawOpsiPerToko = hasil;
+
+                        // Default preferensi: rekomendasi dari toko dengan opsi
+                        // terbanyak (sekali saja, saat kota tujuan pertama kali dipilih).
+                        if (!this.preferensiKurir) {
+                            const acuan = hasil.find(g => !g.error && g.opsi.length > 0);
+                            if (acuan) {
+                                const rekom = acuan.opsi.find(o => o.rekomendasi) || acuan.opsi[0];
+                                this.preferensiKurir = rekom.kode;
+                            }
+                        }
+
+                        this._resolveOpsiPerToko(hasil);
+                    } finally {
+                        this.isLoadingOngkir = false;
+                    }
+                },
+
+                // Terapkan preferensiKurir ke tiap toko (dipanggil ulang tiap
+                // preferensi berubah, tanpa perlu fetch ulang ke hitung-ongkir).
+                _resolveOpsiPerToko(rawList) {
+                    this.ongkirPerToko = rawList.map(g => {
+                        if (g.error) return g;
+                        let opsiDipakai = g.opsi.find(o => o.kode === this.preferensiKurir);
+                        let dipakaiFallback = false;
+                        if (!opsiDipakai) {
+                            opsiDipakai = g.opsi.find(o => o.rekomendasi) || g.opsi[0];
+                            dipakaiFallback = true;
+                        }
+                        return { toko_id: g.toko_id, nama_toko: g.nama_toko, error: false, opsiDipakai, dipakaiFallback };
+                    });
                 },
 
                 async prosesBayar() {
@@ -286,31 +422,39 @@
                         alert("Keranjang Emas kamu kosong!");
                         return;
                     }
-                    if (!this.form.kota_tujuan) {
-                        alert("Pilih kota/kabupaten tujuan dulu.");
+                    if (this.adaItemTanpaToko) {
+                        alert("Ada produk di keranjang yang datanya belum lengkap. Hapus dulu produk itu.");
                         return;
                     }
-                    if (!this.form.metode_pengiriman) {
-                        alert("Pilih metode pengiriman dulu - kalau tidak ada opsi kurir untuk kota ini, gunakan Kargo Multimoda BICH.");
+                    if (!this.bisaBayar) {
+                        alert("Pilih kota tujuan dulu dan pastikan semua toko di keranjangmu punya opsi pengiriman.");
                         return;
                     }
 
                     this.loading = true;
 
                     try {
-                        // JIKA MEMILIH PAYMENT GATEWAY (PG)
+                        // shipping_method dikirim sebagai SATU preferensi (server saat
+                        // ini hanya menerima 1 kode untuk semua toko, dengan fallback
+                        // otomatis per toko - lihat catatan di create-payment_index.ts).
+                        // Karena UI di atas sudah meniru logika fallback yang sama
+                        // persis, apa yang dibayar akan sama dengan yang ditampilkan
+                        // ke pembeli sebelum ini, terlepas dari fallback yang terjadi.
+                        const payloadDasar = {
+                            items: this.cart.map(i => ({ id: i.id, qty: Number(i.qty || 1) })),
+                            customer_name: this.form.name,
+                            customer_email: this.form.email,
+                            customer_phone: this.form.phone,
+                            shipping_address: this.form.alamat,
+                            kota_tujuan: this.form.kota_tujuan,
+                            shipping_method: this.preferensiKurir,
+                        };
+
                         if (this.form.tipe_bayar === 'pg') {
                             const { data, error } = await db.functions.invoke('create-payment', {
                                 body: {
-                                    items: this.cart,
-                                    customer_name: this.form.name,
-                                    customer_email: this.form.email,
-                                    customer_phone: this.form.phone,
-                                    shipping_address: this.form.alamat,
-                                    kota_tujuan: this.form.kota_tujuan,
-                                    shipping_method: this.form.metode_pengiriman,
+                                    ...payloadDasar,
                                     payment_method: 'gateway',
-                                    // 🔴 Otomatis redirect ke success.html dengan service=mart
                                     return_url: `${window.location.origin}/success.html?service=mart`
                                 }
                             });
@@ -324,25 +468,10 @@
                             } else {
                                 throw new Error("Gagal menerima respon Payment Gateway.");
                             }
-                        }
-                        // JIKA MEMILIH DIRECT WHATSAPP
-                        else {
-                            // DIPERBAIKI: sebelumnya di sini langsung `db.from('bich_pesanan').insert(...)`
-                            // memakai harga dari keranjang di browser (this.cart) - bisa dimanipulasi
-                            // lewat DevTools sebelum submit. Sekarang jalur ini WAJIB lewat Edge
-                            // Function yang sama dengan Payment Gateway, supaya harga selalu dihitung
-                            // ulang dari database di server, bukan dipercaya dari klien. Nomor pesanan
-                            // dan teks WhatsApp yang dipakai pun sekarang dari respons server (data
-                            // tervalidasi), bukan dibuat sendiri oleh browser.
+                        } else {
                             const { data, error } = await db.functions.invoke('create-payment', {
                                 body: {
-                                    items: this.cart,
-                                    customer_name: this.form.name,
-                                    customer_email: this.form.email,
-                                    customer_phone: this.form.phone,
-                                    shipping_address: this.form.alamat,
-                                    kota_tujuan: this.form.kota_tujuan,
-                                    shipping_method: this.form.metode_pengiriman,
+                                    ...payloadDasar,
                                     payment_method: 'manual',
                                 }
                             });

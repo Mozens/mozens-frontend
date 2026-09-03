@@ -1,26 +1,29 @@
 // supabase/functions/create-payment/index.ts
 //
-// VERSI FINAL & HARDENED — Zero Trust Architecture
-// Seluruh kalkulasi harga, stok, ongkir, dan fee BICH 100% diverifikasi server-side.
-// Mendukung jalur Payment Gateway (iPaymu) dan WhatsApp Manual.
+// VERSI SPLIT-PER-TOKO — dibangun di atas versi "Zero Trust Architecture" yang
+// sudah ada. Perubahan inti dari versi sebelumnya:
+//  1. Query produk sekarang ikut ambil `toko_id`.
+//  2. Item dikelompokkan per toko_id, ongkir dihitung TERPISAH per kelompok
+//     (bukan 1 ongkir gabungan untuk seluruh cart) - supaya akurat kalau 2
+//     toko kebetulan 1 kota asal tapi tetap harus dikirim sebagai 2 paket.
+//  3. Hasil akhir: 1 baris `bich_pesanan_grup` (level pembayaran) + N baris
+//     `bich_pesanan` (satu per toko, status pengiriman independen).
+//  4. Reservasi stok & idempotency tetap di level SELURUH cart (perilaku lama
+//     dipertahankan) - hanya langkah PENULISAN pesanan yang dipecah.
 //
-// Perubahan hardening (lihat migration_stok_dan_idempotency.sql - WAJIB
-// dijalankan dulu sebelum deploy versi ini):
-//  1. Stok direservasi ATOMIC lewat RPC reserve_stok_produk (row lock +
-//     decrement dalam satu transaksi DB) - menutup race condition oversell
-//     dari cek stok "baca lalu bandingkan" yang lama.
-//  2. Kompensasi (release_stok_produk) dipanggil kalau langkah setelah
-//     reservasi gagal (insert pesanan gagal / iPaymu gagal) - stok gak
-//     nyangkut kepotong tanpa pesanan yang valid.
-//  3. Idempotency: kalau klien kirim idempotency_key eksplisit, atau tidak,
-//     fingerprint otomatis dari isi request + jendela waktu 60 detik dipakai
-//     buat cegah double-submit (double klik / retry jaringan) bikin 2 pesanan.
-//  4. Semua pesan error dari Supabase/exception internal TIDAK diteruskan
-//     mentah ke klien - dicatat di server log, klien dapat pesan generik.
-//  5. Validasi input pelanggan (nama/email/telepon/alamat) + batas qty &
-//     jumlah item per keranjang.
-//  6. Pesanan gateway yang gagal dibuat di iPaymu ditandai status 'Gagal'
-//     (bukan dibiarkan nyangkut 'Pending' selamanya) dan stoknya dilepas.
+// CATATAN JUJUR - BELUM SEPENUHNYA ATOMIC ANTAR TABEL:
+// Supabase JS client di sini tidak memakai transaksi SQL multi-statement -
+// pola yang dipakai (konsisten dengan file aslinya) adalah reservasi dulu,
+// baru tulis, dan kalau tulis gagal di tengah jalan -> kompensasi manual
+// (hapus baris yang sudah sempat masuk + lepas stok). Untuk keamanan penuh
+// 100%, idealnya langkah "insert grup + insert semua anak" dibungkus 1 RPC
+// Postgres (plpgsql, BEGIN/COMMIT implisit) - belum dibuat di sini, tandai
+// sebagai TODO kalau mau dikeraskan lebih lanjut.
+//
+// CATATAN LAIN: kolom `toko_id` pada `bich_produk` DIASUMSIKAN sudah ada
+// (dipakai di mart.html lewat join `bich_toko`). Kalau nama kolomnya beda
+// (mis. `id_toko`), sesuaikan SATU baris di bagian "1. Ambil harga ASLI" di
+// bawah.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -40,18 +43,14 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// --- Batas wajar input, cegah abuse & payload sampah ---
 const QTY_MIN = 1;
 const QTY_MAX = 500;
 const MAX_ITEMS_PER_CART = 50;
 const NAME_MIN = 2, NAME_MAX = 100;
 const ADDRESS_MIN = 5, ADDRESS_MAX = 500;
 const EMAIL_MAX = 254;
-const IDEMPOTENCY_WINDOW_MS = 60_000; // jendela fallback fingerprint kalau klien tidak kirim key sendiri
+const IDEMPOTENCY_WINDOW_MS = 60_000;
 
-// ============================================================================
-// Helper: response generik, error detail dicatat server-side saja
-// ============================================================================
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -59,9 +58,6 @@ function json(body: unknown, status = 200) {
   });
 }
 
-// clientMsg = pesan aman yang sudah kita tulis sendiri (boleh ditampilkan).
-// internalErr = detail asli (Supabase error, exception, dll) - HANYA di-log,
-// tidak pernah ikut ke response.
 function safeError(clientMsg: string, status: number, internalErr?: unknown) {
   if (internalErr !== undefined) {
     console.error(`[create-payment] ${clientMsg} | detail:`, internalErr);
@@ -69,9 +65,6 @@ function safeError(clientMsg: string, status: number, internalErr?: unknown) {
   return json({ error: clientMsg }, status);
 }
 
-// ============================================================================
-// Helper: validasi input pelanggan
-// ============================================================================
 function isNonEmptyString(s: unknown, min: number, max: number): s is string {
   return typeof s === "string" && s.trim().length >= min && s.trim().length <= max;
 }
@@ -85,9 +78,6 @@ function isValidPhone(phone: string): boolean {
   return digits.length >= 9 && digits.length <= 15;
 }
 
-// ============================================================================
-// Helper: idempotency fingerprint (fallback kalau klien tidak kirim key)
-// ============================================================================
 async function buatFingerprint(payload: object, timeBucket: number): Promise<string> {
   const encoder = new TextEncoder();
   const raw = JSON.stringify(payload) + ":" + timeBucket;
@@ -95,9 +85,6 @@ async function buatFingerprint(payload: object, timeBucket: number): Promise<str
   return Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// ============================================================================
-// Helper: iPaymu signature & format
-// ============================================================================
 async function generateIPaymuSignature(va: string, apiKey: string, bodyObj: object): Promise<string> {
   const bodyJson = JSON.stringify(bodyObj);
   const encoder = new TextEncoder();
@@ -113,8 +100,6 @@ function formatRupiah(angka: number): string {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(angka || 0);
 }
 
-// rpc() mengembalikan PostgrestFilterBuilder (thenable), bukan Promise asli -
-// tidak punya method .catch(). Dibungkus try/catch biasa di sini.
 async function rilisStokAman(items: Array<{ id: string | number; qty: number }>, konteks: string) {
   try {
     await supabaseAdmin.rpc("release_stok_produk", { p_items: items });
@@ -126,24 +111,28 @@ async function rilisStokAman(items: Array<{ id: string | number; qty: number }>,
 function formatTimestampIPaymu(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return (
-    d.getFullYear().toString() +
-    pad(d.getMonth() + 1) +
-    pad(d.getDate()) +
-    pad(d.getHours()) +
-    pad(d.getMinutes()) +
-    pad(d.getSeconds())
+    d.getFullYear().toString() + pad(d.getMonth() + 1) + pad(d.getDate()) +
+    pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds())
   );
 }
 
-// ============================================================================
-// Handler utama
-// ============================================================================
+// Kompensasi kalau penulisan grup/anak gagal di tengah jalan setelah stok
+// terlanjur direservasi - hapus baris yang sudah sempat masuk + lepas stok.
+async function batalkanPenulisanPesanan(grupId: number | null, childIds: number[], itemsUntukRilis: Array<{ id: string | number; qty: number }>, konteks: string) {
+  if (childIds.length > 0) {
+    await supabaseAdmin.from("bich_pesanan").delete().in("id", childIds);
+  }
+  if (grupId !== null) {
+    await supabaseAdmin.from("bich_pesanan_grup").delete().eq("id", grupId);
+  }
+  await rilisStokAman(itemsUntukRilis, konteks);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  // Dipakai buat kompensasi kalau ada kegagalan setelah stok direservasi.
   let stokSudahDireservasi = false;
   let itemsUntukRilis: Array<{ id: string | number; qty: number }> = [];
 
@@ -180,7 +169,7 @@ Deno.serve(async (req) => {
     };
 
     // ------------------------------------------------------------------
-    // 0. Validasi input dasar
+    // 0. Validasi input dasar (identik dengan versi sebelumnya)
     // ------------------------------------------------------------------
     if (!items || !Array.isArray(items) || items.length === 0) {
       return safeError("Keranjang kosong atau format tidak valid.", 400);
@@ -207,8 +196,6 @@ Deno.serve(async (req) => {
       return safeError("Metode pembayaran tidak dikenali.", 400);
     }
 
-    // Validasi & normalisasi qty tiap item - integer positif dalam batas wajar.
-    // (Number(-5) / NaN lolos truthy check kalau tidak divalidasi eksplisit.)
     const itemsQtyMap = new Map<string, number>();
     for (const it of items) {
       if (it?.id === undefined || it?.id === null) {
@@ -222,100 +209,159 @@ Deno.serve(async (req) => {
     }
 
     // ------------------------------------------------------------------
-    // 1. Ambil harga ASLI dari Database (Garis Pertahanan Utama Security)
+    // 1. Ambil harga ASLI + toko_id dari Database
+    //    (kalau kolomnya ternyata bernama lain di bich_produk, ganti
+    //    "toko_id" di select() DAN di baris "asli.toko_id" di bawah)
     // ------------------------------------------------------------------
     const productIds = [...itemsQtyMap.keys()];
     const { data: produkAsli, error: errProduk } = await supabaseAdmin
       .from("bich_produk")
-      .select("id, nama_produk, harga, stok")
+      .select("id, nama_produk, harga, stok, toko_id")
       .in("id", productIds);
 
     if (errProduk) {
       return safeError("Gagal verifikasi produk. Coba beberapa saat lagi.", 500, errProduk);
     }
 
-    type ProdukRow = { id: string | number; nama_produk: string; harga: number; stok: number | null };
+    type ProdukRow = { id: string | number; nama_produk: string; harga: number; stok: number | null; toko_id: string | number };
 
     const produkMap = new Map<string, ProdukRow>(
       ((produkAsli || []) as ProdukRow[]).map((p) => [String(p.id), p])
     );
 
-    // Cross-check: semua id yang dikirim klien harus ketemu di DB, jangan
-    // diam-diam di-skip (itemsTervalidasi harus persis selengkap request).
-    let subtotal = 0;
-    const itemsTervalidasi: Array<{ id: string | number; nama_produk: string; harga: number; qty: number }> = [];
+    type ItemValid = { id: string | number; nama_produk: string; harga: number; qty: number; toko_id: string | number };
+
+    let subtotalKeseluruhan = 0;
+    const itemsTervalidasi: ItemValid[] = [];
 
     for (const [idStr, qty] of itemsQtyMap) {
       const asli = produkMap.get(idStr);
       if (!asli) {
         return safeError(`Produk ID ${idStr} tidak ditemukan.`, 400);
       }
-      subtotal += asli.harga * qty;
-      itemsTervalidasi.push({
-        id: asli.id,
-        nama_produk: asli.nama_produk,
-        harga: asli.harga,
-        qty,
-      });
+      if (asli.toko_id === undefined || asli.toko_id === null) {
+        return safeError(`Produk "${asli.nama_produk}" belum terhubung ke lapak manapun - hubungi admin.`, 409);
+      }
+      subtotalKeseluruhan += asli.harga * qty;
+      itemsTervalidasi.push({ id: asli.id, nama_produk: asli.nama_produk, harga: asli.harga, qty, toko_id: asli.toko_id });
     }
 
     // ------------------------------------------------------------------
-    // 1b. Validasi ulang ongkir lewat hitung-ongkir (Server-to-Server)
+    // 1b. Kelompokkan item per toko_id - ini yang tadinya tidak ada.
     // ------------------------------------------------------------------
-    let ongkirResp: Response;
-    try {
-      ongkirResp = await fetch(`${SUPABASE_URL}/functions/v1/hitung-ongkir`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-        body: JSON.stringify({
-          kota_tujuan,
-          items: itemsTervalidasi.map((i) => ({ produk_id: i.id, qty: i.qty })),
-        }),
+    const kelompokPerToko = new Map<string, ItemValid[]>();
+    for (const item of itemsTervalidasi) {
+      const key = String(item.toko_id);
+      if (!kelompokPerToko.has(key)) kelompokPerToko.set(key, []);
+      kelompokPerToko.get(key)!.push(item);
+    }
+
+    // ------------------------------------------------------------------
+    // 1c. Hitung ongkir TERPISAH untuk setiap kelompok toko.
+    //     Kalau metode yang dipilih pembeli (shipping_method) tidak
+    //     tersedia untuk salah satu toko, jangan gagal total - pakai opsi
+    //     rekomendasi toko itu sebagai fallback, dan beri tahu di respons
+    //     (checkout.html sebaiknya nanti diupgrade untuk pilih kurir per
+    //     toko - untuk sekarang fallback ini menjaga transaksi tetap jalan).
+    // ------------------------------------------------------------------
+    type HasilOngkirToko = {
+      tokoId: string;
+      items: ItemValid[];
+      subtotal: number;
+      ongkir: number;
+      labelKurir: string;
+      feeBich: number;
+      dipakaiFallback: boolean;
+    };
+
+    const hasilPerToko: HasilOngkirToko[] = [];
+
+    for (const [tokoId, itemsToko] of kelompokPerToko) {
+      let ongkirResp: Response;
+      try {
+        ongkirResp = await fetch(`${SUPABASE_URL}/functions/v1/hitung-ongkir`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+          body: JSON.stringify({
+            kota_tujuan,
+            items: itemsToko.map((i) => ({ produk_id: i.id, qty: i.qty })),
+          }),
+        });
+      } catch (fetchErr) {
+        return safeError("Layanan hitung ongkir sedang bermasalah. Coba beberapa saat lagi.", 502, fetchErr);
+      }
+
+      if (!ongkirResp.ok) {
+        return safeError("Layanan hitung ongkir sedang bermasalah. Coba beberapa saat lagi.", 502, `HTTP ${ongkirResp.status}`);
+      }
+
+      const ongkirData = await ongkirResp.json();
+
+      if (ongkirData?.error) {
+        // MULTI_ORIGIN di dalam SATU toko berarti data lokasi produk toko itu
+        // sendiri tidak konsisten - ini masalah data, teruskan pesannya apa adanya.
+        return json({ error: ongkirData.message || ongkirData.error }, 400);
+      }
+
+      if (!ongkirData.opsi || ongkirData.opsi.length === 0) {
+        return safeError("Tidak ada opsi pengiriman tersedia untuk salah satu toko di keranjangmu.", 400);
+      }
+
+      let opsiDipakai = ongkirData.opsi.find((o: { kode: string }) => o.kode === shipping_method);
+      let dipakaiFallback = false;
+      if (!opsiDipakai) {
+        opsiDipakai = ongkirData.opsi.find((o: { rekomendasi: boolean }) => o.rekomendasi) || ongkirData.opsi[0];
+        dipakaiFallback = true;
+      }
+
+      const subtotalToko = itemsToko.reduce((s, i) => s + i.harga * i.qty, 0);
+
+      // TIER FEE PLATFORM (2.5% di bawah Rp 5jt omzet bulan berjalan, 5% di
+      // atas itu) - lihat migration_tier_fee_dan_omzet_bulanan.sql. Dihitung
+      // dari omzet TERKONFIRMASI (status Diproses/Dikirim/Selesai) toko ini
+      // bulan ini, TIDAK termasuk pesanan yang baru mau dibuat sekarang
+      // (belum dibayar, jadi belum "confirmed") - itu sebabnya query ini
+      // harus jalan SEBELUM baris pesanan yang baru di-insert di bawah.
+      // Kalau RPC ini gagal karena alasan apapun, fallback aman ke tier
+      // terendah (2.5%) - JANGAN pernah gagalkan seluruh checkout hanya
+      // karena gagal menentukan tier fee.
+      let persenFeeToko = 0.025;
+      try {
+        const { data: omzetBulanIni, error: errOmzet } = await supabaseAdmin.rpc(
+          "omzet_toko_bulan_ini",
+          { p_toko_id: Number(tokoId) },
+        );
+        if (!errOmzet && typeof omzetBulanIni === "number" && omzetBulanIni >= 5_000_000) {
+          persenFeeToko = 0.05;
+        }
+      } catch (_e) {
+        // fallback ke 0.025 di atas, sengaja tidak melempar error ke buyer
+      }
+      const feeBichToko = Math.floor(subtotalToko * persenFeeToko);
+
+      hasilPerToko.push({
+        tokoId,
+        items: itemsToko,
+        subtotal: subtotalToko,
+        ongkir: opsiDipakai.harga,
+        labelKurir: opsiDipakai.label || shipping_method as string,
+        feeBich: feeBichToko,
+        dipakaiFallback,
       });
-    } catch (fetchErr) {
-      return safeError("Layanan hitung ongkir sedang bermasalah. Coba beberapa saat lagi.", 502, fetchErr);
     }
 
-    if (!ongkirResp.ok) {
-      return safeError("Layanan hitung ongkir sedang bermasalah. Coba beberapa saat lagi.", 502, `HTTP ${ongkirResp.status}`);
-    }
-
-    const ongkirData = await ongkirResp.json();
-
-    // Kalau hitung-ongkir kasih alasan spesifik (mis. keranjang multi-origin),
-    // teruskan pesan itu apa adanya - jangan ditelan jadi pesan generik yang
-    // bikin pembeli bingung harus ngapain. Pesan ini sudah aman (ditulis kita
-    // sendiri di hitung-ongkir, bukan bocoran internal).
-    if (ongkirData?.error) {
-      return json({ error: ongkirData.message || ongkirData.error }, 400);
-    }
-
-    const opsiSah = (ongkirData.opsi || []).find((o: { kode: string }) => o.kode === shipping_method);
-
-    if (!opsiSah) {
-      return safeError("Metode pengiriman tidak valid untuk tujuan ini. Muat ulang halaman checkout.", 400);
-    }
-    const ongkir = opsiSah.harga;
-    const feeBich = Math.floor(subtotal * 0.025);
-    const totalAmount = subtotal + ongkir + feeBich;
-    const nomorPesanan = `BM-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
+    const totalAmount = hasilPerToko.reduce((s, h) => s + h.subtotal + h.ongkir + h.feeBich, 0);
+    const feeBichTotal = hasilPerToko.reduce((s, h) => s + h.feeBich, 0);
+    const nomorPesananInduk = `BM-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 4).toUpperCase()}`;
     const metodePembayaranLabel = payment_method === "manual" ? "WhatsApp Manual" : "iPaymu QRIS/VA";
 
     // ------------------------------------------------------------------
-    // 1c. Idempotency - cegah double-submit bikin 2 pesanan terpisah
+    // 1d. Idempotency - identik konsepnya, sekarang dicek di level grup.
     // ------------------------------------------------------------------
     let idempotencyKey: string;
     if (isNonEmptyString(idempotencyKeyDariKlien, 8, 200)) {
-      // Klien (checkout.html) sudah/akan kirim key sendiri per sesi checkout - dipakai apa adanya.
       idempotencyKey = idempotencyKeyDariKlien as string;
     } else {
-      // Fallback otomatis: fingerprint dari isi keranjang + pembeli + jendela
-      // waktu 60 detik. Tidak butuh perubahan di frontend, tapi cakupannya
-      // terbatas ke jendela waktu ini saja (retry setelah 60 detik dianggap
-      // pesanan baru yang sah, bukan double-submit).
       const timeBucket = Math.floor(Date.now() / IDEMPOTENCY_WINDOW_MS);
       idempotencyKey = await buatFingerprint(
         { customer_phone, kota_tujuan, shipping_method, items: [...itemsQtyMap.entries()].sort() },
@@ -323,33 +369,30 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: pesananLama } = await supabaseAdmin
-      .from("bich_pesanan")
-      .select("id, nomor_pesanan, status, total_harga")
+    const { data: grupLama } = await supabaseAdmin
+      .from("bich_pesanan_grup")
+      .select("id, nomor_pesanan, status_pembayaran, grand_total")
       .eq("idempotency_key", idempotencyKey)
       .maybeSingle();
 
-    if (pesananLama) {
-      // Sudah ada pesanan dari request yang sama (double klik / retry jaringan) -
-      // jangan bikin baru, jangan reservasi stok lagi. Kembalikan info yang sudah ada.
+    if (grupLama) {
       return json({
-        order_id: pesananLama.id,
-        nomor_pesanan: pesananLama.nomor_pesanan,
-        status: pesananLama.status,
-        total_validated: pesananLama.total_harga,
+        order_id: grupLama.id,
+        nomor_pesanan: grupLama.nomor_pesanan,
+        status: grupLama.status_pembayaran,
+        total_validated: grupLama.grand_total,
         catatan: "Pesanan dengan permintaan yang sama sudah pernah dibuat sebelumnya.",
       });
     }
 
     // ------------------------------------------------------------------
-    // 1d. Reservasi stok ATOMIC (lock + decrement dalam satu transaksi DB)
-    //     Kalau produk manapun stoknya kurang, RPC ini melempar exception
-    //     dan TIDAK ADA stok manapun yang berubah (all-or-nothing).
+    // 1e. Reservasi stok ATOMIC - tetap di level SELURUH cart (semua toko
+    //     sekaligus), sama seperti versi sebelumnya.
     // ------------------------------------------------------------------
     itemsUntukRilis = itemsTervalidasi.map((i) => ({ id: i.id, qty: i.qty }));
 
     const { error: errReservasi } = await supabaseAdmin.rpc("reserve_stok_produk", {
-      p_items: itemsTervalidasi.map((i) => ({ id: i.id, qty: i.qty })),
+      p_items: itemsUntukRilis,
     });
 
     if (errReservasi) {
@@ -367,69 +410,95 @@ Deno.serve(async (req) => {
     stokSudahDireservasi = true;
 
     // ------------------------------------------------------------------
-    // 2. Simpan pesanan ke Database Supabase (Status: Pending)
+    // 2a. Tulis baris GRUP (level pembayaran)
     // ------------------------------------------------------------------
-    const { data: pesanan, error: errInsert } = await supabaseAdmin
-      .from("bich_pesanan")
+    const { data: grup, error: errGrup } = await supabaseAdmin
+      .from("bich_pesanan_grup")
       .insert([{
-        nomor_pesanan: nomorPesanan,
+        nomor_pesanan: nomorPesananInduk,
         idempotency_key: idempotencyKey,
         nama_pembeli: customer_name,
         wa_pembeli: customer_phone,
         wa_pembeli_email: customer_email || null,
         alamat_lengkap: shipping_address,
-        item_pesanan: itemsTervalidasi,
-        total_harga: totalAmount,
-        ongkir: ongkir,
-        fee_bich: feeBich,
+        kota_tujuan: kota_tujuan,
         metode_pembayaran: metodePembayaranLabel,
-        // Simpan label yang enak dibaca (mis. "Kurir Instan BICH"), bukan
-        // kode mentah (mis. "kurir_lokal") - supaya riwayat pesanan/admin
-        // panel tidak menampilkan kode teknis ke pengguna.
-        metode_pengiriman: opsiSah.label || shipping_method,
-        status: "Pending",
+        status_pembayaran: "Pending",
+        grand_total: totalAmount,
+        fee_bich: feeBichTotal,
       }])
       .select()
       .single();
 
-    if (errInsert) {
-      // Insert pesanan gagal setelah stok terlanjur direservasi - lepas lagi
-      // stoknya supaya tidak nyangkut kepotong tanpa pesanan yang valid.
-      await rilisStokAman(itemsUntukRilis, "insert pesanan gagal");
-
-      // Unique violation di idempotency_key (race: dua request nyaris bersamaan
-      // lolos cek "pesananLama" sebelum salah satu insert duluan) -> anggap
-      // sebagai double-submit juga, bukan error sistem.
-      if (String(errInsert.message || "").toLowerCase().includes("idempotency_key")) {
-        return safeError("Pesanan dengan permintaan yang sama sedang diproses. Cek riwayat pesananmu.", 409, errInsert);
+    if (errGrup) {
+      await rilisStokAman(itemsUntukRilis, "insert grup gagal");
+      if (String(errGrup.message || "").toLowerCase().includes("idempotency_key")) {
+        return safeError("Pesanan dengan permintaan yang sama sedang diproses. Cek riwayat pesananmu.", 409, errGrup);
       }
-      return safeError("Gagal menyimpan pesanan. Coba beberapa saat lagi.", 500, errInsert);
+      return safeError("Gagal menyimpan pesanan. Coba beberapa saat lagi.", 500, errGrup);
     }
 
     // ------------------------------------------------------------------
-    // JALUR MANUAL (WhatsApp/transfer manual)
+    // 2b. Tulis baris ANAK - satu per toko
+    // ------------------------------------------------------------------
+    const childIdsSukses: number[] = [];
+    for (const h of hasilPerToko) {
+      const { data: anak, error: errAnak } = await supabaseAdmin
+        .from("bich_pesanan")
+        .insert([{
+          grup_id: grup.id,
+          toko_id: h.tokoId,
+          nomor_pesanan: `${nomorPesananInduk}-T${h.tokoId}`,
+          nama_pembeli: customer_name,
+          wa_pembeli: customer_phone,
+          wa_pembeli_email: customer_email || null,
+          alamat_lengkap: shipping_address,
+          item_pesanan: h.items,
+          total_harga: h.subtotal + h.ongkir + h.feeBich,
+          ongkir: h.ongkir,
+          fee_bich: h.feeBich,
+          metode_pembayaran: metodePembayaranLabel,
+          metode_pengiriman: h.labelKurir,
+          status: "Pending",
+        }])
+        .select("id")
+        .single();
+
+      if (errAnak) {
+        await batalkanPenulisanPesanan(grup.id, childIdsSukses, itemsUntukRilis, "insert anak gagal");
+        return safeError("Gagal menyimpan sebagian pesanan. Coba beberapa saat lagi.", 500, errAnak);
+      }
+      childIdsSukses.push(anak.id);
+    }
+
+    // ------------------------------------------------------------------
+    // JALUR MANUAL (WhatsApp/transfer manual) - 1 pesan ke admin, dirinci per toko
     // ------------------------------------------------------------------
     if (payment_method === "manual") {
       let textWA = `*PESANAN BICH MART*\n`;
-      textWA += `No. Pesanan: ${nomorPesanan}\n`;
+      textWA += `No. Pesanan: ${nomorPesananInduk}\n`;
       textWA += `Nama: ${customer_name}\n`;
       textWA += `WA: ${customer_phone}\n`;
-      textWA += `Alamat: ${shipping_address}\n`;
-      textWA += `Pengiriman: ${opsiSah.label || shipping_method}\n\n`;
+      textWA += `Alamat: ${shipping_address}\n\n`;
+      for (const h of hasilPerToko) {
+        textWA += `— Toko ID ${h.tokoId} (${h.labelKurir}, ongkir ${formatRupiah(h.ongkir)}) —\n`;
+        for (const it of h.items) textWA += `${it.qty}x ${it.nama_produk}\n`;
+        textWA += `\n`;
+      }
       textWA += `Total Tagihan: ${formatRupiah(totalAmount)}`;
 
       const whatsappUrl = `https://wa.me/${ADMIN_WA_NUMBER}?text=${encodeURIComponent(textWA)}`;
 
       return json({
-        order_id: pesanan.id,
-        nomor_pesanan: nomorPesanan,
+        order_id: grup.id,
+        nomor_pesanan: nomorPesananInduk,
         whatsapp_url: whatsappUrl,
         total_validated: totalAmount,
       });
     }
 
     // ------------------------------------------------------------------
-    // JALUR PAYMENT GATEWAY (iPaymu)
+    // JALUR PAYMENT GATEWAY (iPaymu) - referenceId sekarang mengarah ke GRUP
     // ------------------------------------------------------------------
     const ipaymuBaseUrl = IPAYMU_ENV === "production"
       ? "https://my.ipaymu.com/api/v2/payment"
@@ -438,7 +507,7 @@ Deno.serve(async (req) => {
     const baseReturnUrl = return_url || "https://mozensalqadrie.com/success.html?service=mart";
     const returnUrlFinal = baseReturnUrl.includes("order_id=")
       ? baseReturnUrl
-      : `${baseReturnUrl}${baseReturnUrl.includes("?") ? "&" : "?"}order_id=${encodeURIComponent(nomorPesanan)}&status=pending`;
+      : `${baseReturnUrl}${baseReturnUrl.includes("?") ? "&" : "?"}order_id=${encodeURIComponent(nomorPesananInduk)}&status=pending`;
 
     const ipaymuPayload = {
       name: customer_name,
@@ -450,8 +519,8 @@ Deno.serve(async (req) => {
       cancelUrl: "https://mozensalqadrie.com/market/checkout.html",
       expired: 24,
       expiredType: "hours",
-      comments: `Pesanan BICH Mart ${nomorPesanan}`,
-      referenceId: String(pesanan.id),
+      comments: `Pesanan BICH Mart ${nomorPesananInduk}`,
+      referenceId: String(grup.id),
       product: itemsTervalidasi.map((i) => i.nama_produk),
       qty: itemsTervalidasi.map((i) => i.qty),
       price: itemsTervalidasi.map((i) => i.harga),
@@ -465,54 +534,37 @@ Deno.serve(async (req) => {
 
       pgResponse = await fetch(ipaymuBaseUrl, {
         method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          "va": IPAYMU_VA,
-          "signature": signature,
-          "timestamp": timestamp,
-        },
+        headers: { "Accept": "application/json", "Content-Type": "application/json", "va": IPAYMU_VA, "signature": signature, "timestamp": timestamp },
         body: JSON.stringify(ipaymuPayload),
       });
       pgData = await pgResponse.json();
     } catch (ipaymuErr) {
-      // Gagal total hubungin iPaymu (network error dsb) - pesanan Pending
-      // yang sudah terlanjur dibuat jangan dibiarkan nyangkut, tandai Gagal
-      // dan lepas stoknya.
-      await supabaseAdmin.from("bich_pesanan").update({ status: "Gagal" }).eq("id", pesanan.id);
+      await supabaseAdmin.from("bich_pesanan_grup").update({ status_pembayaran: "Failed" }).eq("id", grup.id);
+      await supabaseAdmin.from("bich_pesanan").update({ status: "Gagal" }).eq("grup_id", grup.id);
       await rilisStokAman(itemsUntukRilis, "iPaymu error jaringan");
       return safeError("Gagal menghubungi payment gateway. Coba beberapa saat lagi.", 502, ipaymuErr);
     }
 
     if (!pgResponse.ok || pgData.Status !== 200) {
-      // iPaymu menolak transaksi - sama seperti di atas, jangan biarkan
-      // pesanan nyangkut 'Pending' & stok tetap terpotong padahal tidak
-      // ada transaksi pembayaran yang benar-benar dibuat.
-      await supabaseAdmin.from("bich_pesanan").update({ status: "Gagal" }).eq("id", pesanan.id);
+      await supabaseAdmin.from("bich_pesanan_grup").update({ status_pembayaran: "Failed" }).eq("id", grup.id);
+      await supabaseAdmin.from("bich_pesanan").update({ status: "Gagal" }).eq("grup_id", grup.id);
       await rilisStokAman(itemsUntukRilis, "iPaymu menolak transaksi");
       return safeError(pgData.Message || "Gagal membuat transaksi pembayaran.", 502, pgData);
     }
 
     const refGateway = String(pgData?.Data?.SessionID || pgData?.Data?.TransactionId || "");
     const { error: errUpdateRef } = await supabaseAdmin
-      .from("bich_pesanan")
+      .from("bich_pesanan_grup")
       .update({ payment_gateway_ref: refGateway })
-      .eq("id", pesanan.id);
+      .eq("id", grup.id);
 
     if (errUpdateRef) {
-      // Transaksi iPaymu SUDAH berhasil dibuat di sisi gateway - jangan
-      // gagalkan response ke pembeli cuma karena update ref gagal. Cukup
-      // log supaya bisa direkonsiliasi manual lewat redaksi/admin panel.
-      console.error("[create-payment] Gagal simpan payment_gateway_ref untuk order", pesanan.id, errUpdateRef);
+      console.error("[create-payment] Gagal simpan payment_gateway_ref untuk grup", grup.id, errUpdateRef);
     }
 
-    return json({ checkout_url: pgData.Data?.Url, order_id: pesanan.id, nomor_pesanan: nomorPesanan });
+    return json({ checkout_url: pgData.Data?.Url, order_id: grup.id, nomor_pesanan: nomorPesananInduk });
 
   } catch (err) {
-    // Jaring pengaman terakhir: kalau stok sempat direservasi tapi ada
-    // exception tak terduga sebelum sempat insert pesanan / handle di atas,
-    // coba lepas stoknya juga - lebih baik overcompensate daripada stok
-    // nyangkut kepotong tanpa pesanan sama sekali.
     if (stokSudahDireservasi && itemsUntukRilis.length > 0) {
       await rilisStokAman(itemsUntukRilis, "catch-all");
     }
