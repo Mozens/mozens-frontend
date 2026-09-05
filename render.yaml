@@ -1,0 +1,25 @@
+# Render Blueprint — BICH Redaksi Server
+# =======================================
+# File ini bikin Render otomatis tahu cara deploy servicenya begitu kamu
+# pilih "New > Blueprint" di Render Dashboard dan arahkan ke repo ini.
+# Nilai rahasia (sync: false) TIDAK diisi di sini - Render akan minta kamu
+# mengisinya manual lewat Dashboard saat pertama kali deploy, dan
+# menyimpannya terenkripsi di sana - sama seperti pola secret yang sudah
+# kita pakai di GitHub Actions & Supabase Edge Functions sebelumnya.
+
+services:
+  - type: web
+    name: bich-redaksi-server
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python redaksi_server.py
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: MOZENS_SERVICE_ROLE_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

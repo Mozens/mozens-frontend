@@ -19,3 +19,7 @@ Pariwisatamodif.html
 node_modules/
 .env
 .env.*
+
+# PENGECUALIAN (File ini WAJIB ikut ter-push ke Git):
+!requirements.txt
+!redaksi_server.py
