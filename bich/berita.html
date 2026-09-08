@@ -165,44 +165,48 @@
 <section class="closing"><div><h3>Ingin ikut memperkaya pengetahuan?</h3><p>Kontribusi informasi dan gagasan dapat menjadi bagian dari estafet pengetahuan.</p></div><a href="/bich/kaderisasi-kapuas.html">Kaderisasi Kapuas →</a></section>
 </main>
 
-<!-- MODAL BICH ULTRA FIX MOBILE -->
-<div id="berita-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 backdrop-blur-md bg-black/60" onclick="if(event.target===this) closeBeritaModal()">
+<!-- ========================================================= -->
+<!-- MODAL BICH EDITORIAL - UNIFIED SINGLE SCROLL (MOBILE FULLSCREEN) -->
+<!-- ========================================================= -->
+<div id="berita-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 backdrop-blur-md bg-black/60" onclick="if(event.target===this) closeBeritaModal()">
     
-    <!-- Induk Modal: Kunci Tinggi Pasti 88% Layar HP (h-[88vh]) -->
-    <div class="bg-[#fffdf9] border border-[#dedad1] rounded-2xl w-full max-w-[720px] h-[88vh] flex flex-col overflow-hidden shadow-2xl relative">
+    <!-- Frame Utama: Fullscreen di HP (w-full h-full), Modal Melayang di Laptop (sm:h-[88vh] sm:rounded-2xl) -->
+    <div class="bg-[#fffdf9] border-0 sm:border border-[#dedad1] w-full h-full sm:h-[88vh] sm:max-w-[720px] sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl relative">
         
-        <!-- Floating Close Button + Marker Versi -->
-        <div class="absolute top-3 right-3 z-30 flex items-center gap-2">
-            <span class="bg-emerald-600 text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded-full shadow">V2-OK</span>
-            <button onclick="closeBeritaModal()" class="text-xl text-slate-500 hover:text-slate-900 bg-[#fffdf9] border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">×</button>
-        </div>
+        <!-- Tombol Close Floating -->
+        <button onclick="closeBeritaModal()" aria-label="Tutup" class="absolute top-3 right-3 z-30 text-xl text-slate-500 hover:text-slate-900 bg-[#fffdf9]/90 border border-slate-300/80 rounded-full w-9 h-9 flex items-center justify-center backdrop-blur-sm shadow-sm transition-all">
+            ✕
+        </button>
 
-        <!-- Kontainer Scroll Tunggal (min-h-0 Memaksa Scroll internal Aktif) -->
-        <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-8 space-y-4 custom-scrollbar">
+        <!-- UNIFIED SCROLL CONTAINER (Satu Wadah Scroll untuk Judul + Artikel) -->
+        <div class="flex-1 min-h-0 overflow-y-auto p-5 sm:p-8 space-y-5 custom-scrollbar">
             
-            <!-- Judul (Di-set 15px di HP agar hanya makan 2-3 baris, 22px di Laptop) -->
-            <div class="pt-2">
-                <div id="modal-badges" class="flex flex-wrap gap-2 mb-2 pr-14"></div>
-                <h2 id="modal-title" style="font-size: 15px !important; line-height: 1.3 !important;" class="font-serif font-bold sm:!text-[22px] text-[#17231f]"></h2>
-                <p id="modal-author" class="font-mono font-bold text-[10px] text-[var(--green)] tracking-wider mt-2"></p>
+            <!-- Header & Judul (Ikut terdorong ke atas saat di-scroll) -->
+            <div class="pt-2 border-b border-[#e5e1d8] pb-4">
+                <div id="modal-badges" class="flex flex-wrap gap-2 mb-3 pr-10"></div>
+                <h2 id="modal-title" class="font-serif font-bold text-lg sm:text-2xl text-[#17231f] leading-snug"></h2>
+                <p id="modal-author" class="font-mono font-bold text-[10px] text-[#126b52] tracking-wider mt-2.5"></p>
             </div>
 
-            <!-- Meta & Konten Artikel -->
-            <div id="modal-meta" class="font-mono font-medium text-[10px] text-[#8a928e] border-b border-[var(--line)] pb-3 flex flex-wrap gap-2"></div>
-            <div id="modal-content" class="font-serif text-[13px] sm:text-base leading-relaxed text-[#38443f] space-y-4"></div>
+            <!-- Meta & Konten Artikel Utama -->
+            <div id="modal-meta" class="font-mono font-medium text-[10px] text-[#8a928e] flex flex-wrap gap-2"></div>
+            <div id="modal-content" class="font-serif text-[14px] sm:text-base leading-relaxed text-[#38443f] space-y-4"></div>
             
-            <!-- Box Analisis BICH -->
-            <div class="insight bg-[var(--green-soft)] border border-[#d1e4da] rounded-xl p-4 sm:p-5">
-                <h5 class="font-mono font-bold text-[10px] text-[var(--green)] tracking-widest mb-2">ANALISIS BICH</h5>
-                <p id="modal-insight" class="text-xs leading-relaxed text-[#52635c]"></p>
+            <!-- Box Analisis Editorial BICH -->
+            <div class="bg-[#eaf3ee] border border-[#d1e4da] rounded-xl p-4 sm:p-5 my-4">
+                <h5 class="font-mono font-bold text-[10px] text-[#126b52] tracking-widest mb-2">ANALISIS BICH</h5>
+                <p id="modal-insight" class="text-xs sm:text-sm leading-relaxed text-[#52635c]"></p>
             </div>
             
-            <p id="modal-source-note" class="font-mono font-medium text-[10px] leading-relaxed text-[#7b8580] border-t border-[var(--line)] pt-3"></p>
+            <!-- Catatan Sumber -->
+            <p id="modal-source-note" class="font-mono font-medium text-[10px] leading-relaxed text-[#7b8580] border-t border-[#e5e1d8] pt-3"></p>
         </div>
 
-        <!-- Tombol Footer Kunci di Bawah (shrink-0) -->
-        <div class="shrink-0 border-t border-[var(--line)] p-3 sm:p-4 bg-[#fffdf9] text-right">
-            <button onclick="closeBeritaModal()" class="close-btn border border-[#d9d6ce] bg-transparent rounded-full px-4 py-2 text-[#59645f] font-mono font-bold text-xs">Selesai membaca</button>
+        <!-- Footer Tombol Selesai (Tetap Diam di Bawah) -->
+        <div class="shrink-0 border-t border-[#e5e1d8] p-3 sm:p-4 bg-[#fffdf9] text-right">
+            <button onclick="closeBeritaModal()" class="border border-[#d9d6ce] hover:bg-[#f2efe6] active:bg-[#e8e4d8] rounded-full px-5 py-2 text-[#59645f] font-mono font-bold text-xs transition-colors">
+                Selesai membaca
+            </button>
         </div>
     </div>
 </div>
