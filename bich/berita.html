@@ -165,32 +165,42 @@
 <section class="closing"><div><h3>Ingin ikut memperkaya pengetahuan?</h3><p>Kontribusi informasi dan gagasan dapat menjadi bagian dari estafet pengetahuan.</p></div><a href="/bich/kaderisasi-kapuas.html">Kaderisasi Kapuas →</a></section>
 </main>
 
-<!-- MODAL BICH TERUSAN TERBACA NYAMAN -->
-<div id="berita-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4" onclick="if(event.target===this) closeBeritaModal()">
-    <div class="w-full max-h-[90vh] flex flex-col overflow-hidden relative">
-        <!-- Floating Close Button -->
-        <button onclick="closeBeritaModal()" class="absolute top-3 right-3 z-30 text-2xl text-slate-400 hover:text-slate-800 bg-[#fffdf9]/90 border border-slate-200/80 rounded-full w-9 h-9 flex items-center justify-center backdrop-blur-sm shadow-sm">×</button>
+<!-- MODAL BICH (REVISI FIX & TERVERIFIKASI) -->
+<div id="berita-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 backdrop-blur-md bg-black/60" onclick="if(event.target===this) closeBeritaModal()">
+    <div class="bg-[#fffdf9] border border-[#dedad1] rounded-2xl w-full max-w-[760px] max-h-[85vh] flex flex-col overflow-hidden shadow-2xl relative">
         
-        <!-- Scrollable Wrapper gabung judul & isi artikel -->
-        <div class="overflow-y-auto custom-scrollbar flex-1">
-            <div class="modal-head">
-                <div id="modal-badges" class="flex flex-wrap gap-2 mb-3 pr-10"></div>
-                <h2 id="modal-title" class="modal-title"></h2>
-                <p id="modal-author" class="modal-author mt-2.5"></p>
-            </div>
-            <div class="modal-body space-y-6">
-                <div id="modal-meta" class="modal-meta flex flex-wrap gap-3"></div>
-                <div id="modal-content" class="modal-content"></div>
-                <div class="insight">
-                    <h5>ANALISIS BICH</h5>
-                    <p id="modal-insight"></p>
-                </div>
-                <p id="modal-source-note" class="source-note"></p>
-            </div>
+        <!-- Tombol Close Floating + Marker Versi V2 -->
+        <div class="absolute top-3 right-3 z-30 flex items-center gap-2">
+            <span class="bg-emerald-600 text-white text-[9px] font-mono font-bold px-2 py-0.5 rounded-full shadow">V2-OK</span>
+            <button onclick="closeBeritaModal()" class="text-xl text-slate-500 hover:text-slate-900 bg-[#fffdf9] border border-slate-300 rounded-full w-8 h-8 flex items-center justify-center shadow-sm">×</button>
         </div>
-        
-        <div class="modal-foot">
-            <button onclick="closeBeritaModal()" class="close-btn">Selesai membaca</button>
+
+        <!-- Scroll Container Utama (Judul + Artikel Nyatu TANPA Sticky) -->
+        <div class="overflow-y-auto p-4 sm:p-8 space-y-4 sm:space-y-6 custom-scrollbar flex-1">
+            
+            <!-- Area Judul (Ukuran dikunci 18px di HP, 24px di Desktop) -->
+            <div class="pt-2">
+                <div id="modal-badges" class="flex flex-wrap gap-2 mb-2.5 pr-16"></div>
+                <h2 id="modal-title" style="font-size: 18px !important; line-height: 1.35 !important;" class="font-serif font-semibold sm:!text-2xl text-[#17231f]"></h2>
+                <p id="modal-author" class="font-mono font-bold text-[10px] text-[var(--green)] tracking-wider mt-2"></p>
+            </div>
+
+            <!-- Meta & Konten Artikel -->
+            <div id="modal-meta" class="font-mono font-medium text-[10px] text-[#8a928e] border-b border-[var(--line)] pb-3 flex flex-wrap gap-2"></div>
+            <div id="modal-content" class="font-serif text-sm sm:text-base leading-relaxed text-[#38443f] space-y-4"></div>
+            
+            <!-- Box Analisis -->
+            <div class="insight bg-[var(--green-soft)] border border-[#d1e4da] rounded-xl p-4 sm:p-5">
+                <h5 class="font-mono font-bold text-[10px] text-[var(--green)] tracking-widest mb-2">ANALISIS BICH</h5>
+                <p id="modal-insight" class="text-xs leading-relaxed text-[#52635c]"></p>
+            </div>
+            
+            <p id="modal-source-note" class="font-mono font-medium text-[10px] leading-relaxed text-[#7b8580] border-t border-[var(--line)] pt-3"></p>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-[var(--line)] p-3 sm:p-4 bg-[#fffdf9] text-right">
+            <button onclick="closeBeritaModal()" class="close-btn border border-[#d9d6ce] bg-transparent rounded-full px-4 py-2 text-[#59645f] font-mono font-bold text-xs">Selesai membaca</button>
         </div>
     </div>
 </div>
