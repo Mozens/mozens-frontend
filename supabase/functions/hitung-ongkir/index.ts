@@ -12,6 +12,27 @@ const KODE_POS: Record<string, number> = {
   'Pontianak': 78111, 'Tarakan': 77111,
 }
 
+// Kurir mitra internal ("Kurir Instan BICH") boleh menjangkau kota-kota
+// TERDEKAT yang berdekatan (bukan cuma 1 kota persis) - dikelompokkan
+// berdasar kedekatan wilayah nyata. Kalau kota tujuan ada di klaster yang
+// sama dengan kota asal produk, kurir mitra tetap dicoba dulu sebelum
+// jatuh ke Biteship.
+const KLASTER_KOTA_TERDEKAT: Record<string, string[]> = {
+  'Banjarmasin': ['Banjarmasin', 'Banjarbaru', 'Martapura'],
+  'Banjarbaru': ['Banjarmasin', 'Banjarbaru', 'Martapura'],
+  'Martapura': ['Banjarmasin', 'Banjarbaru', 'Martapura'],
+  'Samarinda': ['Samarinda', 'Balikpapan'],
+  'Balikpapan': ['Samarinda', 'Balikpapan'],
+  'Palangka Raya': ['Palangka Raya'],
+  'Pontianak': ['Pontianak'],
+  'Tarakan': ['Tarakan'],
+}
+
+function kotaTerjangkauKurirMitra(originKota: string, kotaTujuan: string): boolean {
+  const klaster = KLASTER_KOTA_TERDEKAT[originKota] || [originKota]
+  return klaster.includes(kotaTujuan)
+}
+
 // Batas wajar kuantitas per item - cegah qty negatif/nol/gila-gilaan
 // yang bisa manipulasi totalBeratGram jadi lebih kecil dari seharusnya.
 const QTY_MIN = 1
@@ -103,16 +124,22 @@ serve(async (req) => {
     }
 
     const originKota = [...lokasiAsalSet][0]
-    const sekota = originKota === kota_tujuan
+    const bisaDijangkauKurirMitra = kotaTerjangkauKurirMitra(originKota, kota_tujuan)
 
     const opsi: Array<{ kode: string; label: string; estimasi: string; harga: number; rekomendasi: boolean }> = []
 
-    if (sekota) {
+    if (bisaDijangkauKurirMitra) {
       const totalBeratKg = totalBeratGram / 1000
+      const klasterTujuan = KLASTER_KOTA_TERDEKAT[kota_tujuan] || [kota_tujuan]
+      // Cari kurir yang berdomisili DI MANA SAJA dalam klaster kota
+      // terdekat tujuan - bukan cuma yang persis sama string kota_tujuan.
+      // Ini yang tadinya bikin kurir yang sudah terverifikasi tetap tidak
+      // pernah kepakai kalau domisilinya di kota tetangga yang masih
+      // wajar dijangkau.
       const { data: mitra } = await supabase
         .from('mitra_kurir')
         .select('id')
-        .eq('kota_domisili', kota_tujuan)
+        .in('kota_domisili', klasterTujuan)
         .eq('status_verifikasi', 'TERVERIFIKASI')
         .gte('kapasitas_kg', totalBeratKg)
         .limit(1)
