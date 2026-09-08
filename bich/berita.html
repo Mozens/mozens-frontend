@@ -89,8 +89,45 @@
         #berita-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:34px;padding-top:20px;border-top:1px solid var(--line)}.page-btn{background:transparent;border:0;color:#65706b;font:600 10px var(--mono);padding:10px;cursor:pointer}.page-btn:hover:not(:disabled){color:var(--green)}.page-btn:disabled{opacity:.3;cursor:not-allowed}.page-pill{font:700 9px var(--mono);color:var(--green);letter-spacing:.7px}
         .closing{margin-top:92px;padding:42px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:30px}.closing h3{font:600 25px var(--serif);margin:0 0 6px}.closing p{margin:0;color:#77817d;font-size:12px}.closing a{display:inline-flex;align-items:center;border:1px solid #c8d2cc;border-radius:999px;padding:11px 17px;text-decoration:none;color:var(--green);font:700 10px var(--mono);white-space:nowrap}.closing a:hover{background:var(--green-soft)}
         footer{border-top:1px solid var(--line);padding:25px 34px;text-align:center;color:#8a928e;font:500 9px var(--mono);letter-spacing:.2px}footer a{color:#68736f}
-        #berita-modal{backdrop-filter:blur(10px);background:rgba(11,18,16,.58)}#berita-modal>div{background:#fffdf9;border:1px solid #dedad1;border-radius:20px;max-width:760px;box-shadow:0 35px 100px rgba(0,0,0,.3);color:var(--ink)}.modal-head{padding:30px 32px;border-bottom:1px solid var(--line)}.modal-body{padding:32px;overflow-y:auto}.modal-title{font:600 30px/1.22 var(--serif);color:#17231f}.modal-author{font:700 9px var(--mono);color:var(--green);letter-spacing:.5px}.modal-meta{font:500 9px var(--mono);color:#8a928e;border-bottom:1px solid var(--line);padding-bottom:18px}.modal-content{font:400 14px/1.95 var(--serif);color:#38443f}.modal-content p{margin:0 0 17px}.insight{background:var(--green-soft);border:1px solid #d1e4da;border-radius:14px;padding:20px}.insight h5{font:700 9px var(--mono);color:var(--green);letter-spacing:1px;margin:0 0 9px}.insight p{font-size:11px;line-height:1.75;color:#52635c}.source-note{border-top:1px solid var(--line);padding-top:17px;color:#7b8580;font:500 9px/1.7 var(--mono)}.modal-foot{border-top:1px solid var(--line);padding:17px 32px;text-align:right}.close-btn{border:1px solid #d9d6ce;background:transparent;border-radius:999px;padding:9px 16px;color:#59645f;font:700 9px var(--mono)}
-        @media(max-width:900px){#berita-list-container,#berita-skeleton{grid-template-columns:repeat(2,1fr)}.intent{grid-template-columns:1fr;gap:28px}.method{grid-template-columns:repeat(3,1fr)}}@media(max-width:640px){.site-shell,main{padding-left:20px;padding-right:20px}.topbar-inner{min-height:62px}.brand-note{display:none}.hero{padding:76px 0 60px}h1{font-size:48px}.intent{margin-bottom:55px}.method{grid-template-columns:1fr;gap:16px}.search-row{grid-template-columns:1fr}.section-head{display:block}.section-sub{display:block;margin-top:5px}#berita-list-container,#berita-skeleton{grid-template-columns:1fr}.closing{display:block}.closing a{margin-top:22px}.modal-head,.modal-body{padding:23px}.modal-foot{padding:15px 23px}}
+        
+        /* FIX MODAL BICH DESK & MOBILE */
+        #berita-modal{backdrop-filter:blur(10px);background:rgba(11,18,16,.58)}
+        #berita-modal>div{background:#fffdf9;border:1px solid #dedad1;border-radius:20px;max-width:760px;box-shadow:0 35px 100px rgba(0,0,0,.3);color:var(--ink)}
+        .modal-head{padding:26px 30px 16px;border-bottom:1px solid var(--line);background:var(--paper)}
+        .modal-body{padding:24px 30px 30px}
+        .modal-title{font:600 26px/1.25 var(--serif);color:#17231f}
+        .modal-author{font:700 9px var(--mono);color:var(--green);letter-spacing:.5px}
+        .modal-meta{font:500 9px var(--mono);color:#8a928e;border-bottom:1px solid var(--line);padding-bottom:16px}
+        .modal-content{font:400 14px/1.95 var(--serif);color:#38443f}
+        .modal-content p{margin:0 0 17px}
+        .insight{background:var(--green-soft);border:1px solid #d1e4da;border-radius:14px;padding:20px}
+        .insight h5{font:700 9px var(--mono);color:var(--green);letter-spacing:1px;margin:0 0 9px}
+        .insight p{font-size:11px;line-height:1.75;color:#52635c}
+        .source-note{border-top:1px solid var(--line);padding-top:17px;color:#7b8580;font:500 9px/1.7 var(--mono)}
+        .modal-foot{border-top:1px solid var(--line);padding:15px 30px;background:var(--paper);text-align:right}
+        .close-btn{border:1px solid #d9d6ce;background:transparent;border-radius:999px;padding:9px 16px;color:#59645f;font:700 9px var(--mono)}
+        
+        @media(max-width:900px){#berita-list-container,#berita-skeleton{grid-template-columns:repeat(2,1fr)}.intent{grid-template-columns:1fr;gap:28px}.method{grid-template-columns:repeat(3,1fr)}}
+        @media(max-width:640px){
+            .site-shell,main{padding-left:20px;padding-right:20px}
+            .topbar-inner{min-height:62px}
+            .brand-note{display:none}
+            .hero{padding:76px 0 60px}
+            h1{font-size:48px}
+            .intent{margin-bottom:55px}
+            .method{grid-template-columns:1fr;gap:16px}
+            .search-row{grid-template-columns:1fr}
+            .section-head{display:block}
+            .section-sub{display:block;margin-top:5px}
+            #berita-list-container,#berita-skeleton{grid-template-columns:1fr}
+            .closing{display:block}
+            .closing a{margin-top:22px}
+            /* OPTIMISASI MODAL MOBILE */
+            .modal-title{font-size:20px !important;line-height:1.3 !important}
+            .modal-head{padding:18px 20px 14px !important}
+            .modal-body{padding:18px 20px !important}
+            .modal-foot{padding:12px 20px !important}
+        }
         .custom-scrollbar::-webkit-scrollbar{width:7px}.custom-scrollbar::-webkit-scrollbar-track{background:#f3f1ec}.custom-scrollbar::-webkit-scrollbar-thumb{background:#c8c5bd;border-radius:10px}.custom-scrollbar::-webkit-scrollbar-thumb:hover{background:#9ca79f}
     </style>
 </head>
@@ -127,11 +164,39 @@
 </section>
 <section class="closing"><div><h3>Ingin ikut memperkaya pengetahuan?</h3><p>Kontribusi informasi dan gagasan dapat menjadi bagian dari estafet pengetahuan.</p></div><a href="/bich/kaderisasi-kapuas.html">Kaderisasi Kapuas →</a></section>
 </main>
-<div id="berita-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4" onclick="if(event.target===this) closeBeritaModal()"><div class="w-full max-h-[90vh] flex flex-col overflow-hidden custom-scrollbar">
-<div class="modal-head sticky top-0 z-10 flex justify-between items-start gap-5"><div><div id="modal-badges" class="flex flex-wrap gap-2 mb-4"></div><h2 id="modal-title" class="modal-title"></h2><p id="modal-author" class="modal-author mt-3"></p></div><button onclick="closeBeritaModal()" class="text-2xl text-slate-400 hover:text-slate-700 p-1">×</button></div>
-<div class="modal-body space-y-7"><div id="modal-meta" class="modal-meta flex flex-wrap gap-3"></div><div id="modal-content" class="modal-content"></div><div class="insight"><h5>ANALISIS BICH</h5><p id="modal-insight"></p></div><p id="modal-source-note" class="source-note"></p></div>
-<div class="modal-foot"><button onclick="closeBeritaModal()" class="close-btn">Selesai membaca</button></div></div></div>
+
+<!-- MODAL BICH TERUSAN TERBACA NYAMAN -->
+<div id="berita-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4" onclick="if(event.target===this) closeBeritaModal()">
+    <div class="w-full max-h-[90vh] flex flex-col overflow-hidden relative">
+        <!-- Floating Close Button -->
+        <button onclick="closeBeritaModal()" class="absolute top-3 right-3 z-30 text-2xl text-slate-400 hover:text-slate-800 bg-[#fffdf9]/90 border border-slate-200/80 rounded-full w-9 h-9 flex items-center justify-center backdrop-blur-sm shadow-sm">×</button>
+        
+        <!-- Scrollable Wrapper gabung judul & isi artikel -->
+        <div class="overflow-y-auto custom-scrollbar flex-1">
+            <div class="modal-head">
+                <div id="modal-badges" class="flex flex-wrap gap-2 mb-3 pr-10"></div>
+                <h2 id="modal-title" class="modal-title"></h2>
+                <p id="modal-author" class="modal-author mt-2.5"></p>
+            </div>
+            <div class="modal-body space-y-6">
+                <div id="modal-meta" class="modal-meta flex flex-wrap gap-3"></div>
+                <div id="modal-content" class="modal-content"></div>
+                <div class="insight">
+                    <h5>ANALISIS BICH</h5>
+                    <p id="modal-insight"></p>
+                </div>
+                <p id="modal-source-note" class="source-note"></p>
+            </div>
+        </div>
+        
+        <div class="modal-foot">
+            <button onclick="closeBeritaModal()" class="close-btn">Selesai membaca</button>
+        </div>
+    </div>
+</div>
+
 <footer>© 2026 BICH Editorial · Mozens Inc. · <a href="https://mozensalqadrie.com">mozensalqadrie.com</a></footer>
+
     <!-- ==================== LOGIKA INTEGRASI SUPABASE & PAGINATION ==================== -->
     <script>
         const SUPABASE_URL = 'https://gehbuhuevfxfjyytmrht.supabase.co';
