@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mozens Alqadrie — Inisiator & Kurator Utama | Muara Utama Ekosistem Digital & Generasi Banua</title>
+    <title>Mozens Alqadrie — Pendiri - Muara Utama | Ekosistem Digital &amp; Lumbung Generasi Kalimantan</title>
+    <meta name="description" content="Muara Utama — ekosistem digital terpadu lima provinsi Kalimantan: informasi, ekonomi, kebijakan, perdagangan, mobilitas dan edukasi sebagai lumbung generasi.">
 
-    <meta property="og:title" content="Mozens Alqadrie — Inisiator & Kurator Utama">
-    <meta property="og:description" content="Muara Utama Ekosistem Digital & Generasi Banua Kalimantan">
+    <meta property="og:title" content="Mozens Alqadrie — Pendiri, Muara Utama">
+    <meta property="og:description" content="Ekosistem Digital & Lumbung Generasi Kalimantan — informasi, ekonomi, kebijakan, perdagangan, mobilitas dan edukasi dalam satu muara.">
     <meta property="og:image" content="profile.webp">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="profile.webp">
@@ -82,33 +83,100 @@
         .login { color:#16110a; background:linear-gradient(135deg,#f0c46b,#d18a20); border-color:#e2aa4e; box-shadow:0 8px 24px rgba(217,155,50,.16); }
         .menu { display:none; background:none; border:1px solid var(--line); color:var(--gold-2); border-radius:8px; padding:8px 10px; }
 
-        /* HERO */
+        /* HERO — mobile-first base (small screens) */
         .hero {
             width:100%; margin:0;
-            padding-left:max(24px, calc((100vw - var(--max)) / 2));
-            padding-right:max(24px, calc((100vw - var(--max)) / 2));
-            min-height:680px; position:relative; display:grid; grid-template-columns:1fr; align-items:center; gap:30px; overflow:hidden;
-            background-image:linear-gradient(90deg,rgba(3,8,13,.97) 0%,rgba(3,8,13,.76) 42%,rgba(3,8,13,.28) 75%,rgba(3,8,13,.68) 100%),linear-gradient(180deg,rgba(3,8,13,.1),rgba(3,8,13,.8)),url('assets/hero-river.webp');
-            background-size:cover; background-position:center 45%;
+            padding-left:20px; padding-right:20px;
+            position:relative; overflow:hidden;
+            background:
+                radial-gradient(circle at 50% 18%,rgba(56,199,216,.10),transparent 46%),
+                radial-gradient(circle at 60% 70%,rgba(217,155,50,.10),transparent 42%),
+                linear-gradient(180deg,rgba(3,8,13,1) 0%,rgba(4,10,16,.96) 60%,rgba(3,8,13,.9) 100%),
+                var(--ink);
             border-bottom:1px solid rgba(217,155,50,.18);
         }
-        .hero::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 76% 42%,rgba(217,155,50,.12),transparent 25%),linear-gradient(90deg,rgba(3,8,13,.98),rgba(3,8,13,.48) 58%,rgba(3,8,13,.68)); pointer-events:none; }
-        .hero::after { content:""; position:absolute; width:75vw; height:75vw; max-width:950px; max-height:950px; right:-10vw; top:-30vw; border-radius:50%; border:1px solid rgba(217,155,50,.16); box-shadow:0 0 0 80px rgba(217,155,50,.035),0 0 0 160px rgba(217,155,50,.02); pointer-events:none; }
-        .hero-copy { position:relative; z-index:2; max-width:820px; padding:88px 0 72px; }
-        .eyebrow { font-family:var(--mono); font-size:10px; letter-spacing:2px; color:var(--gold-2); text-transform:uppercase; margin-bottom:18px; }
-        .hero h1 { margin:0; font-family:var(--serif); font-size:clamp(48px,6vw,92px); line-height:.86; letter-spacing:1px; font-weight:600; text-transform:uppercase; }
-        .hero h1 span { display:block; color:var(--gold-2); margin-top:10px; }
-        .hero-kicker { margin:18px 0 14px; font-family:var(--serif); font-size:30px; letter-spacing:1.5px; color:#f2eee6; }
-        .hero-desc { max-width:650px; color:#c1c7ca; font-size:15px; line-height:1.8; margin:0 0 25px; }
-        .hero-cta { display:inline-flex; align-items:center; gap:18px; margin:26px 0 18px; padding:13px 18px; border:1px solid rgba(217,155,50,.72); border-radius:8px; color:#f0c46b; text-decoration:none; font-family:var(--mono); font-size:10px; letter-spacing:1px; background:rgba(5,12,18,.42); transition:.2s ease; }
-        .hero-cta:hover { background:rgba(217,155,50,.1); transform:translateY(-1px); }
-        .signature { border:1px solid rgba(217,155,50,.48); background:linear-gradient(135deg,rgba(6,16,25,.88),rgba(11,24,34,.58)); border-radius:13px; padding:17px 20px; max-width:720px; box-shadow:inset 0 1px rgba(255,255,255,.04),0 18px 40px rgba(0,0,0,.2); position:relative; z-index:4; }
-        .signature-title { text-align:center; color:var(--gold-2); font-family:var(--serif); font-size:26px; letter-spacing:3px; margin-bottom:14px; }
-        .signature-grid { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid rgba(255,255,255,.08); }
-        .signature-item { padding:13px 15px 3px; display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; }
-        .sig-icon { width:28px; height:28px; border:1px solid var(--gold); border-radius:50%; display:grid; place-items:center; color:var(--gold-2); font-size:14px; }
+        .hero::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 60% 20%,rgba(217,155,50,.09),transparent 34%); pointer-events:none; }
+        .hero::after { content:""; position:absolute; width:130vw; height:130vw; border-radius:50%; right:-40vw; top:-40vw; border:1px solid rgba(217,155,50,.14); box-shadow:0 0 0 60px rgba(217,155,50,.03),0 0 0 120px rgba(217,155,50,.018); pointer-events:none; }
+        .hero-shell { position:relative; z-index:2; display:grid; grid-template-columns:1fr; grid-template-areas:"copy" "map"; gap:4px; }
+        .hero-copy { grid-area:copy; max-width:none; padding:40px 0 14px; }
+        .eyebrow { font-family:var(--mono); font-size:9.5px; letter-spacing:2px; color:var(--gold-2); text-transform:uppercase; margin-bottom:14px; }
+        .hero h1 { margin:0; font-family:var(--serif); font-size:clamp(32px,7vw,58px); line-height:1.04; letter-spacing:.5px; font-weight:600; text-transform:uppercase; }
+        .hero h1 span { display:block; color:var(--gold-2); margin-top:8px; }
+        .hero-kicker { margin:12px 0 12px; max-width:520px; font-family:var(--sans); font-size:13px; font-weight:600; letter-spacing:.2px; line-height:1.6; color:var(--gold-2); }
+        .hero-desc { max-width:560px; color:#c1c7ca; font-size:13px; line-height:1.7; margin:0 0 20px; }
+        .hero-cta { display:inline-flex; align-items:center; gap:14px; margin:6px 0 6px; padding:13px 19px; border-radius:999px; color:#1a1206; text-decoration:none; font-family:var(--mono); font-size:9.5px; letter-spacing:1px; font-weight:700; background:linear-gradient(135deg,#f0c46b,#d18a20); box-shadow:0 14px 30px rgba(217,155,50,.22); transition:.2s ease; }
+        .hero-cta:hover { transform:translateY(-2px); box-shadow:0 18px 36px rgba(217,155,50,.32); }
+        .hero-cta-note { margin:0 0 20px; font-family:var(--mono); font-size:9.5px; letter-spacing:.6px; color:#7c8890; }
+        .signature { border:1px solid rgba(217,155,50,.48); background:linear-gradient(135deg,rgba(6,16,25,.88),rgba(11,24,34,.58)); border-radius:13px; padding:15px 15px; max-width:100%; box-shadow:inset 0 1px rgba(255,255,255,.04),0 18px 40px rgba(0,0,0,.2); position:relative; z-index:4; }
+        .signature-title { text-align:center; color:var(--gold-2); font-family:var(--serif); font-size:17px; letter-spacing:1.6px; margin-bottom:10px; }
+        .signature-grid { display:grid; grid-template-columns:1fr; border-top:1px solid rgba(255,255,255,.08); }
+        .signature-item { padding:10px 2px; display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; border-bottom:1px solid rgba(255,255,255,.07); }
+        .signature-item:last-child { border-bottom:0; }
+        .sig-icon { width:26px; height:26px; border:1px solid var(--gold); border-radius:50%; display:grid; place-items:center; color:var(--gold-2); font-size:13px; flex-shrink:0; }
         .signature-item strong { display:block; font-size:11px; letter-spacing:.7px; color:#f5f1ea; }
         .signature-item span { display:block; color:#9fa8ae; font-size:10px; margin-top:3px; }
+
+        /* HERO — INTERACTIVE KALIMANTAN MAP (mobile-first) */
+        .hero-map { grid-area:map; position:relative; padding:14px 0 4px; }
+        .hero-map-svg { width:100%; height:auto; display:block; overflow:visible; filter:drop-shadow(0 18px 36px rgba(0,0,0,.5)); touch-action:manipulation; }
+        .kmap-land { fill:url(#landGradient); fill-rule:evenodd; }
+        .kmap-land-shade { fill:url(#landShade); mix-blend-mode:overlay; opacity:.8; pointer-events:none; }
+        .kmap-province { fill:rgba(255,255,255,.02); stroke:rgba(255,255,255,.06); stroke-width:1.3; stroke-linejoin:round; fill-rule:evenodd; transition:fill .3s ease,stroke .3s ease; cursor:pointer; outline:none; touch-action:manipulation; }
+        .kmap-province.is-active,.kp-kaltara:hover,.kp-kaltara:focus-visible{ fill:rgba(65,209,207,.18); stroke:rgba(65,209,207,.75); }
+        .kp-kaltim:hover,.kp-kaltim:focus-visible,.kp-kaltim.is-active{ fill:rgba(185,198,61,.18); stroke:rgba(185,198,61,.75); }
+        .kp-kalsel:hover,.kp-kalsel:focus-visible,.kp-kalsel.is-active{ fill:rgba(239,141,40,.18); stroke:rgba(239,141,40,.75); }
+        .kp-kalteng:hover,.kp-kalteng:focus-visible,.kp-kalteng.is-active{ fill:rgba(169,121,220,.18); stroke:rgba(169,121,220,.75); }
+        .kp-kalbar:hover,.kp-kalbar:focus-visible,.kp-kalbar.is-active{ fill:rgba(67,184,226,.18); stroke:rgba(67,184,226,.75); }
+        .kmap-route { fill:none; stroke:url(#routeGrad); stroke-width:1.5; stroke-dasharray:6 9; opacity:.55; animation:flow 6.5s linear infinite; pointer-events:none; transition:opacity .3s ease; }
+        .kmap-route.is-active { opacity:1; stroke-width:2.1; }
+        .kmap-marker { cursor:pointer; outline:none; touch-action:manipulation; }
+        .kmap-marker .kmap-dot-outer { fill:none; stroke:currentColor; stroke-width:1; opacity:.5; }
+        .kmap-marker .kmap-dot { fill:#f2eee6; transition:r .2s ease,fill .2s ease; }
+        .kmap-marker .kmap-name { fill:#f5f1ea; font-family:var(--sans); font-size:14px; font-weight:700; letter-spacing:.5px; transition:fill .2s ease; }
+        .kmap-marker .kmap-domain { fill:#c7cdd0; font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:1.1px; text-transform:uppercase; }
+        .kmap-marker:hover .kmap-dot,.kmap-marker:focus-visible .kmap-dot,.kmap-marker.is-active .kmap-dot{ fill:currentColor; r:6; }
+        .kmap-marker:hover .kmap-name,.kmap-marker:focus-visible .kmap-name,.kmap-marker.is-active .kmap-name{ fill:currentColor; }
+        .kmap-m-kaltara{ color:#41d1cf; } .kmap-m-kaltim{ color:#b9c63d; } .kmap-m-kalsel{ color:#ef8d28; } .kmap-m-kalteng{ color:#a979dc; } .kmap-m-kalbar{ color:#43b8e2; }
+        .kmap-muara-group { cursor:pointer; outline:none; touch-action:manipulation; }
+        .kmap-muara-ring { fill:none; stroke:var(--gold-2); stroke-width:1.3; opacity:0; transform-origin:408.8px 359.4px; animation:muaraPulse 2.8s ease-out infinite; }
+        .kmap-muara-ring.r2{ animation-delay:.95s; }
+        .kmap-muara-ring.r3{ animation-delay:1.9s; }
+        .kmap-muara-core { fill:var(--gold-2); filter:drop-shadow(0 0 8px rgba(240,196,107,.85)); transition:r .2s ease; }
+        .kmap-muara-group:hover .kmap-muara-core,.kmap-muara-group:focus-visible .kmap-muara-core,.kmap-muara-group.is-active .kmap-muara-core{ r:10; }
+        .kmap-muara-label { font-family:var(--mono); font-size:12px; letter-spacing:1.4px; fill:var(--gold-2); }
+        .kmap-muara-sub { font-family:var(--sans); font-size:12px; fill:#9aa5ab; }
+        .kmap-hit { fill:transparent; }
+        .hero-map-caption { display:flex; align-items:center; gap:10px; margin-top:6px; padding:0 4px; color:#7c8890; font-family:var(--mono); font-size:8.5px; letter-spacing:.5px; }
+        .hero-map-caption .live-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:#91bf49; box-shadow:0 0 8px rgba(145,191,73,.8); animation:pulse 1.8s infinite; flex-shrink:0; }
+
+        /* HERO — QUICK NAV + SCROLL CUE (mobile-first: 3-col wrap grid, scroll cue hidden) */
+        .hero-quicknav { position:relative; z-index:3; display:grid; grid-template-columns:repeat(3,1fr); gap:2px; padding:12px 0 22px; border-top:1px solid rgba(255,255,255,.08); margin-top:6px; }
+        .hero-quicknav a { display:flex; flex-direction:column; align-items:center; gap:6px; text-decoration:none; color:#aab0b4; padding:10px 4px; font-family:var(--mono); font-size:8px; letter-spacing:.8px; text-align:center; transition:color .2s ease; }
+        .hero-quicknav a .qn-icon { font-size:16px; color:var(--gold-2); line-height:1; }
+        .hero-quicknav a:hover { color:var(--gold-2); }
+        .hero-scroll { display:none; }
+        .hero-scroll .scroll-pill { width:20px; height:32px; border:1px solid rgba(217,155,50,.55); border-radius:12px; position:relative; }
+        .hero-scroll .scroll-pill::after { content:""; position:absolute; left:50%; top:6px; width:3px; height:6px; margin-left:-1.5px; border-radius:2px; background:var(--gold-2); animation:scrollDrop 1.8s ease infinite; }
+
+        /* HERO — desktop enhancement */
+        @media(min-width:901px){
+            .hero{ padding-left:max(24px, calc((100vw - var(--max)) / 2)); padding-right:max(24px, calc((100vw - var(--max)) / 2)); min-height:720px; }
+            .hero::after{ width:75vw; height:75vw; max-width:950px; max-height:950px; right:-14vw; top:-26vw; }
+            .hero-shell{ grid-template-columns:1.05fr 1.15fr; grid-template-areas:"copy map"; align-items:center; gap:18px; }
+            .hero-copy{ max-width:820px; padding:82px 0 30px; }
+            .hero-kicker{ font-size:15px; max-width:560px; }
+            .hero-desc{ font-size:14.5px; line-height:1.8; margin-bottom:25px; }
+            .signature{ padding:17px 20px; max-width:640px; }
+            .signature-title{ font-size:24px; letter-spacing:3px; margin-bottom:14px; }
+            .signature-grid{ grid-template-columns:repeat(3,1fr); }
+            .signature-item{ padding:13px 15px 3px; border-bottom:0; }
+            .hero-map{ padding:44px 0 10px; }
+            .hero-quicknav{ display:flex; align-items:center; gap:0; flex-wrap:wrap; }
+            .hero-quicknav a{ padding:8px 18px; border-right:1px solid rgba(255,255,255,.08); font-size:9px; }
+            .hero-quicknav a:first-child{ padding-left:0; }
+            .hero-quicknav a:last-child{ border-right:0; }
+            .hero-scroll{ display:flex; position:absolute; right:max(24px, calc((100vw - var(--max)) / 2)); bottom:26px; z-index:3; align-items:center; gap:9px; text-decoration:none; color:#8b959b; font-family:var(--mono); font-size:8.5px; letter-spacing:1px; line-height:1.5; }
+        }
         
         /* SHARED */
         .section { padding:34px 0; }
@@ -159,6 +227,16 @@
         .r-melawi{--river-color:#e89b3c;--river-glow:rgba(232,155,60,.18)}
         .river-split { display:grid; gap:6px; margin-top:9px; }
         .river-split a { text-decoration:none; border:1px solid rgba(217,155,50,.32); color:var(--gold-2); border-radius:5px; padding:6px 8px; font-family:var(--mono); font-size:7.5px; }
+
+        /* PROVINCE BUTTONS — recap of the interactive map, one click-button per provinsi */
+        .province-buttons { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; padding:0 14px 15px; }
+        .province-btn { position:relative; display:flex; flex-direction:column; gap:8px; text-decoration:none; border:1px solid rgba(255,255,255,.1); border-left:3px solid var(--pv-color); border-radius:10px; padding:16px 15px 15px; background:linear-gradient(155deg,rgba(17,37,48,.5),rgba(6,15,22,.82)); transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease; }
+        .province-btn:hover { transform:translateY(-4px); border-color:var(--pv-color); box-shadow:0 16px 32px rgba(0,0,0,.32); }
+        .province-btn .pb-no { font-family:var(--mono); font-size:9px; letter-spacing:1px; color:var(--pv-color); }
+        .province-btn .pb-name { font-family:var(--serif); font-size:19px; letter-spacing:.4px; color:#f1eee8; text-transform:uppercase; }
+        .province-btn .pb-domain { font-size:10px; color:#9aa5ab; line-height:1.5; }
+        .pb-kalbar{ --pv-color:#43b8e2; } .pb-kaltim{ --pv-color:#b9c63d; } .pb-kalsel{ --pv-color:#ef8d28; } .pb-kalteng{ --pv-color:#a979dc; } .pb-kaltara{ --pv-color:#41d1cf; }
+        .pb-muara{ --pv-color:#f0c46b; background:linear-gradient(155deg,rgba(217,155,50,.14),rgba(6,15,22,.88)); }
 
         /* VALUE FLOW */
         .value-flow { padding:0 16px 18px; }
@@ -278,21 +356,23 @@
         /* ANIMATIONS */
         @keyframes flow { to { stroke-dashoffset:-140; } }
         @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+        @keyframes muaraPulse { 0%{ transform:scale(.3); opacity:.9; } 100%{ transform:scale(2.6); opacity:0; } }
+        @keyframes scrollDrop { 0%{ opacity:0; top:6px; } 30%{ opacity:1; } 100%{ opacity:0; top:20px; } }
 
         /* RESPONSIVE MEDIA QUERIES */
         @media(max-width:1180px){
             .nav-links{gap:16px}.nav-links a{font-size:11px}
             .rivers{grid-template-columns:repeat(3,1fr)}
             .services{grid-template-columns:repeat(3,1fr)}
+            .province-buttons{grid-template-columns:repeat(3,1fr)}
         }
         @media(max-width:900px){
             .nav-links,.nav-actions .lang{display:none}.menu{display:block}
-            .hero{grid-template-columns:1fr;min-height:590px;padding-left:18px;padding-right:18px;background-position:58% center}
-            .hero-copy{padding:62px 18px 28px;max-width:none}
             .connectivity-frame{grid-template-columns:1fr}.connectivity-map{min-height:340px;border-left:0;border-top:1px solid rgba(255,255,255,.06)}.connectivity-copy{padding:26px 22px}
             .faith-band{grid-template-columns:1fr}.faith-cta{justify-self:start}
             .rivers{grid-template-columns:repeat(3,1fr)}
             .services{grid-template-columns:repeat(2,1fr)}
+            .province-buttons{grid-template-columns:repeat(2,1fr)}
             .people-works,.founder{grid-template-columns:1fr}.founder-card{justify-content:flex-start}
             .kader-rivers{grid-template-columns:repeat(3,1fr)}
         }
@@ -300,8 +380,7 @@
             .shell{width:min(calc(100% - 24px),var(--max))}
             .site-header .nav{min-height:64px}
             .brand-mark{width:31px;height:38px}.brand-copy strong{font-size:17px}.brand-copy span{font-size:7px;letter-spacing:1px}
-            .hero-copy{padding:46px 14px 20px}.hero h1{font-size:44px;line-height:.9}.hero-kicker{font-size:23px}.hero-desc{font-size:12.5px;line-height:1.65}
-            .signature{padding:15px 14px;max-width:100%}.signature-title{font-size:18px;letter-spacing:1.8px;margin-bottom:10px}.signature-grid{grid-template-columns:1fr}.signature-item{border-bottom:1px solid rgba(255,255,255,.07);padding:9px 2px}.signature-item:last-child{border-bottom:0}
+            .province-buttons{grid-template-columns:1fr}
             .section{padding:22px 0}.section-head{padding:19px 17px 14px;display:block}.section-head .arrow-link{display:inline-block;margin-top:10px}.section-title{font-size:26px}.section-sub{font-size:11px}
             .connectivity-section{padding-top:10px}.connectivity-copy{padding:24px 18px}.connectivity-copy .section-title{font-size:30px}.connectivity-points{gap:6px}.connectivity-points i{display:none}.connectivity-map{min-height:300px}.connectivity-map svg{min-height:300px}.connectivity-status{left:12px;bottom:12px;font-size:8px}
             .rivers{grid-template-columns:1fr 1fr;gap:9px;padding:0 9px 10px}.river-card{min-height:250px}.river-inner{min-height:250px;padding:13px}.river-symbol{margin-top:30px}.river-name{font-size:24px}.river-desc{font-size:10.5px}
@@ -320,9 +399,9 @@
             .footer-grid{grid-template-columns:1fr}.footer-links{justify-content:flex-start;gap:12px}.copyright{line-height:1.5}
         }
         @media(max-width:430px){
-            .rivers{grid-template-columns:1fr}.hero h1{font-size:41px}.brand-copy strong{font-size:18px}.brand-copy span{font-size:8px}.connectivity-map{min-height:260px}.connectivity-map svg{min-height:260px}.connectivity-copy .section-title{font-size:28px}.faith-band{gap:16px}
+            .rivers{grid-template-columns:1fr}.brand-copy strong{font-size:18px}.brand-copy span{font-size:8px}.connectivity-map{min-height:260px}.connectivity-map svg{min-height:260px}.connectivity-copy .section-title{font-size:28px}.faith-band{gap:16px}
         }
-        @media(max-width:380px){.hero h1{font-size:39px}.kader-rivers{grid-template-columns:1fr}}
+        @media(max-width:380px){.kader-rivers{grid-template-columns:1fr}}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
     </style>
 </head>
@@ -353,29 +432,107 @@
 
 <main id="beranda">
     <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-copy">
-            <div class="eyebrow">MEMPERSEMBAHKAN ...</div>
-            <h1 id="hero-title">Ekosistem Terpadu <span>Warga Banua</span></h1>
-            <div class="hero-kicker">RUMAH BERPENGHUNI · MUARA UTAMA</div>
-            <p class="hero-desc">Bagaimana sebuah nilai diaplikasikan dalam kehidupan nyata sehari-hari hingga kembali menjadi sesuatu yang bernilai dan bermanfaat bagi orang banyak.</p>
-            <a class="hero-cta" href="#ekosistem">JELAJAHI EKOSISTEM <span aria-hidden="true">↓</span></a>
-            <div class="signature" aria-label="Perhatikan Analisa Eksekusi">
-                <div class="signature-title">PERHATIKAN. ANALISA. EKSEKUSI.</div>
-                <div class="signature-grid">
-                    <div class="signature-item"><div class="sig-icon">◉</div><div><strong>PERHATIKAN</strong><span>Lihat kenyataan dengan jernih.</span></div></div>
-                    <div class="signature-item"><div class="sig-icon">⌕</div><div><strong>ANALISA</strong><span>Pahami sampai ke akar masalah dan peluang.</span></div></div>
-                    <div class="signature-item"><div class="sig-icon">↗</div><div><strong>EKSEKUSI</strong><span>Berpikir strategis, bertindak tepat.</span></div></div>
-                </div>
+        <div class="shell hero-shell">
+            <div class="hero-copy">
+                <div class="eyebrow">EKOSISTEM DIGITAL KALIMANTAN</div>
+                <h1 id="hero-title">Ekosistem Terpadu <span>&amp; Lumbung Generasi Kalimantan</span></h1>
+                <div class="hero-kicker">Informasi · Ekonomi · Kebijakan · Perdagangan · Mobilitas · Edukasi — satu Kalimantan.</div>
+                <p class="hero-desc">Satu ekosistem digital untuk lima provinsi Kalimantan — informasi, ekonomi, kebijakan, perdagangan, mobilitas dan pusat edukasi, semuanya terhubung dalam satu Muara Utama.</p>
+                <a class="hero-cta" href="#ekosistem">MASUK KE MUARA UTAMA <span aria-hidden="true">→</span></a>
+                <div class="hero-cta-note">Mulai dari Edukasi &amp; Lumbung Generasi</div>
+            </div>
+
+            <div class="hero-map">
+                <svg class="hero-map-svg" viewBox="0 0 800 720" role="img" aria-labelledby="kmap-title kmap-desc">
+                    <title id="kmap-title">Peta interaktif lima provinsi Kalimantan menuju Muara Utama</title>
+                    <desc id="kmap-desc">Klik area tiap provinsi untuk membuka ruang ekosistemnya, atau klik Muara Utama di tengah untuk membuka portal edukasi Sungai Melawi. Bentuk dan batas wilayah mengikuti data resmi Badan Informasi Geospasial (BIG).</desc>
+                    <defs>
+                    <linearGradient id="landGradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c3b2e"/><stop offset=".45" stop-color="#254a34"/><stop offset="1" stop-color="#12241c"/></linearGradient>
+                    <radialGradient id="landShade" cx="55%" cy="42%" r="70%"><stop offset="0" stop-color="#f0c46b" stop-opacity=".22"/><stop offset=".6" stop-color="#38c7d8" stop-opacity=".06"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+                    <linearGradient id="routeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0c46b"/><stop offset="1" stop-color="#38c7d8" stop-opacity=".5"/></linearGradient>
+                    <filter id="coastGlow" x="-15%" y="-15%" width="130%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3.2" result="blur"/><feFlood flood-color="#38c7d8" flood-opacity=".85" result="color"/><feComposite in="color" in2="blur" operator="in" result="glow"/><feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                    <clipPath id="landClip">
+                    <path d="M99.9,201.6 L100.7,198.1 L96.5,204.5 L78,209 L79.1,215.6 L75.6,219.6 L73.8,226.6 L59.3,237.6 L58.3,249.3 L52.7,259 L53.8,261.3 L48.5,262.3 L53.8,274.9 L51.3,282 L44,287.4 L50.2,300.7 L48.8,310.7 L51.5,316.3 L49.2,320.9 L61.9,327.7 L69,340.6 L66.5,347.6 L69.2,360.2 L61.4,364.5 L64.7,383.7 L67.1,385.3 L69.5,383.8 L73,387.5 L78.8,385.2 L84.6,389.4 L88.7,388.2 L96.5,390.8 L97.3,393.8 L101.6,392.2 L104.5,395.4 L102.6,398.1 L99.8,397.9 L100.1,401 L108.2,406.1 L106.9,414.6 L113,421.9 L121.5,424.1 L119.3,430.2 L130.7,441 L127.7,463.5 L122,470 L119.7,470 L120.7,473.9 L118.8,473.8 L130.6,481.1 L134.3,488 L132.2,501.8 L130.2,503.2 L135.1,506.5 L136.2,516.1 L138.6,518.2 L139.2,526.2 L136.3,529.8 L140.9,531.6 L141.2,538.1 L144.2,540 L141.6,548.5 L144,553.5 L147.4,556.2 L155.3,549.2 L165.9,545.1 L169.8,548.6 L171.2,555.7 L168.9,555.8 L172.1,559.2 L177.5,556.2 L180.5,551.1 L194.2,546.3 L197.2,542 L206.7,538.2 L208.7,534.5 L205.6,528.1 L206.7,524.1 L203.5,520 L204.5,509 L197.9,501.7 L203.5,485.1 L200.2,482.9 L197,483.7 L192.8,477.9 L198.1,466.2 L195.2,464 L195.9,461.2 L192.1,461.7 L190.5,464.3 L186.7,459.4 L196.8,450.9 L201.9,452.4 L207.3,445.8 L209.2,449.1 L210.7,446.6 L214.2,446.3 L223.4,436.3 L223.9,433.2 L226.2,434.2 L235.4,429.7 L237,427.3 L234.7,422.3 L236.6,419.5 L239.8,419.4 L241.4,413.1 L249.1,409.2 L255.4,408.8 L261,404.2 L261.4,400.8 L265.2,402.2 L270.7,399.2 L272.8,394.2 L279.2,396 L279.3,390.3 L281.8,388.1 L285.2,389.4 L289.1,395.9 L297.8,392.3 L303,394.3 L315.4,391.4 L316.5,388.6 L318.6,389.3 L319.3,385.2 L325.5,385.6 L336.8,379.6 L341.2,381.1 L346.6,376.8 L352.7,380.6 L356.5,374.9 L352.9,368.4 L358.9,362.8 L357.9,359.6 L360.6,355.6 L367.1,352.7 L368.6,349.2 L366.7,348.2 L367.9,344.2 L365.3,342.5 L366.6,336.7 L355.8,328.7 L362.7,325.4 L369.1,326.3 L378.7,319.4 L378.3,316.8 L383.3,314.2 L384.4,309.8 L397.4,302 L395.3,299.6 L396.5,295.8 L400.5,293.7 L398.9,289.6 L402.7,285.5 L398.8,282.2 L401.8,276.3 L400.1,271 L404.2,270.1 L407.1,264.5 L416.8,263.5 L419.9,255.6 L418.8,248 L422.4,245.4 L417.8,241.5 L406.1,242.6 L395.3,248 L394,253.2 L381.9,258.9 L376.1,251.8 L367.1,254.2 L360.5,247.9 L347.5,247 L344.8,242.9 L335.6,245.4 L342.3,237 L337.3,233.6 L329.3,233 L326.1,236.4 L302.2,233.2 L297.4,237.2 L281.8,242.7 L280.9,245.6 L283.2,247.6 L279.4,252.9 L276.9,264.8 L262.3,265.7 L254.7,275.3 L243.3,271.3 L237.3,275.8 L235,275.2 L235,278.1 L230.8,271.9 L225.5,273.8 L212.6,268.3 L189.6,272.3 L186.5,277.8 L182.9,277.9 L182.9,281.4 L180.2,279.1 L174.8,284 L171.7,281.2 L166.4,284.7 L157.3,280.9 L153.8,274.5 L145.3,274.6 L146,271.2 L142.8,266 L140.6,266 L139.4,261.5 L130.4,259.6 L130.4,255.7 L124.3,253.3 L123.2,245.9 L114.3,244.6 L114.5,240.3 L111.9,241.6 L111.6,238.8 L102,230.8 L103.6,219.2 L96.6,218.5 L93.2,209.7 L94.3,206.2 L99.5,204.5 L99.9,201.6 Z M90.4,413.9 L87.6,415.7 L85.7,428.5 L82,433.4 L90.3,437.2 L110.3,425.6 L108.9,415.7 L105.7,414.7 L102.8,416.9 L100.2,414.4 L94.2,415.6 L90.4,413.9 Z M73.1,391.5 L72.1,402.1 L76.6,408.4 L86.2,405 L96.5,408.2 L98.5,413.5 L103.4,416.4 L106.1,413.6 L108,406.4 L105.7,406.3 L105.4,403.5 L94.3,397.3 L88.2,398.1 L73.1,391.5 Z M48.1,453.1 L46.6,455.4 L43.6,454.4 L40.5,456.4 L44,456.6 L42.5,461.1 L45.2,463.1 L50.8,461.5 L54.1,457.8 L48.1,453.1 Z M64.2,359.1 L59.4,359.9 L62,368.3 L61.2,363.9 L68.9,360.3 L64.2,359.1 Z" fill-rule="evenodd"/>
+                    <path d="M473.1,290.5 L471.9,289.1 L469.4,292.6 L466.4,291.6 L454.6,295.3 L450,300.3 L446.4,300.4 L444.9,305.2 L434,305.5 L433.5,307.5 L422.2,306.8 L421.6,303.8 L418.3,303.5 L420.4,300 L416.6,295.8 L408.1,299.7 L397,298.3 L395.6,304.1 L393.6,302.9 L384.2,310 L383.5,313.9 L378.4,316.8 L378.7,319.4 L375.7,322 L368.5,326.6 L362.7,325.4 L355.8,328.7 L366.6,336.7 L365.3,342.5 L367.9,344.2 L366.7,348.2 L368.6,349.2 L367.1,352.7 L360.6,355.6 L357.9,359.6 L358.9,362.8 L352.9,368.4 L356.5,374.9 L352.7,380.6 L346.6,376.8 L341.2,381.1 L336.8,379.6 L325.5,385.6 L319.3,385.2 L318.6,389.3 L316.5,388.6 L315.4,391.4 L303,394.3 L297.8,392.3 L289.1,395.9 L285.2,389.4 L281.8,388.1 L279.3,390.3 L279.2,396 L272.8,394.2 L270.7,399.2 L265.2,402.2 L261.4,400.8 L261,404.2 L255.4,408.8 L249.1,409.2 L241.4,413.1 L239.8,419.4 L236.6,419.5 L234.7,422.3 L237,427.3 L235.4,429.7 L226.2,434.2 L223.9,433.2 L223.4,436.3 L214.2,446.3 L210.7,446.6 L209.2,449.1 L207.3,445.8 L201.9,452.4 L196.8,450.9 L188.4,457.6 L187.4,462.3 L190.6,464.3 L192.1,461.7 L195.9,461.2 L195.2,464 L198.1,466.2 L192.8,478 L197,483.7 L200.2,482.9 L203.5,485.1 L197.9,501.7 L204.5,509 L203.5,520 L206.7,524.1 L205.6,528.1 L208.7,534.5 L206.7,538.2 L197.2,542 L194.2,546.3 L180.5,551.1 L177.5,556.2 L183,554.9 L194.7,561.1 L219.9,550.2 L225.4,549.6 L231.4,553 L235,558.1 L245,552.3 L246.2,549.7 L243.5,549 L246.9,545.6 L254.5,560.1 L252.6,570.3 L253.9,585 L250.5,592 L256.5,594.6 L260.3,594.4 L285.3,578.5 L293.7,579.8 L306.6,587.9 L331.6,573.4 L340.2,565.8 L336.3,567.3 L333.3,564.3 L340.7,554.6 L343.5,558.8 L350.1,562 L361.6,576.2 L367.6,573 L369.1,569.9 L379.6,568.1 L381.9,579.1 L378.3,587.6 L381.4,589.2 L395.2,588.2 L410.6,581.1 L412,578.3 L417.4,583.4 L425.2,582 L425.8,584.9 L432.7,589.1 L433.3,578.7 L439.6,571.2 L437.7,569.1 L446.4,561.2 L443.5,556.4 L446.2,552.8 L444.3,550.8 L445.8,551.3 L447.9,546.8 L451.3,548.3 L450,543.4 L454.9,542.2 L455.7,538 L461.6,536.7 L464,527.7 L470.1,520.4 L484.7,510.5 L495.6,499.4 L498.9,501.7 L499.4,496 L503.4,492.6 L504,489 L507.2,490 L506.4,486.8 L509.6,482.2 L508,478.3 L500.9,478.3 L499.5,473.5 L504.8,461.4 L503.7,456.9 L509.1,450.4 L509,447.3 L511.6,445.7 L514.5,447.3 L522.5,440.1 L531.9,437.4 L533.2,431.7 L538.3,427.5 L537.8,422.2 L532.4,425.1 L526.3,416 L522.4,416.6 L522.9,413.7 L517,405.1 L512.1,407.1 L506.5,404.5 L503.1,407.7 L502.5,404 L498.8,401.2 L499.6,397.4 L502.8,395.7 L501.4,392.2 L504.7,391 L503.5,388.1 L505.3,385.2 L498.3,383.6 L500,379.1 L494.8,370.3 L495.8,362.7 L499.4,359.7 L495.3,356.7 L500.2,353.2 L499.2,348.5 L490,351 L489,354.7 L482.6,355.6 L479.8,359.8 L481.2,361.8 L477.1,364.3 L472.8,361.3 L471.2,347.1 L469.7,346 L466.9,348.2 L458.1,340.3 L471.5,322.5 L480,321.6 L481.7,323.8 L487.5,318.5 L488.1,314.9 L483.8,311.7 L477.4,293.3 L473.1,290.5 Z" fill-rule="evenodd"/>
+                    <path d="M531.8,437.6 L522.5,440.1 L514.5,447.3 L511.6,445.7 L509,447.3 L509.1,450.4 L503.7,456.9 L504.8,461.4 L499.5,473.5 L500.9,478.3 L508,478.3 L509.6,482.2 L506.4,486.8 L507.2,490 L504,489 L503.4,492.6 L499.4,496 L498.9,501.7 L495.6,499.4 L484.7,510.5 L470.1,520.4 L464,527.7 L461.6,536.7 L455.8,538 L454.9,542.2 L450,543.4 L451.3,548.3 L447.9,546.8 L445.8,551.3 L444.3,550.8 L446.2,552.8 L443.5,556.4 L446.4,561.2 L437.7,569.1 L438.6,573.5 L433.3,578.7 L432.7,589.1 L442.1,591.6 L451.1,601.9 L452.6,639.1 L457.9,638.9 L480,627.3 L528.9,608 L537.2,600.9 L546.6,599.4 L549.7,586 L554.8,576.2 L561.4,574.1 L561,567.5 L568.2,565.5 L561.1,560.8 L560.1,557.5 L555.4,556.4 L557.5,553.7 L556,551.7 L558.2,548.4 L557.4,543.7 L559.1,542 L559.4,551.8 L563.5,552.1 L564.5,557 L567.9,556.6 L574.6,547.8 L574.8,533 L578.2,526.7 L574.1,524.7 L571.7,526.9 L569.3,523.5 L577,523.2 L578.9,521.2 L582.5,522 L582.8,526.2 L586.3,523.8 L587.6,514.3 L565.5,507.7 L556.9,509.7 L551.2,507.6 L543.7,508.8 L537.3,513.4 L537.1,506.8 L533.8,501.1 L535.8,491 L527.4,488.8 L529.8,471.8 L526.3,471.3 L528.3,467.1 L525.3,465.2 L525.6,459.8 L523.2,458 L524.6,451.5 L521.9,450.7 L527,447 L531.8,437.6 Z M567.2,571.4 L557,578.1 L549.1,601.4 L554.6,614.6 L551.6,628.6 L552.3,631.3 L553.8,629.6 L555.7,630.9 L555.3,633 L556.6,629.4 L563.7,625.9 L563.5,623.5 L568.2,620.4 L570.8,621.1 L571.2,617.3 L568,614 L572.8,607.8 L570.1,606.7 L570.5,598 L568.1,595 L571.1,589.9 L566.5,582.9 L568.7,572.1 L567.2,571.4 Z M577.8,581.9 L571,595.6 L573.1,596.5 L574.4,602.5 L577,600.7 L579.6,586.2 L577.8,581.9 Z M538.8,680.2 L532.3,686 L538.1,682.8 L538.8,680.2 Z" fill-rule="evenodd"/>
+                    <path d="M634.3,163.9 L628.9,166 L622.8,165.2 L621.1,171.5 L618.2,173.4 L614.3,168.3 L611.5,170.2 L608.5,167.2 L604.7,168 L598.8,177.1 L593.3,176.3 L588.9,171.9 L583.9,172 L584.5,179.3 L581.8,180.9 L582.5,183.3 L572.4,183.4 L569.3,187.3 L573.4,192.4 L571.1,195.7 L564.4,197.3 L565.5,201.6 L562.6,204.8 L558.3,227.2 L553.7,228.6 L549.4,237.3 L547,236.9 L545.9,239.8 L538.6,243.8 L532.3,256.1 L524.8,253.9 L512.8,256.6 L508.5,258.6 L507.9,263.7 L504.3,266.3 L498.2,264.9 L495.8,261.6 L486.5,261.6 L485.3,256.7 L481.6,255.5 L479.6,249.8 L471.9,244.9 L464.4,247.4 L458.8,252.3 L457.5,249.6 L451.4,248.7 L447.5,243.8 L436.5,237.5 L424.7,242.7 L418.8,248 L419.9,255.6 L416.4,263.9 L407.1,264.5 L404.2,270.1 L400,271.2 L401.8,276.3 L398.8,282.2 L402.7,285.5 L398.9,289.6 L400.5,293.7 L396.5,295.8 L396.4,298.2 L408.1,299.7 L416.6,295.8 L420.4,300 L418.3,303.5 L421.6,303.8 L424.3,307.9 L444.9,305.2 L446.4,300.4 L450,300.3 L454.4,295.4 L466.4,291.6 L469.4,292.6 L471.9,289.1 L477.4,293.3 L483.8,311.7 L488.1,314.9 L487.5,318.5 L481.7,323.8 L480,321.6 L471.5,322.5 L465.7,328.2 L466.4,331.4 L457.9,339.7 L466.9,348.2 L469.7,346 L471.2,347.1 L472.8,361.3 L477.1,364.3 L481.2,361.8 L479.8,359.8 L482.6,355.6 L489,354.7 L490,351 L499.1,348.5 L500.2,353.2 L495.3,356.7 L499.4,359.7 L495.8,362.7 L494.8,370.3 L500,379.1 L498.3,383.6 L505.3,385.2 L503.5,388.1 L504.7,391 L501.4,392.2 L502.8,395.7 L499.6,397.4 L498.8,401.2 L502.5,404 L503.1,407.7 L506.5,404.5 L512.1,407.1 L517,405.1 L522.9,413.7 L522.4,416.6 L526.3,416 L531.7,424.8 L537.8,422.2 L538.3,427.5 L533.2,431.7 L527,447 L521.9,450.7 L524.6,451.5 L523.2,458 L525.6,459.8 L525.3,465.2 L528.3,467.1 L526.3,471.3 L529.8,471.8 L527.4,488.8 L535.8,491 L533.8,501.1 L537.1,506.8 L537.3,513.4 L543.7,508.8 L551.2,507.6 L556.9,509.7 L560.4,507.5 L588.3,514.5 L590.2,497.9 L587.9,500.6 L587.9,498.2 L585.2,497.6 L577.1,501 L576.5,494.1 L574.3,493.7 L581.3,489.9 L581,479.9 L578.3,476.6 L580.6,469.8 L575.2,469.2 L567.5,472.6 L566.3,470.3 L571.3,464.4 L588.3,457.8 L586.3,451.3 L588.1,447 L602.7,440.9 L603.8,432.7 L601.2,430.8 L603,428.6 L598.4,423.9 L601.3,415.9 L600.3,422.6 L603.9,425.7 L604.1,430.4 L606.2,429.7 L605.8,434.8 L611.2,434.9 L619.4,429.5 L631.2,412.4 L637,408.8 L640.8,392.7 L638.9,385.6 L645.5,384.9 L651.5,377.1 L649.4,375.4 L652.2,371 L648.8,360.6 L656,347.1 L655.7,342.3 L653.9,341.9 L655.5,340.7 L652.4,341.6 L651.6,337.8 L653.8,339 L653.6,336.6 L656.2,336 L652.6,333.3 L656.7,329.3 L658.4,315.1 L661.9,315.5 L662.1,310.5 L666.6,301.9 L669.5,300.6 L669.6,295.7 L673.7,290.5 L683.9,285.9 L687.9,290.3 L692,289.8 L691.3,283.7 L685.3,270.5 L681.8,268.1 L682.4,265.8 L688.6,269.6 L690.6,277.2 L694,278.6 L694.4,281.2 L712.5,284.9 L716.1,288.1 L721.1,285.3 L731.5,287.7 L737.3,284.4 L739.9,287.5 L746,288.3 L759.5,275.3 L759.1,271.7 L754.5,269.8 L749.3,271 L744.4,263.8 L740.8,263.5 L744.2,262.6 L743.9,260.3 L731,249.5 L724.3,248.9 L723.8,247.2 L722.5,249.1 L723,246.5 L721,248 L718.7,246.4 L720,243.9 L716.9,244 L719.6,242.7 L718.9,240 L699.4,229.7 L693.7,222.9 L693.4,219.1 L684.2,217 L678.1,210.1 L677.5,203.1 L668.9,201.3 L670.5,194.3 L668.1,191.1 L683.3,188.9 L686.1,191.1 L691.3,190 L695.4,186.2 L696.6,181.9 L693.2,177.1 L691.4,178.5 L689.8,173.1 L680.3,176.1 L676.7,180.8 L672.1,180.8 L662.3,167 L659.8,168.5 L652.6,166.4 L652,170.1 L650.6,167.3 L648.4,168.3 L647.1,164.2 L635.7,170 L632.9,168.8 L634.3,163.9 Z M663,374.2 L654.6,378.1 L648.9,384.4 L655.3,380.6 L652.7,381.6 L653.7,380.1 L662,378.5 L663,374.2 Z M641.1,388.3 L643,398.3 L650.5,407.8 L645.6,399.7 L646.1,393.8 L641.1,388.3 Z M585,494.5 L576.6,494.9 L576.2,499.1 L577.5,500.4 L585.7,497 L585,494.5 Z M652,394.4 L650.8,397.1 L656.2,399.6 L662.8,399.1 L662.1,396.1 L655.8,396.8 L652,394.4 Z M658.6,380.7 L653.9,384.5 L655.6,387.3 L660.2,385.6 L660.9,381.4 L659.2,382.7 L658.6,380.7 Z M641,385.6 L639.6,386 L642.4,389.3 L645.4,390.9 L645.6,387.5 L652.6,392.8 L651.8,389.7 L641,385.6 Z M676.1,192.2 L669.8,192.3 L671.1,197.6 L676.1,195.3 L676.1,192.2 Z M681.4,193 L676.7,190.3 L676.7,195.2 L680.4,193.4 L683.5,196.8 L686.9,195.3 L681.4,193 Z M652.9,384.1 L645.7,386.5 L649.5,386 L652.6,388.9 L652.1,386.8 L655.3,385.4 L652.9,384.1 Z M643.3,400 L643.9,403.7 L641.4,405.3 L643.2,409.1 L645.8,404 L643.3,400 Z M656.4,369.6 L650.7,380.2 L657.5,371.5 L656.4,369.6 Z M679.3,198.1 L676.6,197.6 L676,202 L683.4,200.9 L679.3,198.1 Z M674.3,197.9 L669.7,198.2 L669.9,201.5 L671.5,200.1 L675.7,201.8 L672.5,199.7 L674.3,197.9 Z M682.9,198.2 L681.4,193.9 L677.9,195.7 L682.9,198.2 Z M640.8,394 L640,401.2 L641.2,404.1 L643.3,403.9 L640.8,394 Z M653.9,368.1 L649.5,375.4 L651.3,375.9 L653.9,368.1 Z M676.3,196 L672.5,199.4 L675.1,201.3 L678.1,197 L676.3,196 Z M652.7,397.5 L655.2,401.6 L658.5,401.5 L652.7,397.5 Z" fill-rule="evenodd"/>
+                    <path d="M589,34 L586.8,40.2 L583.4,39.2 L580,42.5 L573.9,35.3 L568.6,37.4 L560.7,35.2 L559.8,38.9 L556.7,39.4 L554,43.3 L549.1,38.3 L543.9,37.9 L540.4,35.1 L540.1,42.3 L536.6,44.3 L536.8,46.3 L532.4,45.5 L527,50.5 L523.5,65.5 L517.8,68.6 L521.9,71.7 L518.6,87.6 L524.7,102.4 L522.4,104.6 L519.7,101.6 L516.7,107.7 L514.7,117.7 L518.1,122.7 L514.6,125.6 L513.5,131.4 L509.5,131.6 L506.1,134.8 L501.4,134.9 L498.4,130 L496,135.7 L489.9,138.5 L489.1,142.4 L484.8,145.8 L489.3,148.1 L485.4,153.3 L487,157.9 L484.9,161.1 L486.6,162.7 L490.9,160.8 L496,167.9 L492.8,170.6 L488.5,170.3 L485.4,175.3 L482.1,175.2 L478.3,179.2 L475.6,178.1 L476,183.5 L472.5,185.9 L465.4,185.2 L463.4,189.7 L460.1,190.4 L460.1,194.5 L465.7,194.7 L464.9,202.1 L468.4,200.7 L470.5,202.2 L467.8,206.5 L470.1,209.9 L465.7,211.4 L463.9,214.5 L458.5,214 L456.8,217.4 L457.9,229.4 L450.9,233.8 L448.2,246.9 L456.5,249 L459.2,252.3 L464.4,247.4 L471.9,244.9 L479.6,249.8 L481.6,255.5 L485.3,256.7 L486.5,261.6 L495.8,261.6 L498.2,264.9 L505,266.1 L507.9,263.7 L508.5,258.6 L512.8,256.6 L524.8,253.9 L532.9,255.8 L538.6,243.8 L551.8,235.1 L551.5,231.6 L554.3,228.1 L558,227.7 L560.3,221.9 L562.6,204.8 L565.5,201.6 L564.4,197.3 L571.1,195.7 L573.4,192.4 L569.3,187.2 L572.5,183.3 L582.5,183.3 L581.8,180.9 L584.5,179.3 L583.9,171.9 L588.9,171.9 L593.3,176.3 L598.8,177.1 L604.7,168 L608.5,167.2 L611.5,170.2 L614.3,168.3 L618.2,173.4 L621.1,171.5 L622.8,165.2 L628.9,166 L633.9,163.7 L635,165.4 L632.9,168.8 L635.7,170 L647.1,164.2 L648.4,168.3 L650.6,167.3 L652,170.1 L652.6,166.4 L659.8,168.5 L662.3,167 L672.1,180.8 L676.7,180.8 L680.3,176.1 L689.1,173.2 L675.8,159.7 L674.8,151.1 L667,148.4 L671.4,146.4 L666.6,143.5 L670.2,141 L668.2,140.6 L669.9,139.6 L667,138.1 L668.5,136.7 L666.5,134.2 L660.1,134.6 L663.3,129.1 L650.5,129.9 L653.2,126.4 L650.8,122 L641.7,121.7 L641.1,118.7 L647.7,114.9 L655.9,113.9 L655.3,110.9 L650.7,109.3 L646,111.5 L648.7,109.6 L648.6,105.9 L644.6,101.7 L634.8,98.6 L633.1,95.5 L635,90.4 L628.8,89.5 L619.4,91.9 L625.6,88.3 L653.9,88.5 L653.7,85.9 L649.3,85.5 L653.7,82.5 L659.2,88.1 L666.4,90 L677.7,83.7 L666.9,78.6 L675.3,79.7 L668.4,72.2 L661.5,71.5 L657,68.1 L653.8,68.8 L650.4,62.5 L645.2,61.8 L646.4,60.2 L650.3,61.9 L652.8,57.8 L648.9,56.2 L647.3,52.6 L655.9,55.8 L661.3,50.7 L651.7,50.3 L648.5,45.2 L640.3,40.9 L636.9,36.4 L633.5,39.2 L622.4,38.3 L620.9,40.3 L613.2,36.8 L607.8,39.8 L601.9,35.2 L598.5,39.2 L593.4,39.1 L589,34 Z M636.9,91.8 L633.6,95.2 L635.7,98.3 L653.5,102.8 L655.9,99.4 L645.6,93.7 L636.9,91.8 Z M663,102.4 L658.1,102.1 L655.7,106.4 L664.8,116.5 L666.6,104.9 L663,102.4 Z M672.2,51.1 L667.6,51.1 L679.4,60.4 L684.7,58.5 L683,51.1 L672.2,51.1 Z M666,52.4 L661,57.2 L661.9,62 L666.8,65.2 L670.6,63.8 L672.6,58.5 L666,52.4 Z M656.3,60.5 L654.4,59.1 L650.7,62.4 L651.8,67.6 L658.2,68.1 L661.8,71.1 L667.5,70.8 L667.6,68.8 L661.6,67.5 L656.3,60.5 Z M677.1,92.6 L673,93.4 L672.5,95.7 L680.3,101.7 L677.1,92.6 Z M650.8,94.5 L648.5,94.8 L650.6,97.3 L658,100.1 L662.7,99.4 L650.8,94.5 Z M671.3,71.8 L669.5,72.6 L671.7,76.4 L678.2,77.9 L671.3,71.8 Z M663.3,92.7 L655.1,92 L663.4,95.5 L666.1,94.3 L663.3,92.7 Z M649.2,91 L640,91.2 L650.2,93.7 L651.8,92.5 L649.2,91 Z M653.9,104.6 L651.1,105 L651.4,108.8 L654.8,109.1 L653.9,104.6 Z" fill-rule="evenodd"/>
+                    </clipPath>
+                    </defs>
+                    <g class="kmap-land-group" filter="url(#coastGlow)">
+                    <path class="kmap-land" d="M99.9,201.6 L100.7,198.1 L96.5,204.5 L78,209 L79.1,215.6 L75.6,219.6 L73.8,226.6 L59.3,237.6 L58.3,249.3 L52.7,259 L53.8,261.3 L48.5,262.3 L53.8,274.9 L51.3,282 L44,287.4 L50.2,300.7 L48.8,310.7 L51.5,316.3 L49.2,320.9 L61.9,327.7 L69,340.6 L66.5,347.6 L69.2,360.2 L61.4,364.5 L64.7,383.7 L67.1,385.3 L69.5,383.8 L73,387.5 L78.8,385.2 L84.6,389.4 L88.7,388.2 L96.5,390.8 L97.3,393.8 L101.6,392.2 L104.5,395.4 L102.6,398.1 L99.8,397.9 L100.1,401 L108.2,406.1 L106.9,414.6 L113,421.9 L121.5,424.1 L119.3,430.2 L130.7,441 L127.7,463.5 L122,470 L119.7,470 L120.7,473.9 L118.8,473.8 L130.6,481.1 L134.3,488 L132.2,501.8 L130.2,503.2 L135.1,506.5 L136.2,516.1 L138.6,518.2 L139.2,526.2 L136.3,529.8 L140.9,531.6 L141.2,538.1 L144.2,540 L141.6,548.5 L144,553.5 L147.4,556.2 L155.3,549.2 L165.9,545.1 L169.8,548.6 L171.2,555.7 L168.9,555.8 L172.1,559.2 L177.5,556.2 L180.5,551.1 L194.2,546.3 L197.2,542 L206.7,538.2 L208.7,534.5 L205.6,528.1 L206.7,524.1 L203.5,520 L204.5,509 L197.9,501.7 L203.5,485.1 L200.2,482.9 L197,483.7 L192.8,477.9 L198.1,466.2 L195.2,464 L195.9,461.2 L192.1,461.7 L190.5,464.3 L186.7,459.4 L196.8,450.9 L201.9,452.4 L207.3,445.8 L209.2,449.1 L210.7,446.6 L214.2,446.3 L223.4,436.3 L223.9,433.2 L226.2,434.2 L235.4,429.7 L237,427.3 L234.7,422.3 L236.6,419.5 L239.8,419.4 L241.4,413.1 L249.1,409.2 L255.4,408.8 L261,404.2 L261.4,400.8 L265.2,402.2 L270.7,399.2 L272.8,394.2 L279.2,396 L279.3,390.3 L281.8,388.1 L285.2,389.4 L289.1,395.9 L297.8,392.3 L303,394.3 L315.4,391.4 L316.5,388.6 L318.6,389.3 L319.3,385.2 L325.5,385.6 L336.8,379.6 L341.2,381.1 L346.6,376.8 L352.7,380.6 L356.5,374.9 L352.9,368.4 L358.9,362.8 L357.9,359.6 L360.6,355.6 L367.1,352.7 L368.6,349.2 L366.7,348.2 L367.9,344.2 L365.3,342.5 L366.6,336.7 L355.8,328.7 L362.7,325.4 L369.1,326.3 L378.7,319.4 L378.3,316.8 L383.3,314.2 L384.4,309.8 L397.4,302 L395.3,299.6 L396.5,295.8 L400.5,293.7 L398.9,289.6 L402.7,285.5 L398.8,282.2 L401.8,276.3 L400.1,271 L404.2,270.1 L407.1,264.5 L416.8,263.5 L419.9,255.6 L418.8,248 L422.4,245.4 L417.8,241.5 L406.1,242.6 L395.3,248 L394,253.2 L381.9,258.9 L376.1,251.8 L367.1,254.2 L360.5,247.9 L347.5,247 L344.8,242.9 L335.6,245.4 L342.3,237 L337.3,233.6 L329.3,233 L326.1,236.4 L302.2,233.2 L297.4,237.2 L281.8,242.7 L280.9,245.6 L283.2,247.6 L279.4,252.9 L276.9,264.8 L262.3,265.7 L254.7,275.3 L243.3,271.3 L237.3,275.8 L235,275.2 L235,278.1 L230.8,271.9 L225.5,273.8 L212.6,268.3 L189.6,272.3 L186.5,277.8 L182.9,277.9 L182.9,281.4 L180.2,279.1 L174.8,284 L171.7,281.2 L166.4,284.7 L157.3,280.9 L153.8,274.5 L145.3,274.6 L146,271.2 L142.8,266 L140.6,266 L139.4,261.5 L130.4,259.6 L130.4,255.7 L124.3,253.3 L123.2,245.9 L114.3,244.6 L114.5,240.3 L111.9,241.6 L111.6,238.8 L102,230.8 L103.6,219.2 L96.6,218.5 L93.2,209.7 L94.3,206.2 L99.5,204.5 L99.9,201.6 Z M90.4,413.9 L87.6,415.7 L85.7,428.5 L82,433.4 L90.3,437.2 L110.3,425.6 L108.9,415.7 L105.7,414.7 L102.8,416.9 L100.2,414.4 L94.2,415.6 L90.4,413.9 Z M73.1,391.5 L72.1,402.1 L76.6,408.4 L86.2,405 L96.5,408.2 L98.5,413.5 L103.4,416.4 L106.1,413.6 L108,406.4 L105.7,406.3 L105.4,403.5 L94.3,397.3 L88.2,398.1 L73.1,391.5 Z M48.1,453.1 L46.6,455.4 L43.6,454.4 L40.5,456.4 L44,456.6 L42.5,461.1 L45.2,463.1 L50.8,461.5 L54.1,457.8 L48.1,453.1 Z M64.2,359.1 L59.4,359.9 L62,368.3 L61.2,363.9 L68.9,360.3 L64.2,359.1 Z" fill-rule="evenodd"/>
+                    <path class="kmap-land" d="M473.1,290.5 L471.9,289.1 L469.4,292.6 L466.4,291.6 L454.6,295.3 L450,300.3 L446.4,300.4 L444.9,305.2 L434,305.5 L433.5,307.5 L422.2,306.8 L421.6,303.8 L418.3,303.5 L420.4,300 L416.6,295.8 L408.1,299.7 L397,298.3 L395.6,304.1 L393.6,302.9 L384.2,310 L383.5,313.9 L378.4,316.8 L378.7,319.4 L375.7,322 L368.5,326.6 L362.7,325.4 L355.8,328.7 L366.6,336.7 L365.3,342.5 L367.9,344.2 L366.7,348.2 L368.6,349.2 L367.1,352.7 L360.6,355.6 L357.9,359.6 L358.9,362.8 L352.9,368.4 L356.5,374.9 L352.7,380.6 L346.6,376.8 L341.2,381.1 L336.8,379.6 L325.5,385.6 L319.3,385.2 L318.6,389.3 L316.5,388.6 L315.4,391.4 L303,394.3 L297.8,392.3 L289.1,395.9 L285.2,389.4 L281.8,388.1 L279.3,390.3 L279.2,396 L272.8,394.2 L270.7,399.2 L265.2,402.2 L261.4,400.8 L261,404.2 L255.4,408.8 L249.1,409.2 L241.4,413.1 L239.8,419.4 L236.6,419.5 L234.7,422.3 L237,427.3 L235.4,429.7 L226.2,434.2 L223.9,433.2 L223.4,436.3 L214.2,446.3 L210.7,446.6 L209.2,449.1 L207.3,445.8 L201.9,452.4 L196.8,450.9 L188.4,457.6 L187.4,462.3 L190.6,464.3 L192.1,461.7 L195.9,461.2 L195.2,464 L198.1,466.2 L192.8,478 L197,483.7 L200.2,482.9 L203.5,485.1 L197.9,501.7 L204.5,509 L203.5,520 L206.7,524.1 L205.6,528.1 L208.7,534.5 L206.7,538.2 L197.2,542 L194.2,546.3 L180.5,551.1 L177.5,556.2 L183,554.9 L194.7,561.1 L219.9,550.2 L225.4,549.6 L231.4,553 L235,558.1 L245,552.3 L246.2,549.7 L243.5,549 L246.9,545.6 L254.5,560.1 L252.6,570.3 L253.9,585 L250.5,592 L256.5,594.6 L260.3,594.4 L285.3,578.5 L293.7,579.8 L306.6,587.9 L331.6,573.4 L340.2,565.8 L336.3,567.3 L333.3,564.3 L340.7,554.6 L343.5,558.8 L350.1,562 L361.6,576.2 L367.6,573 L369.1,569.9 L379.6,568.1 L381.9,579.1 L378.3,587.6 L381.4,589.2 L395.2,588.2 L410.6,581.1 L412,578.3 L417.4,583.4 L425.2,582 L425.8,584.9 L432.7,589.1 L433.3,578.7 L439.6,571.2 L437.7,569.1 L446.4,561.2 L443.5,556.4 L446.2,552.8 L444.3,550.8 L445.8,551.3 L447.9,546.8 L451.3,548.3 L450,543.4 L454.9,542.2 L455.7,538 L461.6,536.7 L464,527.7 L470.1,520.4 L484.7,510.5 L495.6,499.4 L498.9,501.7 L499.4,496 L503.4,492.6 L504,489 L507.2,490 L506.4,486.8 L509.6,482.2 L508,478.3 L500.9,478.3 L499.5,473.5 L504.8,461.4 L503.7,456.9 L509.1,450.4 L509,447.3 L511.6,445.7 L514.5,447.3 L522.5,440.1 L531.9,437.4 L533.2,431.7 L538.3,427.5 L537.8,422.2 L532.4,425.1 L526.3,416 L522.4,416.6 L522.9,413.7 L517,405.1 L512.1,407.1 L506.5,404.5 L503.1,407.7 L502.5,404 L498.8,401.2 L499.6,397.4 L502.8,395.7 L501.4,392.2 L504.7,391 L503.5,388.1 L505.3,385.2 L498.3,383.6 L500,379.1 L494.8,370.3 L495.8,362.7 L499.4,359.7 L495.3,356.7 L500.2,353.2 L499.2,348.5 L490,351 L489,354.7 L482.6,355.6 L479.8,359.8 L481.2,361.8 L477.1,364.3 L472.8,361.3 L471.2,347.1 L469.7,346 L466.9,348.2 L458.1,340.3 L471.5,322.5 L480,321.6 L481.7,323.8 L487.5,318.5 L488.1,314.9 L483.8,311.7 L477.4,293.3 L473.1,290.5 Z" fill-rule="evenodd"/>
+                    <path class="kmap-land" d="M531.8,437.6 L522.5,440.1 L514.5,447.3 L511.6,445.7 L509,447.3 L509.1,450.4 L503.7,456.9 L504.8,461.4 L499.5,473.5 L500.9,478.3 L508,478.3 L509.6,482.2 L506.4,486.8 L507.2,490 L504,489 L503.4,492.6 L499.4,496 L498.9,501.7 L495.6,499.4 L484.7,510.5 L470.1,520.4 L464,527.7 L461.6,536.7 L455.8,538 L454.9,542.2 L450,543.4 L451.3,548.3 L447.9,546.8 L445.8,551.3 L444.3,550.8 L446.2,552.8 L443.5,556.4 L446.4,561.2 L437.7,569.1 L438.6,573.5 L433.3,578.7 L432.7,589.1 L442.1,591.6 L451.1,601.9 L452.6,639.1 L457.9,638.9 L480,627.3 L528.9,608 L537.2,600.9 L546.6,599.4 L549.7,586 L554.8,576.2 L561.4,574.1 L561,567.5 L568.2,565.5 L561.1,560.8 L560.1,557.5 L555.4,556.4 L557.5,553.7 L556,551.7 L558.2,548.4 L557.4,543.7 L559.1,542 L559.4,551.8 L563.5,552.1 L564.5,557 L567.9,556.6 L574.6,547.8 L574.8,533 L578.2,526.7 L574.1,524.7 L571.7,526.9 L569.3,523.5 L577,523.2 L578.9,521.2 L582.5,522 L582.8,526.2 L586.3,523.8 L587.6,514.3 L565.5,507.7 L556.9,509.7 L551.2,507.6 L543.7,508.8 L537.3,513.4 L537.1,506.8 L533.8,501.1 L535.8,491 L527.4,488.8 L529.8,471.8 L526.3,471.3 L528.3,467.1 L525.3,465.2 L525.6,459.8 L523.2,458 L524.6,451.5 L521.9,450.7 L527,447 L531.8,437.6 Z M567.2,571.4 L557,578.1 L549.1,601.4 L554.6,614.6 L551.6,628.6 L552.3,631.3 L553.8,629.6 L555.7,630.9 L555.3,633 L556.6,629.4 L563.7,625.9 L563.5,623.5 L568.2,620.4 L570.8,621.1 L571.2,617.3 L568,614 L572.8,607.8 L570.1,606.7 L570.5,598 L568.1,595 L571.1,589.9 L566.5,582.9 L568.7,572.1 L567.2,571.4 Z M577.8,581.9 L571,595.6 L573.1,596.5 L574.4,602.5 L577,600.7 L579.6,586.2 L577.8,581.9 Z M538.8,680.2 L532.3,686 L538.1,682.8 L538.8,680.2 Z" fill-rule="evenodd"/>
+                    <path class="kmap-land" d="M634.3,163.9 L628.9,166 L622.8,165.2 L621.1,171.5 L618.2,173.4 L614.3,168.3 L611.5,170.2 L608.5,167.2 L604.7,168 L598.8,177.1 L593.3,176.3 L588.9,171.9 L583.9,172 L584.5,179.3 L581.8,180.9 L582.5,183.3 L572.4,183.4 L569.3,187.3 L573.4,192.4 L571.1,195.7 L564.4,197.3 L565.5,201.6 L562.6,204.8 L558.3,227.2 L553.7,228.6 L549.4,237.3 L547,236.9 L545.9,239.8 L538.6,243.8 L532.3,256.1 L524.8,253.9 L512.8,256.6 L508.5,258.6 L507.9,263.7 L504.3,266.3 L498.2,264.9 L495.8,261.6 L486.5,261.6 L485.3,256.7 L481.6,255.5 L479.6,249.8 L471.9,244.9 L464.4,247.4 L458.8,252.3 L457.5,249.6 L451.4,248.7 L447.5,243.8 L436.5,237.5 L424.7,242.7 L418.8,248 L419.9,255.6 L416.4,263.9 L407.1,264.5 L404.2,270.1 L400,271.2 L401.8,276.3 L398.8,282.2 L402.7,285.5 L398.9,289.6 L400.5,293.7 L396.5,295.8 L396.4,298.2 L408.1,299.7 L416.6,295.8 L420.4,300 L418.3,303.5 L421.6,303.8 L424.3,307.9 L444.9,305.2 L446.4,300.4 L450,300.3 L454.4,295.4 L466.4,291.6 L469.4,292.6 L471.9,289.1 L477.4,293.3 L483.8,311.7 L488.1,314.9 L487.5,318.5 L481.7,323.8 L480,321.6 L471.5,322.5 L465.7,328.2 L466.4,331.4 L457.9,339.7 L466.9,348.2 L469.7,346 L471.2,347.1 L472.8,361.3 L477.1,364.3 L481.2,361.8 L479.8,359.8 L482.6,355.6 L489,354.7 L490,351 L499.1,348.5 L500.2,353.2 L495.3,356.7 L499.4,359.7 L495.8,362.7 L494.8,370.3 L500,379.1 L498.3,383.6 L505.3,385.2 L503.5,388.1 L504.7,391 L501.4,392.2 L502.8,395.7 L499.6,397.4 L498.8,401.2 L502.5,404 L503.1,407.7 L506.5,404.5 L512.1,407.1 L517,405.1 L522.9,413.7 L522.4,416.6 L526.3,416 L531.7,424.8 L537.8,422.2 L538.3,427.5 L533.2,431.7 L527,447 L521.9,450.7 L524.6,451.5 L523.2,458 L525.6,459.8 L525.3,465.2 L528.3,467.1 L526.3,471.3 L529.8,471.8 L527.4,488.8 L535.8,491 L533.8,501.1 L537.1,506.8 L537.3,513.4 L543.7,508.8 L551.2,507.6 L556.9,509.7 L560.4,507.5 L588.3,514.5 L590.2,497.9 L587.9,500.6 L587.9,498.2 L585.2,497.6 L577.1,501 L576.5,494.1 L574.3,493.7 L581.3,489.9 L581,479.9 L578.3,476.6 L580.6,469.8 L575.2,469.2 L567.5,472.6 L566.3,470.3 L571.3,464.4 L588.3,457.8 L586.3,451.3 L588.1,447 L602.7,440.9 L603.8,432.7 L601.2,430.8 L603,428.6 L598.4,423.9 L601.3,415.9 L600.3,422.6 L603.9,425.7 L604.1,430.4 L606.2,429.7 L605.8,434.8 L611.2,434.9 L619.4,429.5 L631.2,412.4 L637,408.8 L640.8,392.7 L638.9,385.6 L645.5,384.9 L651.5,377.1 L649.4,375.4 L652.2,371 L648.8,360.6 L656,347.1 L655.7,342.3 L653.9,341.9 L655.5,340.7 L652.4,341.6 L651.6,337.8 L653.8,339 L653.6,336.6 L656.2,336 L652.6,333.3 L656.7,329.3 L658.4,315.1 L661.9,315.5 L662.1,310.5 L666.6,301.9 L669.5,300.6 L669.6,295.7 L673.7,290.5 L683.9,285.9 L687.9,290.3 L692,289.8 L691.3,283.7 L685.3,270.5 L681.8,268.1 L682.4,265.8 L688.6,269.6 L690.6,277.2 L694,278.6 L694.4,281.2 L712.5,284.9 L716.1,288.1 L721.1,285.3 L731.5,287.7 L737.3,284.4 L739.9,287.5 L746,288.3 L759.5,275.3 L759.1,271.7 L754.5,269.8 L749.3,271 L744.4,263.8 L740.8,263.5 L744.2,262.6 L743.9,260.3 L731,249.5 L724.3,248.9 L723.8,247.2 L722.5,249.1 L723,246.5 L721,248 L718.7,246.4 L720,243.9 L716.9,244 L719.6,242.7 L718.9,240 L699.4,229.7 L693.7,222.9 L693.4,219.1 L684.2,217 L678.1,210.1 L677.5,203.1 L668.9,201.3 L670.5,194.3 L668.1,191.1 L683.3,188.9 L686.1,191.1 L691.3,190 L695.4,186.2 L696.6,181.9 L693.2,177.1 L691.4,178.5 L689.8,173.1 L680.3,176.1 L676.7,180.8 L672.1,180.8 L662.3,167 L659.8,168.5 L652.6,166.4 L652,170.1 L650.6,167.3 L648.4,168.3 L647.1,164.2 L635.7,170 L632.9,168.8 L634.3,163.9 Z M663,374.2 L654.6,378.1 L648.9,384.4 L655.3,380.6 L652.7,381.6 L653.7,380.1 L662,378.5 L663,374.2 Z M641.1,388.3 L643,398.3 L650.5,407.8 L645.6,399.7 L646.1,393.8 L641.1,388.3 Z M585,494.5 L576.6,494.9 L576.2,499.1 L577.5,500.4 L585.7,497 L585,494.5 Z M652,394.4 L650.8,397.1 L656.2,399.6 L662.8,399.1 L662.1,396.1 L655.8,396.8 L652,394.4 Z M658.6,380.7 L653.9,384.5 L655.6,387.3 L660.2,385.6 L660.9,381.4 L659.2,382.7 L658.6,380.7 Z M641,385.6 L639.6,386 L642.4,389.3 L645.4,390.9 L645.6,387.5 L652.6,392.8 L651.8,389.7 L641,385.6 Z M676.1,192.2 L669.8,192.3 L671.1,197.6 L676.1,195.3 L676.1,192.2 Z M681.4,193 L676.7,190.3 L676.7,195.2 L680.4,193.4 L683.5,196.8 L686.9,195.3 L681.4,193 Z M652.9,384.1 L645.7,386.5 L649.5,386 L652.6,388.9 L652.1,386.8 L655.3,385.4 L652.9,384.1 Z M643.3,400 L643.9,403.7 L641.4,405.3 L643.2,409.1 L645.8,404 L643.3,400 Z M656.4,369.6 L650.7,380.2 L657.5,371.5 L656.4,369.6 Z M679.3,198.1 L676.6,197.6 L676,202 L683.4,200.9 L679.3,198.1 Z M674.3,197.9 L669.7,198.2 L669.9,201.5 L671.5,200.1 L675.7,201.8 L672.5,199.7 L674.3,197.9 Z M682.9,198.2 L681.4,193.9 L677.9,195.7 L682.9,198.2 Z M640.8,394 L640,401.2 L641.2,404.1 L643.3,403.9 L640.8,394 Z M653.9,368.1 L649.5,375.4 L651.3,375.9 L653.9,368.1 Z M676.3,196 L672.5,199.4 L675.1,201.3 L678.1,197 L676.3,196 Z M652.7,397.5 L655.2,401.6 L658.5,401.5 L652.7,397.5 Z" fill-rule="evenodd"/>
+                    <path class="kmap-land" d="M589,34 L586.8,40.2 L583.4,39.2 L580,42.5 L573.9,35.3 L568.6,37.4 L560.7,35.2 L559.8,38.9 L556.7,39.4 L554,43.3 L549.1,38.3 L543.9,37.9 L540.4,35.1 L540.1,42.3 L536.6,44.3 L536.8,46.3 L532.4,45.5 L527,50.5 L523.5,65.5 L517.8,68.6 L521.9,71.7 L518.6,87.6 L524.7,102.4 L522.4,104.6 L519.7,101.6 L516.7,107.7 L514.7,117.7 L518.1,122.7 L514.6,125.6 L513.5,131.4 L509.5,131.6 L506.1,134.8 L501.4,134.9 L498.4,130 L496,135.7 L489.9,138.5 L489.1,142.4 L484.8,145.8 L489.3,148.1 L485.4,153.3 L487,157.9 L484.9,161.1 L486.6,162.7 L490.9,160.8 L496,167.9 L492.8,170.6 L488.5,170.3 L485.4,175.3 L482.1,175.2 L478.3,179.2 L475.6,178.1 L476,183.5 L472.5,185.9 L465.4,185.2 L463.4,189.7 L460.1,190.4 L460.1,194.5 L465.7,194.7 L464.9,202.1 L468.4,200.7 L470.5,202.2 L467.8,206.5 L470.1,209.9 L465.7,211.4 L463.9,214.5 L458.5,214 L456.8,217.4 L457.9,229.4 L450.9,233.8 L448.2,246.9 L456.5,249 L459.2,252.3 L464.4,247.4 L471.9,244.9 L479.6,249.8 L481.6,255.5 L485.3,256.7 L486.5,261.6 L495.8,261.6 L498.2,264.9 L505,266.1 L507.9,263.7 L508.5,258.6 L512.8,256.6 L524.8,253.9 L532.9,255.8 L538.6,243.8 L551.8,235.1 L551.5,231.6 L554.3,228.1 L558,227.7 L560.3,221.9 L562.6,204.8 L565.5,201.6 L564.4,197.3 L571.1,195.7 L573.4,192.4 L569.3,187.2 L572.5,183.3 L582.5,183.3 L581.8,180.9 L584.5,179.3 L583.9,171.9 L588.9,171.9 L593.3,176.3 L598.8,177.1 L604.7,168 L608.5,167.2 L611.5,170.2 L614.3,168.3 L618.2,173.4 L621.1,171.5 L622.8,165.2 L628.9,166 L633.9,163.7 L635,165.4 L632.9,168.8 L635.7,170 L647.1,164.2 L648.4,168.3 L650.6,167.3 L652,170.1 L652.6,166.4 L659.8,168.5 L662.3,167 L672.1,180.8 L676.7,180.8 L680.3,176.1 L689.1,173.2 L675.8,159.7 L674.8,151.1 L667,148.4 L671.4,146.4 L666.6,143.5 L670.2,141 L668.2,140.6 L669.9,139.6 L667,138.1 L668.5,136.7 L666.5,134.2 L660.1,134.6 L663.3,129.1 L650.5,129.9 L653.2,126.4 L650.8,122 L641.7,121.7 L641.1,118.7 L647.7,114.9 L655.9,113.9 L655.3,110.9 L650.7,109.3 L646,111.5 L648.7,109.6 L648.6,105.9 L644.6,101.7 L634.8,98.6 L633.1,95.5 L635,90.4 L628.8,89.5 L619.4,91.9 L625.6,88.3 L653.9,88.5 L653.7,85.9 L649.3,85.5 L653.7,82.5 L659.2,88.1 L666.4,90 L677.7,83.7 L666.9,78.6 L675.3,79.7 L668.4,72.2 L661.5,71.5 L657,68.1 L653.8,68.8 L650.4,62.5 L645.2,61.8 L646.4,60.2 L650.3,61.9 L652.8,57.8 L648.9,56.2 L647.3,52.6 L655.9,55.8 L661.3,50.7 L651.7,50.3 L648.5,45.2 L640.3,40.9 L636.9,36.4 L633.5,39.2 L622.4,38.3 L620.9,40.3 L613.2,36.8 L607.8,39.8 L601.9,35.2 L598.5,39.2 L593.4,39.1 L589,34 Z M636.9,91.8 L633.6,95.2 L635.7,98.3 L653.5,102.8 L655.9,99.4 L645.6,93.7 L636.9,91.8 Z M663,102.4 L658.1,102.1 L655.7,106.4 L664.8,116.5 L666.6,104.9 L663,102.4 Z M672.2,51.1 L667.6,51.1 L679.4,60.4 L684.7,58.5 L683,51.1 L672.2,51.1 Z M666,52.4 L661,57.2 L661.9,62 L666.8,65.2 L670.6,63.8 L672.6,58.5 L666,52.4 Z M656.3,60.5 L654.4,59.1 L650.7,62.4 L651.8,67.6 L658.2,68.1 L661.8,71.1 L667.5,70.8 L667.6,68.8 L661.6,67.5 L656.3,60.5 Z M677.1,92.6 L673,93.4 L672.5,95.7 L680.3,101.7 L677.1,92.6 Z M650.8,94.5 L648.5,94.8 L650.6,97.3 L658,100.1 L662.7,99.4 L650.8,94.5 Z M671.3,71.8 L669.5,72.6 L671.7,76.4 L678.2,77.9 L671.3,71.8 Z M663.3,92.7 L655.1,92 L663.4,95.5 L666.1,94.3 L663.3,92.7 Z M649.2,91 L640,91.2 L650.2,93.7 L651.8,92.5 L649.2,91 Z M653.9,104.6 L651.1,105 L651.4,108.8 L654.8,109.1 L653.9,104.6 Z" fill-rule="evenodd"/>
+                    </g>
+                    <ellipse class="kmap-land-shade" cx="450" cy="300" rx="420" ry="420" clip-path="url(#landClip)"/>
+                    <g class="kmap-routes">
+                    <path class="kmap-route" data-id="kalbar" d="M408.8,359.4 Q308.4,322.6 205.3,350.9"/>
+                    <path class="kmap-route" data-id="kalteng" d="M408.8,359.4 Q371.9,402.1 366.7,458.2"/>
+                    <path class="kmap-route" data-id="kalsel" d="M408.8,359.4 Q490.6,441.8 509.4,556.4"/>
+                    <path class="kmap-route" data-id="kaltim" d="M408.8,359.4 Q487.0,308.6 580.1,312.6"/>
+                    <path class="kmap-route" data-id="kaltara" d="M408.8,359.4 Q522.4,274.7 565.7,139.7"/>
+                    </g>
+                    <a class="kmap-province kp-kalbar" href="./bich/berita.html" tabindex="0" data-id="kalbar" data-province="Kalimantan Barat" data-river="Kapuas" data-function="Informasi" aria-label="Kalimantan Barat — Kapuas — Informasi"><title>Kalimantan Barat — Informasi</title><path fill-rule="evenodd" d="M99.9,201.6 L100.7,198.1 L96.5,204.5 L78,209 L79.1,215.6 L75.6,219.6 L73.8,226.6 L59.3,237.6 L58.3,249.3 L52.7,259 L53.8,261.3 L48.5,262.3 L53.8,274.9 L51.3,282 L44,287.4 L50.2,300.7 L48.8,310.7 L51.5,316.3 L49.2,320.9 L61.9,327.7 L69,340.6 L66.5,347.6 L69.2,360.2 L61.4,364.5 L64.7,383.7 L67.1,385.3 L69.5,383.8 L73,387.5 L78.8,385.2 L84.6,389.4 L88.7,388.2 L96.5,390.8 L97.3,393.8 L101.6,392.2 L104.5,395.4 L102.6,398.1 L99.8,397.9 L100.1,401 L108.2,406.1 L106.9,414.6 L113,421.9 L121.5,424.1 L119.3,430.2 L130.7,441 L127.7,463.5 L122,470 L119.7,470 L120.7,473.9 L118.8,473.8 L130.6,481.1 L134.3,488 L132.2,501.8 L130.2,503.2 L135.1,506.5 L136.2,516.1 L138.6,518.2 L139.2,526.2 L136.3,529.8 L140.9,531.6 L141.2,538.1 L144.2,540 L141.6,548.5 L144,553.5 L147.4,556.2 L155.3,549.2 L165.9,545.1 L169.8,548.6 L171.2,555.7 L168.9,555.8 L172.1,559.2 L177.5,556.2 L180.5,551.1 L194.2,546.3 L197.2,542 L206.7,538.2 L208.7,534.5 L205.6,528.1 L206.7,524.1 L203.5,520 L204.5,509 L197.9,501.7 L203.5,485.1 L200.2,482.9 L197,483.7 L192.8,477.9 L198.1,466.2 L195.2,464 L195.9,461.2 L192.1,461.7 L190.5,464.3 L186.7,459.4 L196.8,450.9 L201.9,452.4 L207.3,445.8 L209.2,449.1 L210.7,446.6 L214.2,446.3 L223.4,436.3 L223.9,433.2 L226.2,434.2 L235.4,429.7 L237,427.3 L234.7,422.3 L236.6,419.5 L239.8,419.4 L241.4,413.1 L249.1,409.2 L255.4,408.8 L261,404.2 L261.4,400.8 L265.2,402.2 L270.7,399.2 L272.8,394.2 L279.2,396 L279.3,390.3 L281.8,388.1 L285.2,389.4 L289.1,395.9 L297.8,392.3 L303,394.3 L315.4,391.4 L316.5,388.6 L318.6,389.3 L319.3,385.2 L325.5,385.6 L336.8,379.6 L341.2,381.1 L346.6,376.8 L352.7,380.6 L356.5,374.9 L352.9,368.4 L358.9,362.8 L357.9,359.6 L360.6,355.6 L367.1,352.7 L368.6,349.2 L366.7,348.2 L367.9,344.2 L365.3,342.5 L366.6,336.7 L355.8,328.7 L362.7,325.4 L369.1,326.3 L378.7,319.4 L378.3,316.8 L383.3,314.2 L384.4,309.8 L397.4,302 L395.3,299.6 L396.5,295.8 L400.5,293.7 L398.9,289.6 L402.7,285.5 L398.8,282.2 L401.8,276.3 L400.1,271 L404.2,270.1 L407.1,264.5 L416.8,263.5 L419.9,255.6 L418.8,248 L422.4,245.4 L417.8,241.5 L406.1,242.6 L395.3,248 L394,253.2 L381.9,258.9 L376.1,251.8 L367.1,254.2 L360.5,247.9 L347.5,247 L344.8,242.9 L335.6,245.4 L342.3,237 L337.3,233.6 L329.3,233 L326.1,236.4 L302.2,233.2 L297.4,237.2 L281.8,242.7 L280.9,245.6 L283.2,247.6 L279.4,252.9 L276.9,264.8 L262.3,265.7 L254.7,275.3 L243.3,271.3 L237.3,275.8 L235,275.2 L235,278.1 L230.8,271.9 L225.5,273.8 L212.6,268.3 L189.6,272.3 L186.5,277.8 L182.9,277.9 L182.9,281.4 L180.2,279.1 L174.8,284 L171.7,281.2 L166.4,284.7 L157.3,280.9 L153.8,274.5 L145.3,274.6 L146,271.2 L142.8,266 L140.6,266 L139.4,261.5 L130.4,259.6 L130.4,255.7 L124.3,253.3 L123.2,245.9 L114.3,244.6 L114.5,240.3 L111.9,241.6 L111.6,238.8 L102,230.8 L103.6,219.2 L96.6,218.5 L93.2,209.7 L94.3,206.2 L99.5,204.5 L99.9,201.6 Z M90.4,413.9 L87.6,415.7 L85.7,428.5 L82,433.4 L90.3,437.2 L110.3,425.6 L108.9,415.7 L105.7,414.7 L102.8,416.9 L100.2,414.4 L94.2,415.6 L90.4,413.9 Z M73.1,391.5 L72.1,402.1 L76.6,408.4 L86.2,405 L96.5,408.2 L98.5,413.5 L103.4,416.4 L106.1,413.6 L108,406.4 L105.7,406.3 L105.4,403.5 L94.3,397.3 L88.2,398.1 L73.1,391.5 Z M48.1,453.1 L46.6,455.4 L43.6,454.4 L40.5,456.4 L44,456.6 L42.5,461.1 L45.2,463.1 L50.8,461.5 L54.1,457.8 L48.1,453.1 Z M64.2,359.1 L59.4,359.9 L62,368.3 L61.2,363.9 L68.9,360.3 L64.2,359.1 Z"/></a>
+                    <a class="kmap-province kp-kalteng" href="./bich/kahayan.html" tabindex="0" data-id="kalteng" data-province="Kalimantan Tengah" data-river="Kahayan" data-function="Kebijakan" aria-label="Kalimantan Tengah — Kahayan — Kebijakan"><title>Kalimantan Tengah — Kebijakan</title><path fill-rule="evenodd" d="M473.1,290.5 L471.9,289.1 L469.4,292.6 L466.4,291.6 L454.6,295.3 L450,300.3 L446.4,300.4 L444.9,305.2 L434,305.5 L433.5,307.5 L422.2,306.8 L421.6,303.8 L418.3,303.5 L420.4,300 L416.6,295.8 L408.1,299.7 L397,298.3 L395.6,304.1 L393.6,302.9 L384.2,310 L383.5,313.9 L378.4,316.8 L378.7,319.4 L375.7,322 L368.5,326.6 L362.7,325.4 L355.8,328.7 L366.6,336.7 L365.3,342.5 L367.9,344.2 L366.7,348.2 L368.6,349.2 L367.1,352.7 L360.6,355.6 L357.9,359.6 L358.9,362.8 L352.9,368.4 L356.5,374.9 L352.7,380.6 L346.6,376.8 L341.2,381.1 L336.8,379.6 L325.5,385.6 L319.3,385.2 L318.6,389.3 L316.5,388.6 L315.4,391.4 L303,394.3 L297.8,392.3 L289.1,395.9 L285.2,389.4 L281.8,388.1 L279.3,390.3 L279.2,396 L272.8,394.2 L270.7,399.2 L265.2,402.2 L261.4,400.8 L261,404.2 L255.4,408.8 L249.1,409.2 L241.4,413.1 L239.8,419.4 L236.6,419.5 L234.7,422.3 L237,427.3 L235.4,429.7 L226.2,434.2 L223.9,433.2 L223.4,436.3 L214.2,446.3 L210.7,446.6 L209.2,449.1 L207.3,445.8 L201.9,452.4 L196.8,450.9 L188.4,457.6 L187.4,462.3 L190.6,464.3 L192.1,461.7 L195.9,461.2 L195.2,464 L198.1,466.2 L192.8,478 L197,483.7 L200.2,482.9 L203.5,485.1 L197.9,501.7 L204.5,509 L203.5,520 L206.7,524.1 L205.6,528.1 L208.7,534.5 L206.7,538.2 L197.2,542 L194.2,546.3 L180.5,551.1 L177.5,556.2 L183,554.9 L194.7,561.1 L219.9,550.2 L225.4,549.6 L231.4,553 L235,558.1 L245,552.3 L246.2,549.7 L243.5,549 L246.9,545.6 L254.5,560.1 L252.6,570.3 L253.9,585 L250.5,592 L256.5,594.6 L260.3,594.4 L285.3,578.5 L293.7,579.8 L306.6,587.9 L331.6,573.4 L340.2,565.8 L336.3,567.3 L333.3,564.3 L340.7,554.6 L343.5,558.8 L350.1,562 L361.6,576.2 L367.6,573 L369.1,569.9 L379.6,568.1 L381.9,579.1 L378.3,587.6 L381.4,589.2 L395.2,588.2 L410.6,581.1 L412,578.3 L417.4,583.4 L425.2,582 L425.8,584.9 L432.7,589.1 L433.3,578.7 L439.6,571.2 L437.7,569.1 L446.4,561.2 L443.5,556.4 L446.2,552.8 L444.3,550.8 L445.8,551.3 L447.9,546.8 L451.3,548.3 L450,543.4 L454.9,542.2 L455.7,538 L461.6,536.7 L464,527.7 L470.1,520.4 L484.7,510.5 L495.6,499.4 L498.9,501.7 L499.4,496 L503.4,492.6 L504,489 L507.2,490 L506.4,486.8 L509.6,482.2 L508,478.3 L500.9,478.3 L499.5,473.5 L504.8,461.4 L503.7,456.9 L509.1,450.4 L509,447.3 L511.6,445.7 L514.5,447.3 L522.5,440.1 L531.9,437.4 L533.2,431.7 L538.3,427.5 L537.8,422.2 L532.4,425.1 L526.3,416 L522.4,416.6 L522.9,413.7 L517,405.1 L512.1,407.1 L506.5,404.5 L503.1,407.7 L502.5,404 L498.8,401.2 L499.6,397.4 L502.8,395.7 L501.4,392.2 L504.7,391 L503.5,388.1 L505.3,385.2 L498.3,383.6 L500,379.1 L494.8,370.3 L495.8,362.7 L499.4,359.7 L495.3,356.7 L500.2,353.2 L499.2,348.5 L490,351 L489,354.7 L482.6,355.6 L479.8,359.8 L481.2,361.8 L477.1,364.3 L472.8,361.3 L471.2,347.1 L469.7,346 L466.9,348.2 L458.1,340.3 L471.5,322.5 L480,321.6 L481.7,323.8 L487.5,318.5 L488.1,314.9 L483.8,311.7 L477.4,293.3 L473.1,290.5 Z"/></a>
+                    <a class="kmap-province kp-kalsel" href="./market/mart.html" tabindex="0" data-id="kalsel" data-province="Kalimantan Selatan" data-river="Barito" data-function="Perdagangan" aria-label="Kalimantan Selatan — Barito — Perdagangan"><title>Kalimantan Selatan — Perdagangan</title><path fill-rule="evenodd" d="M531.8,437.6 L522.5,440.1 L514.5,447.3 L511.6,445.7 L509,447.3 L509.1,450.4 L503.7,456.9 L504.8,461.4 L499.5,473.5 L500.9,478.3 L508,478.3 L509.6,482.2 L506.4,486.8 L507.2,490 L504,489 L503.4,492.6 L499.4,496 L498.9,501.7 L495.6,499.4 L484.7,510.5 L470.1,520.4 L464,527.7 L461.6,536.7 L455.8,538 L454.9,542.2 L450,543.4 L451.3,548.3 L447.9,546.8 L445.8,551.3 L444.3,550.8 L446.2,552.8 L443.5,556.4 L446.4,561.2 L437.7,569.1 L438.6,573.5 L433.3,578.7 L432.7,589.1 L442.1,591.6 L451.1,601.9 L452.6,639.1 L457.9,638.9 L480,627.3 L528.9,608 L537.2,600.9 L546.6,599.4 L549.7,586 L554.8,576.2 L561.4,574.1 L561,567.5 L568.2,565.5 L561.1,560.8 L560.1,557.5 L555.4,556.4 L557.5,553.7 L556,551.7 L558.2,548.4 L557.4,543.7 L559.1,542 L559.4,551.8 L563.5,552.1 L564.5,557 L567.9,556.6 L574.6,547.8 L574.8,533 L578.2,526.7 L574.1,524.7 L571.7,526.9 L569.3,523.5 L577,523.2 L578.9,521.2 L582.5,522 L582.8,526.2 L586.3,523.8 L587.6,514.3 L565.5,507.7 L556.9,509.7 L551.2,507.6 L543.7,508.8 L537.3,513.4 L537.1,506.8 L533.8,501.1 L535.8,491 L527.4,488.8 L529.8,471.8 L526.3,471.3 L528.3,467.1 L525.3,465.2 L525.6,459.8 L523.2,458 L524.6,451.5 L521.9,450.7 L527,447 L531.8,437.6 Z M567.2,571.4 L557,578.1 L549.1,601.4 L554.6,614.6 L551.6,628.6 L552.3,631.3 L553.8,629.6 L555.7,630.9 L555.3,633 L556.6,629.4 L563.7,625.9 L563.5,623.5 L568.2,620.4 L570.8,621.1 L571.2,617.3 L568,614 L572.8,607.8 L570.1,606.7 L570.5,598 L568.1,595 L571.1,589.9 L566.5,582.9 L568.7,572.1 L567.2,571.4 Z M577.8,581.9 L571,595.6 L573.1,596.5 L574.4,602.5 L577,600.7 L579.6,586.2 L577.8,581.9 Z M538.8,680.2 L532.3,686 L538.1,682.8 L538.8,680.2 Z"/></a>
+                    <a class="kmap-province kp-kaltim" href="./bich/mahakam.html" tabindex="0" data-id="kaltim" data-province="Kalimantan Timur" data-river="Mahakam" data-function="Ekonomi" aria-label="Kalimantan Timur — Mahakam — Ekonomi"><title>Kalimantan Timur — Ekonomi</title><path fill-rule="evenodd" d="M634.3,163.9 L628.9,166 L622.8,165.2 L621.1,171.5 L618.2,173.4 L614.3,168.3 L611.5,170.2 L608.5,167.2 L604.7,168 L598.8,177.1 L593.3,176.3 L588.9,171.9 L583.9,172 L584.5,179.3 L581.8,180.9 L582.5,183.3 L572.4,183.4 L569.3,187.3 L573.4,192.4 L571.1,195.7 L564.4,197.3 L565.5,201.6 L562.6,204.8 L558.3,227.2 L553.7,228.6 L549.4,237.3 L547,236.9 L545.9,239.8 L538.6,243.8 L532.3,256.1 L524.8,253.9 L512.8,256.6 L508.5,258.6 L507.9,263.7 L504.3,266.3 L498.2,264.9 L495.8,261.6 L486.5,261.6 L485.3,256.7 L481.6,255.5 L479.6,249.8 L471.9,244.9 L464.4,247.4 L458.8,252.3 L457.5,249.6 L451.4,248.7 L447.5,243.8 L436.5,237.5 L424.7,242.7 L418.8,248 L419.9,255.6 L416.4,263.9 L407.1,264.5 L404.2,270.1 L400,271.2 L401.8,276.3 L398.8,282.2 L402.7,285.5 L398.9,289.6 L400.5,293.7 L396.5,295.8 L396.4,298.2 L408.1,299.7 L416.6,295.8 L420.4,300 L418.3,303.5 L421.6,303.8 L424.3,307.9 L444.9,305.2 L446.4,300.4 L450,300.3 L454.4,295.4 L466.4,291.6 L469.4,292.6 L471.9,289.1 L477.4,293.3 L483.8,311.7 L488.1,314.9 L487.5,318.5 L481.7,323.8 L480,321.6 L471.5,322.5 L465.7,328.2 L466.4,331.4 L457.9,339.7 L466.9,348.2 L469.7,346 L471.2,347.1 L472.8,361.3 L477.1,364.3 L481.2,361.8 L479.8,359.8 L482.6,355.6 L489,354.7 L490,351 L499.1,348.5 L500.2,353.2 L495.3,356.7 L499.4,359.7 L495.8,362.7 L494.8,370.3 L500,379.1 L498.3,383.6 L505.3,385.2 L503.5,388.1 L504.7,391 L501.4,392.2 L502.8,395.7 L499.6,397.4 L498.8,401.2 L502.5,404 L503.1,407.7 L506.5,404.5 L512.1,407.1 L517,405.1 L522.9,413.7 L522.4,416.6 L526.3,416 L531.7,424.8 L537.8,422.2 L538.3,427.5 L533.2,431.7 L527,447 L521.9,450.7 L524.6,451.5 L523.2,458 L525.6,459.8 L525.3,465.2 L528.3,467.1 L526.3,471.3 L529.8,471.8 L527.4,488.8 L535.8,491 L533.8,501.1 L537.1,506.8 L537.3,513.4 L543.7,508.8 L551.2,507.6 L556.9,509.7 L560.4,507.5 L588.3,514.5 L590.2,497.9 L587.9,500.6 L587.9,498.2 L585.2,497.6 L577.1,501 L576.5,494.1 L574.3,493.7 L581.3,489.9 L581,479.9 L578.3,476.6 L580.6,469.8 L575.2,469.2 L567.5,472.6 L566.3,470.3 L571.3,464.4 L588.3,457.8 L586.3,451.3 L588.1,447 L602.7,440.9 L603.8,432.7 L601.2,430.8 L603,428.6 L598.4,423.9 L601.3,415.9 L600.3,422.6 L603.9,425.7 L604.1,430.4 L606.2,429.7 L605.8,434.8 L611.2,434.9 L619.4,429.5 L631.2,412.4 L637,408.8 L640.8,392.7 L638.9,385.6 L645.5,384.9 L651.5,377.1 L649.4,375.4 L652.2,371 L648.8,360.6 L656,347.1 L655.7,342.3 L653.9,341.9 L655.5,340.7 L652.4,341.6 L651.6,337.8 L653.8,339 L653.6,336.6 L656.2,336 L652.6,333.3 L656.7,329.3 L658.4,315.1 L661.9,315.5 L662.1,310.5 L666.6,301.9 L669.5,300.6 L669.6,295.7 L673.7,290.5 L683.9,285.9 L687.9,290.3 L692,289.8 L691.3,283.7 L685.3,270.5 L681.8,268.1 L682.4,265.8 L688.6,269.6 L690.6,277.2 L694,278.6 L694.4,281.2 L712.5,284.9 L716.1,288.1 L721.1,285.3 L731.5,287.7 L737.3,284.4 L739.9,287.5 L746,288.3 L759.5,275.3 L759.1,271.7 L754.5,269.8 L749.3,271 L744.4,263.8 L740.8,263.5 L744.2,262.6 L743.9,260.3 L731,249.5 L724.3,248.9 L723.8,247.2 L722.5,249.1 L723,246.5 L721,248 L718.7,246.4 L720,243.9 L716.9,244 L719.6,242.7 L718.9,240 L699.4,229.7 L693.7,222.9 L693.4,219.1 L684.2,217 L678.1,210.1 L677.5,203.1 L668.9,201.3 L670.5,194.3 L668.1,191.1 L683.3,188.9 L686.1,191.1 L691.3,190 L695.4,186.2 L696.6,181.9 L693.2,177.1 L691.4,178.5 L689.8,173.1 L680.3,176.1 L676.7,180.8 L672.1,180.8 L662.3,167 L659.8,168.5 L652.6,166.4 L652,170.1 L650.6,167.3 L648.4,168.3 L647.1,164.2 L635.7,170 L632.9,168.8 L634.3,163.9 Z M663,374.2 L654.6,378.1 L648.9,384.4 L655.3,380.6 L652.7,381.6 L653.7,380.1 L662,378.5 L663,374.2 Z M641.1,388.3 L643,398.3 L650.5,407.8 L645.6,399.7 L646.1,393.8 L641.1,388.3 Z M585,494.5 L576.6,494.9 L576.2,499.1 L577.5,500.4 L585.7,497 L585,494.5 Z M652,394.4 L650.8,397.1 L656.2,399.6 L662.8,399.1 L662.1,396.1 L655.8,396.8 L652,394.4 Z M658.6,380.7 L653.9,384.5 L655.6,387.3 L660.2,385.6 L660.9,381.4 L659.2,382.7 L658.6,380.7 Z M641,385.6 L639.6,386 L642.4,389.3 L645.4,390.9 L645.6,387.5 L652.6,392.8 L651.8,389.7 L641,385.6 Z M676.1,192.2 L669.8,192.3 L671.1,197.6 L676.1,195.3 L676.1,192.2 Z M681.4,193 L676.7,190.3 L676.7,195.2 L680.4,193.4 L683.5,196.8 L686.9,195.3 L681.4,193 Z M652.9,384.1 L645.7,386.5 L649.5,386 L652.6,388.9 L652.1,386.8 L655.3,385.4 L652.9,384.1 Z M643.3,400 L643.9,403.7 L641.4,405.3 L643.2,409.1 L645.8,404 L643.3,400 Z M656.4,369.6 L650.7,380.2 L657.5,371.5 L656.4,369.6 Z M679.3,198.1 L676.6,197.6 L676,202 L683.4,200.9 L679.3,198.1 Z M674.3,197.9 L669.7,198.2 L669.9,201.5 L671.5,200.1 L675.7,201.8 L672.5,199.7 L674.3,197.9 Z M682.9,198.2 L681.4,193.9 L677.9,195.7 L682.9,198.2 Z M640.8,394 L640,401.2 L641.2,404.1 L643.3,403.9 L640.8,394 Z M653.9,368.1 L649.5,375.4 L651.3,375.9 L653.9,368.1 Z M676.3,196 L672.5,199.4 L675.1,201.3 L678.1,197 L676.3,196 Z M652.7,397.5 L655.2,401.6 L658.5,401.5 L652.7,397.5 Z"/></a>
+                    <a class="kmap-province kp-kaltara" href="./bich/pariwisata.html" tabindex="0" data-id="kaltara" data-province="Kalimantan Utara" data-river="Kayan" data-function="Potensi" aria-label="Kalimantan Utara — Kayan — Potensi"><title>Kalimantan Utara — Potensi</title><path fill-rule="evenodd" d="M589,34 L586.8,40.2 L583.4,39.2 L580,42.5 L573.9,35.3 L568.6,37.4 L560.7,35.2 L559.8,38.9 L556.7,39.4 L554,43.3 L549.1,38.3 L543.9,37.9 L540.4,35.1 L540.1,42.3 L536.6,44.3 L536.8,46.3 L532.4,45.5 L527,50.5 L523.5,65.5 L517.8,68.6 L521.9,71.7 L518.6,87.6 L524.7,102.4 L522.4,104.6 L519.7,101.6 L516.7,107.7 L514.7,117.7 L518.1,122.7 L514.6,125.6 L513.5,131.4 L509.5,131.6 L506.1,134.8 L501.4,134.9 L498.4,130 L496,135.7 L489.9,138.5 L489.1,142.4 L484.8,145.8 L489.3,148.1 L485.4,153.3 L487,157.9 L484.9,161.1 L486.6,162.7 L490.9,160.8 L496,167.9 L492.8,170.6 L488.5,170.3 L485.4,175.3 L482.1,175.2 L478.3,179.2 L475.6,178.1 L476,183.5 L472.5,185.9 L465.4,185.2 L463.4,189.7 L460.1,190.4 L460.1,194.5 L465.7,194.7 L464.9,202.1 L468.4,200.7 L470.5,202.2 L467.8,206.5 L470.1,209.9 L465.7,211.4 L463.9,214.5 L458.5,214 L456.8,217.4 L457.9,229.4 L450.9,233.8 L448.2,246.9 L456.5,249 L459.2,252.3 L464.4,247.4 L471.9,244.9 L479.6,249.8 L481.6,255.5 L485.3,256.7 L486.5,261.6 L495.8,261.6 L498.2,264.9 L505,266.1 L507.9,263.7 L508.5,258.6 L512.8,256.6 L524.8,253.9 L532.9,255.8 L538.6,243.8 L551.8,235.1 L551.5,231.6 L554.3,228.1 L558,227.7 L560.3,221.9 L562.6,204.8 L565.5,201.6 L564.4,197.3 L571.1,195.7 L573.4,192.4 L569.3,187.2 L572.5,183.3 L582.5,183.3 L581.8,180.9 L584.5,179.3 L583.9,171.9 L588.9,171.9 L593.3,176.3 L598.8,177.1 L604.7,168 L608.5,167.2 L611.5,170.2 L614.3,168.3 L618.2,173.4 L621.1,171.5 L622.8,165.2 L628.9,166 L633.9,163.7 L635,165.4 L632.9,168.8 L635.7,170 L647.1,164.2 L648.4,168.3 L650.6,167.3 L652,170.1 L652.6,166.4 L659.8,168.5 L662.3,167 L672.1,180.8 L676.7,180.8 L680.3,176.1 L689.1,173.2 L675.8,159.7 L674.8,151.1 L667,148.4 L671.4,146.4 L666.6,143.5 L670.2,141 L668.2,140.6 L669.9,139.6 L667,138.1 L668.5,136.7 L666.5,134.2 L660.1,134.6 L663.3,129.1 L650.5,129.9 L653.2,126.4 L650.8,122 L641.7,121.7 L641.1,118.7 L647.7,114.9 L655.9,113.9 L655.3,110.9 L650.7,109.3 L646,111.5 L648.7,109.6 L648.6,105.9 L644.6,101.7 L634.8,98.6 L633.1,95.5 L635,90.4 L628.8,89.5 L619.4,91.9 L625.6,88.3 L653.9,88.5 L653.7,85.9 L649.3,85.5 L653.7,82.5 L659.2,88.1 L666.4,90 L677.7,83.7 L666.9,78.6 L675.3,79.7 L668.4,72.2 L661.5,71.5 L657,68.1 L653.8,68.8 L650.4,62.5 L645.2,61.8 L646.4,60.2 L650.3,61.9 L652.8,57.8 L648.9,56.2 L647.3,52.6 L655.9,55.8 L661.3,50.7 L651.7,50.3 L648.5,45.2 L640.3,40.9 L636.9,36.4 L633.5,39.2 L622.4,38.3 L620.9,40.3 L613.2,36.8 L607.8,39.8 L601.9,35.2 L598.5,39.2 L593.4,39.1 L589,34 Z M636.9,91.8 L633.6,95.2 L635.7,98.3 L653.5,102.8 L655.9,99.4 L645.6,93.7 L636.9,91.8 Z M663,102.4 L658.1,102.1 L655.7,106.4 L664.8,116.5 L666.6,104.9 L663,102.4 Z M672.2,51.1 L667.6,51.1 L679.4,60.4 L684.7,58.5 L683,51.1 L672.2,51.1 Z M666,52.4 L661,57.2 L661.9,62 L666.8,65.2 L670.6,63.8 L672.6,58.5 L666,52.4 Z M656.3,60.5 L654.4,59.1 L650.7,62.4 L651.8,67.6 L658.2,68.1 L661.8,71.1 L667.5,70.8 L667.6,68.8 L661.6,67.5 L656.3,60.5 Z M677.1,92.6 L673,93.4 L672.5,95.7 L680.3,101.7 L677.1,92.6 Z M650.8,94.5 L648.5,94.8 L650.6,97.3 L658,100.1 L662.7,99.4 L650.8,94.5 Z M671.3,71.8 L669.5,72.6 L671.7,76.4 L678.2,77.9 L671.3,71.8 Z M663.3,92.7 L655.1,92 L663.4,95.5 L666.1,94.3 L663.3,92.7 Z M649.2,91 L640,91.2 L650.2,93.7 L651.8,92.5 L649.2,91 Z M653.9,104.6 L651.1,105 L651.4,108.8 L654.8,109.1 L653.9,104.6 Z"/></a>
+                    <a class="kmap-marker kmap-m-kalbar" href="./bich/berita.html" tabindex="0" data-id="kalbar" aria-label="Kalimantan Barat — Kapuas — Informasi">
+                    <circle class="kmap-dot-outer" cx="205.3" cy="350.9" r="8"/><circle class="kmap-dot" cx="205.3" cy="350.9" r="4"/>
+                    <text class="kmap-name" x="215.3" y="346.9" text-anchor="start">KALIMANTAN BARAT</text><text class="kmap-domain" x="215.3" y="359.9" text-anchor="start">INFORMASI</text>
+                    </a>
+                    <a class="kmap-marker kmap-m-kalteng" href="./bich/kahayan.html" tabindex="0" data-id="kalteng" aria-label="Kalimantan Tengah — Kahayan — Kebijakan">
+                    <circle class="kmap-dot-outer" cx="366.7" cy="458.2" r="8"/><circle class="kmap-dot" cx="366.7" cy="458.2" r="4"/>
+                    <text class="kmap-name" x="376.7" y="454.2" text-anchor="start">KALIMANTAN TENGAH</text><text class="kmap-domain" x="376.7" y="467.2" text-anchor="start">KEBIJAKAN</text>
+                    </a>
+                    <a class="kmap-marker kmap-m-kalsel" href="./market/mart.html" tabindex="0" data-id="kalsel" aria-label="Kalimantan Selatan — Barito — Perdagangan">
+                    <circle class="kmap-dot-outer" cx="509.4" cy="556.4" r="8"/><circle class="kmap-dot" cx="509.4" cy="556.4" r="4"/>
+                    <text class="kmap-name" x="519.4" y="552.4" text-anchor="start">KALIMANTAN SELATAN</text><text class="kmap-domain" x="519.4" y="565.4" text-anchor="start">PERDAGANGAN</text>
+                    </a>
+                    <a class="kmap-marker kmap-m-kaltim" href="./bich/mahakam.html" tabindex="0" data-id="kaltim" aria-label="Kalimantan Timur — Mahakam — Ekonomi">
+                    <circle class="kmap-dot-outer" cx="580.1" cy="312.6" r="8"/><circle class="kmap-dot" cx="580.1" cy="312.6" r="4"/>
+                    <text class="kmap-name" x="590.1" y="308.6" text-anchor="start">KALIMANTAN TIMUR</text><text class="kmap-domain" x="590.1" y="321.6" text-anchor="start">EKONOMI</text>
+                    </a>
+                    <a class="kmap-marker kmap-m-kaltara" href="./bich/pariwisata.html" tabindex="0" data-id="kaltara" aria-label="Kalimantan Utara — Kayan — Mobilitas">
+                    <circle class="kmap-dot-outer" cx="565.7" cy="139.7" r="8"/><circle class="kmap-dot" cx="565.7" cy="139.7" r="4"/>
+                    <text class="kmap-name" x="575.7" y="135.7" text-anchor="start">KALIMANTAN UTARA</text><text class="kmap-domain" x="575.7" y="148.7" text-anchor="start">MOBILITAS</text>
+                    </a>
+                    <a class="kmap-muara-group" href="./bich/edukasi.html" tabindex="0" data-id="muara" aria-label="Muara Utama — Sungai Melawi — Edukasi, Lumbung Generasi">
+                    <title>Muara Utama — Sungai Melawi: Aliran Edukasi &amp; Lumbung Generasi</title>
+                    <circle class="kmap-muara-ring r1" cx="408.8" cy="359.4" r="10"/>
+                    <circle class="kmap-muara-ring r2" cx="408.8" cy="359.4" r="10"/>
+                    <circle class="kmap-muara-ring r3" cx="408.8" cy="359.4" r="10"/>
+                    <circle class="kmap-muara-core" cx="408.8" cy="359.4" r="7"/>
+                    <text class="kmap-muara-label" x="408.8" y="389.4" text-anchor="middle">MUARA UTAMA</text>
+                    <text class="kmap-muara-sub" x="408.8" y="401.4" text-anchor="middle">SUNGAI MELAWI · LUMBUNG GENERASI</text>
+                    <circle class="kmap-hit" cx="408.8" cy="359.4" r="46"/>
+                    </a>
+                    </svg>
+                <div class="hero-map-caption"><span class="live-dot"></span> KLIK PROVINSI ATAU MUARA UTAMA UNTUK MENJELAJAH</div>
             </div>
         </div>
+
+        <div class="shell hero-quicknav" aria-label="Navigasi cepat ekosistem">
+            <a href="./bich/berita.html"><span class="qn-icon">🌐</span>INFORMASI</a>
+            <a href="#karya"><span class="qn-icon">🪶</span>KARYA</a>
+            <a href="./market/mart.html"><span class="qn-icon">📊</span>USAHA</a>
+            <a href="./bich/edukasi.html"><span class="qn-icon">📖</span>PEMBELAJARAN</a>
+            <a href="./bich/pariwisata.html"><span class="qn-icon">🧭</span>PERJALANAN</a>
+            <a href="#penghuni"><span class="qn-icon">👥</span>MANUSIA</a>
+        </div>
+        <a class="hero-scroll" href="#konektivitas" aria-label="Gulir ke bawah">
+            <span class="scroll-pill" aria-hidden="true"></span> SCROLL<br>KE BAWAH
+        </a>
     </section>
 
     <section class="shell section connectivity-section" id="konektivitas" aria-labelledby="connectivity-title">
         <div class="connectivity-frame">
             <div class="connectivity-copy">
                 <div class="micro">GLOBAL CONNECTIVITY</div>
-                <h2 id="connectivity-title" class="section-title">DARI BANUA, <span class="gold">TERHUBUNG KE DUNIA.</span></h2>
-                <p class="section-sub">Mari kita jadikan ekosistem ini sebagai MUARA bagi dunia menjelajahi Banua. Dimana arus pengetahuan, peluang, karya, dan kemitraan bergerak dua arah.</p>
+                <h2 id="connectivity-title" class="section-title">KALIMANTAN - GERBANG NUSANTARA, <span class="gold">TERHUBUNG KE DUNIA.</span></h2>
+                <p class="section-sub">Ekosistem ini sebagai MUARA bagi dunia menjelajahi Kalimantan sebagai gerbang utama Nusantara. Dimana arus pengetahuan, peluang, karya, dan kemitraan bergerak dua arah.</p>
                 <div class="connectivity-points">
                     <span>Banua</span><i>→</i><span>Dubai</span><i>→</i><span>London</span><i>→</i><span>New York</span>
                 </div>
@@ -425,23 +582,31 @@
     <section class="shell section" id="sungai">
         <div class="section-frame">
             <div class="section-head">
-                <div><div class="micro">MUARA → ALIRAN → VALUE</div><h2 class="section-title">ENAM SUNGAI, <span class="gold">SATU MUARA</span></h2><p class="section-sub">Enam aliran value yang bermuara di satu tujuan: kemajuan bersama.</p></div>
+                <div><div class="micro">MUARA → ALIRAN → VALUE</div><h2 class="section-title">ENAM SUNGAI <span class="gold">FILOSOFI</span></h2><p class="section-sub">Enam aliran value yang bermuara di satu tujuan: kemajuan bersama.</p></div>
                 <a class="arrow-link" href="#layanan">LIHAT SELURUH EKOSISTEM →</a>
             </div>
-            <div class="rivers">
-                <a class="river-card r-kapuas" style="--river-image:url('assets/rivers/01.webp')" href="./bich/berita.html"><div class="river-inner"><div><div class="river-no">01</div><div class="river-symbol">▱</div><div class="river-name">KAPUAS</div><div class="river-domain">Arteri Terpanjang</div><p class="river-desc">Pusat aliran informasi faktual dan terpercaya regional Kalimantan.</p></div><span class="river-btn">SEPUTAR KALIMANTAN →</span></div></a>
-                <a class="river-card r-mahakam" style="--river-image:url('assets/rivers/02.webp')" href="./bich/mahakam.html"><div class="river-inner"><div><div class="river-no">02</div><div class="river-symbol">⌁</div><div class="river-name">MAHAKAM</div><div class="river-domain">Jalur Migas &amp; Tambang</div><p class="river-desc">Navigasi mendalam seputar Ekonomi, Analisis Pasar Modal, dan update harga komoditas.</p></div><span class="river-btn">EKONOMI &amp; PASAR MODAL →</span></div></a>
-                <div class="river-card river-card-split r-barito" style="--river-image:url('assets/rivers/03.webp')"><div class="river-inner"><div><div class="river-no">03</div><div class="river-symbol">▣</div><div class="river-name">BARITO</div><div class="river-domain">Jalur Dagang Tertua</div><p class="river-desc">Dari Pasar Terapung Lok Baintan hingga ke genggaman Anda — arus dagang Barito kini mengalir digital. Jukung berganti server, tapi urat nadi ekonomi Banua tetap sama.</p></div><div class="river-split"><a href="./market/mart.html">PASAR DIGITAL BANUA ( BICH Mart ) →</a><a href="./bich/loker.html">PROYEK &amp; LOKER →</a></div></div></div>
-                <a class="river-card r-kahayan" style="--river-image:url('assets/rivers/04.webp')" href="./bich/kahayan.html"><div class="river-inner"><div><div class="river-no">04</div><div class="river-symbol">⌂</div><div class="river-name">KAHAYAN</div><div class="river-domain">Melintasi Ibu Kota Provinsi</div><p class="river-desc">Dinamika kebijakan, analisis peta Politik nasional, serta geopolitik regional Kalimantan.</p></div><span class="river-btn">ANALISIS POLITIK →</span></div></a>
-                <a class="river-card r-kayan" style="--river-image:url('assets/rivers/05.webp')" href="./bich/pariwisata.html"><div class="river-inner"><div><div class="river-no">05</div><div class="river-symbol">✈</div><div class="river-name">KAYAN</div><div class="river-domain">Perbatasan &amp; Koridor IKN</div><p class="river-desc">Destinasi wisata, termasuk teleportasi antarmoda orang dan barang terhubung regional Kalimantan.</p></div><span class="river-btn">PARIWISATA &amp; MOBILITAS →</span></div></a>
-                <a class="river-card r-melawi" style="--river-image:url('assets/rivers/06.webp')" href="./bich/edukasi.html"><div class="river-inner"><div><div class="river-no">06</div><div class="river-symbol">⌂</div><div class="river-name">MELAWI</div><div class="river-domain">Anak Sungai Menuju Pedalaman</div><p class="river-desc">Pusat Edukasi, literasi finansial, playbook eksekusi, serta modul pembelajaran taktis.</p></div><span class="river-btn">PORTAL EDUKASI →</span></div></a>
+            <div class="province-buttons">
+                <a class="province-btn pb-kalbar" href="./bich/berita.html"><span class="pb-no">01 · SUNGAI KAPUAS</span><span class="pb-name">Kalimantan Barat</span><span class="pb-domain">Informasi — pusat aliran berita faktual seputar Kalimantan.</span></a>
+                <a class="province-btn pb-kaltim" href="./bich/mahakam.html"><span class="pb-no">02 · SUNGAI MAHAKAM</span><span class="pb-name">Kalimantan Timur</span><span class="pb-domain">Ekonomi — analisis pasar modal &amp; harga komoditas.</span></a>
+                <a class="province-btn pb-kalsel" href="./market/mart.html"><span class="pb-no">03 · SUNGAI BARITO</span><span class="pb-name">Kalimantan Selatan</span><span class="pb-domain">Perdagangan — pasar digital Banua (BICH Mart) &amp; proyek/loker.</span></a>
+                <a class="province-btn pb-kalteng" href="./bich/kahayan.html"><span class="pb-no">04 · SUNGAI KAHAYAN</span><span class="pb-name">Kalimantan Tengah</span><span class="pb-domain">Kebijakan — analisis politik &amp; geopolitik regional.</span></a>
+                <a class="province-btn pb-kaltara" href="./bich/pariwisata.html"><span class="pb-no">05 · SUNGAI KAYAN</span><span class="pb-name">Kalimantan Utara</span><span class="pb-domain">Mobiiitas — pariwisata &amp; pergerakan antarmoda.</span></a>
+                <a class="province-btn pb-muara" href="./bich/edukasi.html"><span class="pb-no">06 · SUNGAI MELAWI</span><span class="pb-name">Muara Utama</span><span class="pb-domain">Edukasi — lumbung generasi &amp; pemberdayaan swadiri.</span></a>
             </div>
         </div>
     </section>
 
     <section class="shell section" id="ekosistem">
         <div class="section-frame">
-            <div class="section-head"><div><div class="micro">VALUE FLOW</div><h2 class="section-title">NILAI YANG <span class="gold">TERUS MENGALIR</span></h2><p class="section-sub">Setiap value yang masuk ke rumah ini diupayakan kembali memberi dampak.</p></div></div>
+            <div class="section-head"><div><div class="micro">VALUE FLOW</div><h2 class="section-title">NILAI YANG <span class="gold">TERUS MENGALIR</span></h2><p class="section-sub">Setiap pribadi yang menjadi bagian dari ekosistem ini akan melihat karyanya memberi dampak bagi pribadi lainnya.</p></div></div>
+            <div class="signature" aria-label="Perhatikan Analisa Eksekusi" style="margin-bottom:26px">
+                <div class="signature-title">PERHATIKAN. ANALISA. EKSEKUSI.</div>
+                <div class="signature-grid">
+                    <div class="signature-item"><div class="sig-icon">◉</div><div><strong>PERHATIKAN</strong><span>Lihat kenyataan dengan jernih.</span></div></div>
+                    <div class="signature-item"><div class="sig-icon">⌕</div><div><strong>ANALISA</strong><span>Pahami sampai ke akar masalah dan peluang.</span></div></div>
+                    <div class="signature-item"><div class="sig-icon">↗</div><div><strong>EKSEKUSI</strong><span>Berpikir strategis, bertindak tepat.</span></div></div>
+                </div>
+            </div>
             <div class="value-flow"><div class="flow-track">
                 <div class="flow-node"><div class="flow-icon">▱</div><span>Informasi</span></div><div class="flow-arrow">→</div>
                 <div class="flow-node"><div class="flow-icon">⌕</div><span>Analisa</span></div><div class="flow-arrow">→</div>
@@ -459,14 +624,14 @@
 
     <section class="shell section" id="layanan">
         <div class="section-frame">
-            <div class="section-head"><div><div class="micro">RUANG-RUANG DI DALAM RUMAH</div><h2 class="section-title">LAYANAN <span class="gold">EKOSISTEM</span></h2><p class="section-sub">Berbeda fungsi, satu rumah. Setiap ruang dirancang untuk mengalirkan value ke ruang lainnya.</p></div></div>
+            <div class="section-head"><div><div class="micro">FASILITAS YANG TELAH TERSEDIA SAAT INI</div><h2 class="section-title">LAYANAN <span class="gold">EKOSISTEM</span></h2><p class="section-sub">Setiap LAYANAN dirancang untuk mengalirkan nilai ke layanan lainnya.</p></div></div>
             <div class="services">
                 <a class="service" href="./bich/index.html">
                     <img class="service-image" src="assets/services/04.webp" alt="" loading="lazy" decoding="async">
                     <div>
                         <strong>BICH</strong>
                         <em>Independent Regional Intelligence</em>
-                        <p>Riset, data, analisa, dan wawasan independen untuk Banua dan dunia.</p>
+                        <p>Riset, data, analisa, dan wawasan independen untuk Kalimantan dan dunia.</p>
                     </div>
                     <span class="service-cta">KUNJUNGI →</span>
                 </a>
@@ -502,7 +667,7 @@
                     <div>
                         <strong>FAITH &amp; GRATITUDE</strong>
                         <em>Kemudahan Ibadah &amp; Kontribusi Sosial</em>
-                        <p>Ruang layanan yang dipersiapkan untuk mempermudah ikhtiar ibadah tanpa menjadikannya sekadar piala duniawi.</p>
+                        <p>Ruang layanan yang dipersiapkan untuk mempermudah ikhtiar ibadah dan perwujudan rasa syukur.</p>
                     </div>
                     <span class="service-cta">JELAJAHI RUANG →</span>
                 </a>
@@ -513,9 +678,9 @@
     <section class="shell section" id="kaderisasi">
         <div class="kader-frame">
             <div class="kader-head">
-                <div class="micro">PINTU MASUK UTAMA PARA PENGHUNI</div>
-                <h2 class="kader-title">LUMBUNG GENERASI <span class="gold">BANUA</span></h2>
-                <p class="kader-sub">Enam sungai bukan hanya aliran informasi, pasar, kebijakan, perjalanan, dan karya. Masing-masing adalah jalur kaderisasi menuju peran, kontribusi, dan kelak menjadi pewaris sungainya.</p>
+                <div class="micro">PINTU MASUK UTAMA PARA PENGHUNI EKOSISTEM</div>
+                <h2 class="kader-title">LUMBUNG GENERASI <span class="gold">KALIMANTAN</span></h2>
+                <p class="kader-sub">Enam sungai bukan hanya aliran informasi, ekonomi, perdagangan, kebijakan, perjalanan, dan karya. Masing-masing adalah jalur kaderisasi menuju peran, kontribusi, dan kelak menjadi pewaris sungainya.</p>
             </div>
             <div class="kader-ladder">
                 <div class="tier"><div class="tier-num">01 · MEMULAI</div><h3>Perintis</h3><p>Memahami medan, nilai, dan dasar peran di sungainya.</p></div>
@@ -537,7 +702,7 @@
     <section class="shell section" id="penghuni">
         <div class="people-works">
             <a class="people-panel people-door" href="./penghuni.html" aria-label="Buka ruang Penghuni">
-                <div class="panel-pad"><div class="micro">RUMAH INI DIHUNI MANUSIA NYATA</div><h2 class="panel-title">PENGHUNI BICH</h2><p class="panel-copy">Penghuni bukan dekorasi. Diantara mereka adalah Anda yang akan tampil terlihat disini ketika sistem memiliki data nyata tentang kontribusi, karya, dan rekam jejak yang tersedia.</p>
+                <div class="panel-pad"><div class="micro">EKOSISTEM INI DIHUNI MANUSIA PILIHAN</div><h2 class="panel-title">PENGHUNI EKOSISTEM</h2><p class="panel-copy">Penghuni bukan dekorasi. Diantara mereka adalah Anda yang nantinya akan tampil terlihat disini ketika sistem memiliki data nyata tentang kontribusi, karya, dan rekam jejak yang tersedia.</p>
                     <div class="empty-state"><div class="micro">STATUS</div><p>Ruang penghuni telah disiapkan. Daftar publik akan muncul ketika data penghuni terverifikasi tersedia.</p></div>
                     <div class="people-roles"><span class="role">Maker</span><span class="role">Merchant</span><span class="role">Traveler</span><span class="role">Analyst</span><span class="role">Learner</span><span class="role">Partner</span><span class="role">Mentor</span></div>
                 </div>
@@ -618,6 +783,90 @@
         });
     }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
     sections.forEach(s => observer.observe(s));
+})();
+
+/* KALIMANTAN MAP — two-way hover/focus sync + idle ambient flow */
+(() => {
+    const svg = document.querySelector('.hero-map-svg');
+    if (!svg) return;
+    const ids = ['kaltara', 'kaltim', 'kalsel', 'kalteng', 'kalbar'];
+    const groups = {};
+    ids.concat('muara').forEach(id => { groups[id] = []; });
+    svg.querySelectorAll('[data-id]').forEach(el => {
+        const id = el.getAttribute('data-id');
+        if (groups[id]) groups[id].push(el);
+    });
+
+    function setActive(id, on) {
+        (groups[id] || []).forEach(el => el.classList.toggle('is-active', on));
+    }
+    function highlight(id) {
+        setActive(id, true);
+        if (id !== 'muara') setActive('muara', true);
+    }
+    function clear(id) {
+        setActive(id, false);
+        if (id !== 'muara') setActive('muara', false);
+    }
+
+    ids.concat('muara').forEach(id => {
+        groups[id].forEach(el => {
+            el.addEventListener('mouseenter', () => highlight(id));
+            el.addEventListener('mouseleave', () => clear(id));
+            el.addEventListener('focus', () => highlight(id));
+            el.addEventListener('blur', () => clear(id));
+            el.addEventListener('touchstart', () => highlight(id), { passive: true });
+        });
+    });
+
+    // When Muara is hovered/focused, light up all five provinces in sequence
+    let muaraSeq = null;
+    function sequenceProvinces() {
+        let i = 0;
+        muaraSeq = setInterval(() => {
+            ids.forEach(id => setActive(id, false));
+            setActive(ids[i % ids.length], true);
+            i++;
+        }, 260);
+    }
+    groups.muara.forEach(el => {
+        el.addEventListener('mouseenter', sequenceProvinces);
+        el.addEventListener('focus', sequenceProvinces);
+        el.addEventListener('mouseleave', () => { clearInterval(muaraSeq); ids.forEach(id => setActive(id, false)); });
+        el.addEventListener('blur', () => { clearInterval(muaraSeq); ids.forEach(id => setActive(id, false)); });
+    });
+
+    // Idle ambient animation: cycle one province at a time into the Muara, pause, repeat
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let idleTimer = null, idleIndex = 0, userActive = false;
+    function idleStep() {
+        if (userActive) return;
+        ids.forEach(id => setActive(id, false));
+        setActive('muara', false);
+        highlight(ids[idleIndex % ids.length]);
+        idleIndex++;
+    }
+    function startIdle() {
+        if (reduceMotion) return;
+        idleTimer = setInterval(idleStep, 2600);
+    }
+    function stopIdle() {
+        clearInterval(idleTimer);
+        userActive = true;
+        ids.forEach(id => setActive(id, false));
+        setActive('muara', false);
+        window.clearTimeout(svg._resumeIdle);
+        svg._resumeIdle = window.setTimeout(() => { userActive = false; }, 4000);
+    }
+    svg.addEventListener('pointerenter', stopIdle);
+    svg.addEventListener('focusin', stopIdle);
+    if ('IntersectionObserver' in window) {
+        new IntersectionObserver(entries => {
+            entries.forEach(entry => { if (entry.isIntersecting) startIdle(); else clearInterval(idleTimer); });
+        }, { threshold: .3 }).observe(svg);
+    } else {
+        startIdle();
+    }
 })();
 </script>
 </body>
