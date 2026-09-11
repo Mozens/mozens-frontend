@@ -199,26 +199,58 @@ Deno.serve(async (req) => {
 });
 
 async function prosesPesananMart(referenceId: string, berhasilBayar: boolean, trxId: string) {
-  const { data: pesanan, error } = await supabaseAdmin
-    .from("bich_pesanan")
-    .select("id, item_pesanan, status")
+  // ‼️ PERBAIKAN: referenceId di sini adalah id `bich_pesanan_grup`, BUKAN
+  // `bich_pesanan` (anak) lagi - sejak create-payment.ts dipecah per toko,
+  // referenceId yang dikirim ke iPaymu sudah mengarah ke grup (lihat header
+  // file itu: "referenceId sekarang mengarah ke GRUP"). Versi lama fungsi
+  // ini masih cari langsung di bich_pesanan pakai referenceId (jadi salah
+  // tabel/salah id) dan menulis status "Success" yang tidak dikenali di
+  // manapun (seller.html & trigger cegah_seller_ubah_kolom_terlarang cuma
+  // paham Pending/Diproses/Dikirim/Selesai/Gagal) - itu BUG produksi yang
+  // bikin pesanan macet permanen di "Pending" walau sudah dibayar.
+  const { data: grup, error: errGrup } = await supabaseAdmin
+    .from("bich_pesanan_grup")
+    .select("id, status_pembayaran, payment_gateway_ref")
     .eq("id", referenceId)
     .single();
 
-  if (error || !pesanan) throw new Error("Pesanan Mart tidak ditemukan: " + referenceId);
-  if (pesanan.status === "Success") return { table: "bich_pesanan", statusBaru: "already_processed" };
+  if (errGrup || !grup) throw new Error("Pesanan (grup) tidak ditemukan: " + referenceId);
 
-  const statusBaru = berhasilBayar ? "Success" : "Failed";
-  await supabaseAdmin.from("bich_pesanan").update({ status: statusBaru, payment_gateway_ref: trxId }).eq("id", pesanan.id);
+  // Idempotency - pola sama persis dengan prosesLangganan(): webhook bisa
+  // terpanggil lebih dari sekali untuk trxId yang sama (retry dari gateway),
+  // kalau trxId ini sudah pernah tercatat, jangan proses ulang (mencegah
+  // cascade status ke anak jalan dobel).
+  if (grup.payment_gateway_ref === trxId) {
+    return { table: "bich_pesanan_grup", statusBaru: "already_processed" };
+  }
 
-  // CATATAN: stok TIDAK dipotong di sini. Stok sudah direservasi atomic
-  // (dipotong) di create-payment.ts saat pesanan dibuat status Pending,
-  // lewat RPC reserve_stok_produk - lihat migration_stok_dan_idempotency.sql.
-  // Kalau di sini dipotong lagi, stok akan berkurang 2x untuk 1 pesanan.
-  // Kalau pembayaran gagal/kedaluwarsa, stok dikembalikan oleh
-  // release_stok_produk (dipanggil dari expirasi_pesanan_pending / jalur
-  // gagal di create-payment) - bukan tugas webhook ini.
-  return { table: "bich_pesanan", statusBaru };
+  const statusPembayaranBaru = berhasilBayar ? "Success" : "Failed";
+  await supabaseAdmin
+    .from("bich_pesanan_grup")
+    .update({ status_pembayaran: statusPembayaranBaru, payment_gateway_ref: trxId })
+    .eq("id", grup.id);
+
+  // Cascade ke SEMUA anak (satu per toko) sekaligus - HANYA yang masih
+  // "Pending", supaya webhook yang terpanggil ulang tidak menimpa status
+  // yang sudah dimajukan penjual (mis. sudah "Dikirim"/"Selesai"). Ini juga
+  // titik yang tadinya TIDAK PERNAH tercapai karena bug di atas - jadi
+  // status anak selalu nyangkut di "Pending" walau pembayaran sukses.
+  const statusAnakBaru = berhasilBayar ? "Diproses" : "Gagal";
+  const { error: errCascade } = await supabaseAdmin
+    .from("bich_pesanan")
+    .update({ status: statusAnakBaru })
+    .eq("grup_id", grup.id)
+    .eq("status", "Pending");
+
+  if (errCascade) {
+    console.error("[ipaymu-webhook] Gagal cascade status ke bich_pesanan anak untuk grup", grup.id, errCascade);
+  }
+
+  // CATATAN: stok TIDAK dipotong di sini - sudah direservasi atomic di
+  // create-payment.ts saat pesanan dibuat (RPC reserve_stok_produk). Kalau
+  // pembayaran gagal, stok dikembalikan lewat jalur release_stok_produk di
+  // create-payment/expirasi pending - bukan tugas webhook ini.
+  return { table: "bich_pesanan_grup", statusBaru: statusPembayaranBaru };
 }
 
 async function prosesTransaksiAtm(idTransaksi: string, berhasilBayar: boolean, trxId: string) {
