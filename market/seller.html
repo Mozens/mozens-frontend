@@ -49,7 +49,7 @@
 
             <!-- Tombol Navigasi & Logout -->
             <div class="flex items-center gap-2">
-                <!-- TOMBOL KELUAR (Hanya muncul jika penjual sudah login) -->
+                <!-- TOMBOL KELUAR -->
                 <button x-show="isLoggedIn" x-cloak @click="logout()" 
                         class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition duration-200 cursor-pointer">
                     <i class="fa-solid fa-right-from-bracket"></i>
@@ -96,7 +96,7 @@
             <button @click="toast.show = false" class="text-slate-400 hover:text-slate-100"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <!-- STEP 0: LOGIN PENJUAL (WAJIB, supaya toko tidak bisa diklaim orang lain) -->
+        <!-- STEP 0: LOGIN PENJUAL -->
         <div x-show="!isLoggedIn" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
             <div class="flex items-center gap-2.5 border-b border-slate-800/80 pb-4">
                 <span class="w-7 h-7 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-black text-xs">
@@ -131,7 +131,7 @@
             </template>
         </div>
 
-        <!-- STEP 1: REGISTRASI TOKO (Jika Belum Daftarkan Toko) -->
+        <!-- STEP 1: REGISTRASI TOKO -->
         <div x-show="isLoggedIn" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden">
             <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
                 <div class="flex items-center gap-2.5">
@@ -169,7 +169,7 @@
                     </div>
                 </div>
 
-                <!-- 🔴 TOGGLE LIVE REAL-TIME -->
+                <!-- TOGGLE LIVE REAL-TIME -->
                 <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3">
                     <label class="flex items-center justify-between cursor-pointer">
                         <span class="flex items-center gap-2 text-xs font-bold text-slate-200">
@@ -184,7 +184,6 @@
                         <p class="text-[10px] text-slate-500 mt-1.5">Badge 🔴 LIVE akan muncul di semua produk kamu selama toggle ini menyala. Jangan lupa matikan setelah selesai live.</p>
                     </div>
 
-                    <!-- LIVE SHOPPING DI DALAM BICH MART SENDIRI (bukan TikTok/IG) -->
                     <div x-show="isTokoSaved" x-cloak class="border-t border-slate-800 pt-3">
                         <a :href="'live.html?toko=' + toko.id + '&host=1'" target="_blank"
                            class="w-full bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white text-xs font-extrabold py-2.5 rounded-xl border border-emerald-600/40 transition flex items-center justify-center gap-2">
@@ -285,9 +284,47 @@
                         </select>
                         <p class="text-[10px] text-slate-500 mt-1.5">Wajib sama persis dengan kota di sistem ongkir — jangan ketik manual, supaya penghitungan ongkir & pengelompokan pesanan tidak meleset.</p>
                     </div>
+
+                    <!-- 📷 FOTO PRODUK: DUAL-MODE (UPLOAD/KAMERA HP VS LINK URL) -->
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">URL Foto Produk</label>
-                        <input type="url" x-model="produk.gambar_url" placeholder="https://..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition">
+                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5">Foto Produk *</label>
+                        
+                        <!-- Toggle Mode -->
+                        <div class="flex gap-2 mb-2">
+                            <button type="button" @click="fotoMode = 'file'" 
+                                    :class="fotoMode === 'file' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-slate-200'"
+                                    class="px-2.5 py-1 rounded-lg text-[10px] transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-camera"></i> Upload / Kamera HP
+                            </button>
+                            <button type="button" @click="fotoMode = 'url'" 
+                                    :class="fotoMode === 'url' ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400 hover:text-slate-200'"
+                                    class="px-2.5 py-1 rounded-lg text-[10px] transition flex items-center gap-1.5 cursor-pointer">
+                                <i class="fa-solid fa-link"></i> Tempel Link URL
+                            </button>
+                        </div>
+
+                        <!-- Mode 1: File / Kamera HP -->
+                        <div x-show="fotoMode === 'file'">
+                            <input type="file" id="inputFotoFile" accept="image/*" capture="environment" @change="handleFileChange($event)"
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-amber-500/20 file:text-amber-400 hover:file:bg-amber-500/30 cursor-pointer">
+                            <p class="text-[10px] text-slate-500 mt-1">Jepret langsung pakai kamera HP atau ambil foto dari galeri.</p>
+                        </div>
+
+                        <!-- Mode 2: Input URL Manual -->
+                        <div x-show="fotoMode === 'url'">
+                            <input type="url" x-model="produk.gambar_url" placeholder="https://..." 
+                                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 transition">
+                            <p class="text-[10px] text-slate-500 mt-1">Tempel link foto produk jika sudah tersimpan di internet.</p>
+                        </div>
+
+                        <!-- Indikator Upload & Preview Foto -->
+                        <div x-show="previewFotoUrl" x-cloak class="mt-2.5 flex items-center gap-3 bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <img :src="previewFotoUrl" class="w-12 h-12 object-cover rounded-lg border border-slate-800 flex-shrink-0" alt="Preview Foto">
+                            <div class="text-[10px] text-slate-400 min-w-0">
+                                <p class="font-bold text-slate-200">Pratinjau Foto</p>
+                                <p x-text="uploadingFoto ? '⏳ Mengunggah foto...' : '✅ Foto siap dipajang'"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -300,21 +337,20 @@
                 <div class="pt-3 flex items-center justify-between">
                     <p class="text-[10px] text-slate-500">* Produk yang di-submit akan langsung tampil di BICH Mart.</p>
                     <div class="flex items-center gap-2">
-                        <!-- DITAMBAHKAN: tombol batal muncul cuma saat sedang mode edit -->
                         <button type="button" x-show="editingProdukId" x-cloak @click="batalEditProduk()"
                                 class="text-slate-400 hover:text-slate-200 text-xs font-bold px-4 py-3">
                             Batal
                         </button>
-                        <button type="submit" :disabled="loading" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition flex items-center gap-2">
-                            <i class="fa-solid" :class="editingProdukId ? 'fa-floppy-disk' : 'fa-plus-circle'"></i>
-                            <span x-text="editingProdukId ? 'Simpan Perubahan' : 'Pajang Produk Sekarang'"></span>
+                        <button type="submit" :disabled="loading || uploadingFoto" class="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-black text-xs px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition flex items-center gap-2">
+                            <i class="fa-solid" :class="loading || uploadingFoto ? 'fa-spinner fa-spin' : (editingProdukId ? 'fa-floppy-disk' : 'fa-plus-circle')"></i>
+                            <span x-text="uploadingFoto ? 'Mengunggah Foto...' : (loading ? 'Menyimpan...' : (editingProdukId ? 'Simpan Perubahan' : 'Pajang Produk Sekarang'))"></span>
                         </button>
                     </div>
                 </div>
             </form>
         </div>
 
-        <!-- STEP 3: DAFTAR PRODUK SAYA (Edit / Hapus) -->
+        <!-- STEP 3: DAFTAR PRODUK SAYA -->
         <div x-show="isLoggedIn && isTokoSaved" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
                 <div class="flex items-center gap-2.5">
@@ -356,7 +392,7 @@
             </div>
         </div>
 
-        <!-- STEP 4: PESANAN MASUK (per-toko, hasil migrasi split-pesanan) -->
+        <!-- STEP 4: PESANAN MASUK -->
         <div x-show="isLoggedIn && isTokoSaved" x-cloak class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800/80 pb-4">
                 <div class="flex items-center gap-2.5">
@@ -369,8 +405,6 @@
                 </button>
             </div>
 
-            <!-- Filter status - default sembunyikan yang belum dibayar/dibatalkan biar tidak
-                 bikin bingung penjual dengan pesanan yang belum pasti jadi -->
             <div class="flex flex-wrap gap-1.5">
                 <template x-for="f in ['Diproses', 'Dikirim', 'Selesai', 'Semua']" :key="f">
                     <button @click="filterPesanan = f"
@@ -420,11 +454,6 @@
                             <span class="font-bold text-amber-400" x-text="'Rp ' + Number(p.total_harga || 0).toLocaleString('id-ID')"></span>
                         </div>
 
-                        <!-- Tombol aksi lanjut status - hanya tampil kalau langkah berikutnya valid,
-                             mengikuti alur yang sama dengan yang dikunci trigger DB (lihat
-                             migration_rls_pesanan_grup.sql: menunggu_pembayaran -> diproses (otomatis
-                             oleh webhook) -> diproses -> dikirim -> selesai, penjual TIDAK bisa
-                             mundur atau lompat). -->
                         <div class="flex gap-2 pt-1" x-show="p.status === 'Diproses' || p.status === 'Dikirim'">
                             <button x-show="p.status === 'Diproses'" @click="updateStatusPesanan(p, 'Dikirim')"
                                     :disabled="updatingPesananId === p.id"
@@ -482,13 +511,19 @@
                     gambar_url: '',
                     video_demo_url: ''
                 },
+                // --- STATE FITUR UPLOAD FOTO ---
+                fotoMode: 'file', // 'file' atau 'url'
+                fotoFile: null,
+                previewFotoUrl: '',
+                uploadingFoto: false,
+
                 isTokoSaved: false,
                 loading: false,
-                // DITAMBAHKAN: state untuk daftar produk + mode edit
                 daftarProduk: [],
                 loadingProduk: false,
                 editingProdukId: null,
-                // --- STATE PESANAN MASUK (per-toko) ---
+
+                // --- STATE PESANAN MASUK ---
                 daftarPesanan: [],
                 loadingPesanan: false,
                 filterPesanan: 'Diproses',
@@ -504,7 +539,6 @@
                 },
 
                 async initSeller() {
-                    // Cek sesi login yang masih aktif (Supabase Auth session, BUKAN localStorage manual)
                     const { data: { session } } = await db.auth.getSession();
                     if (session) {
                         this.userId = session.user.id;
@@ -517,11 +551,6 @@
                         if (event === 'SIGNED_OUT') {
                             this.isLoggedIn = false;
                             this.userId = null;
-                            // DIPERBAIKI: sebelumnya reset ini tidak menyertakan is_live/
-                            // live_url - jadi kalau seller A logout lalu di browser yang
-                            // sama seller B login, sisa state "is_live: true" milik A bisa
-                            // ketampil sesaat sebelum muatTokoSaya() menimpanya. Kecil, tapi
-                            // tetap potensi kebocoran tampilan antar sesi.
                             this.toko = { id: null, nama_toko: '', pemilik: '', wa: '', deskripsi: '', is_live: false, live_url: '' };
                             this.isTokoSaved = false;
                         }
@@ -535,21 +564,10 @@
                     setTimeout(() => { this.toast.show = false; }, 4000);
                 },
 
-                // DIPINDAH dari OTP email ke OTP WhatsApp - alasan: tidak semua penjual
-                // punya email yang aktif dicek, dan verifikasi email sempat kena rate
-                // limit bawaan Supabase (quota pengiriman email gratis cukup ketat).
-                // Pengiriman kode tetap lewat Supabase Auth (jadi auth.uid() & semua RLS
-                // yang sudah ada TIDAK PERLU diubah) - cuma "kurir" pengirim kodenya yang
-                // diganti dari email ke WhatsApp lewat Send SMS Hook + Fonnte. Lihat
-                // send-otp-whatsapp/index.ts untuk sisi server-nya.
                 normalizePhone(input) {
                     let digits = String(input || '').replace(/[^\d]/g, '');
                     if (digits.startsWith('0')) digits = '62' + digits.slice(1);
                     else if (!digits.startsWith('62')) digits = '62' + digits;
-                    // Penjagaan: nomor Indonesia yang valid minimal ~10-13 digit total
-                    // (termasuk kode negara 62). Kalau lebih pendek dari itu, input
-                    // kemungkinan kosong/ngawur - lempar error yang jelas daripada
-                    // diam-diam hasilkan nomor rusak semacam "+62" doang.
                     if (digits.length < 10 || digits.length > 15) {
                         throw new Error('Nomor WhatsApp tidak valid: "' + input + '"');
                     }
@@ -578,9 +596,7 @@
                         const { data, error } = await db.auth.verifyOtp({
                             phone: this.authPhone,
                             token: this.otpCode,
-                            type: 'sms', // tetap 'sms' di sisi API Supabase walau pengirimannya lewat WA -
-                                         // ini nama tipe internal Supabase untuk jalur OTP nomor telepon,
-                                         // bukan penanda channel pengiriman (channel diatur oleh Send SMS Hook).
+                            type: 'sms',
                         });
                         if (error) throw error;
                         this.userId = data.user.id;
@@ -601,7 +617,6 @@
                     this.authPhone = '';
                 },
 
-                // --- Muat toko milik user yang sedang login (bukan dari localStorage) ---
                 async muatTokoSaya() {
                     try {
                         const { data, error } = await db
@@ -628,14 +643,11 @@
                     }
                     this.loading = true;
                     try {
-                        // DITAMBAHKAN: nomor WA toko (beda dari nomor login) juga wajib
-                        // dinormalisasi - kalau tidak, link "Chat Penjual" di mart.html
-                        // bisa rusak kalau penjual ketik "0812..." apa adanya tanpa +62.
                         const waTokoNormalized = this.normalizePhone(this.toko.wa);
 
                         const payload = {
                             ...(this.toko.id ? { id: this.toko.id } : {}),
-                            owner_id: this.userId, // <-- kunci keamanan: RLS memastikan hanya owner_id = auth.uid() yang boleh insert/update
+                            owner_id: this.userId,
                             nama_toko: this.toko.nama_toko,
                             pemilik: this.toko.pemilik,
                             wa: waTokoNormalized,
@@ -651,17 +663,25 @@
                         this.isTokoSaved = true;
                         this.showToast('Profil Lapak berhasil disimpan, Bolo! Silakan tambah produk.');
                     } catch (err) {
-                        // Kode 23505 = unique_violation di Postgres. Kalau constraint yang
-                        // kena adalah bich_toko_wa_unique (lihat migration_cegah_toko_kembar.sql),
-                        // ini kemungkinan besar sesi/akun ganda dari OTP yang di-retry -
-                        // kasih pesan yang jelas, bukan error mentah Postgres yang membingungkan.
                         if (err.code === '23505' && (err.message || '').includes('bich_toko_wa_unique')) {
-                            this.showToast('Nomor WA ini sudah terdaftar sebagai toko lain. Kalau ini toko kamu yang sebelumnya sempat gagal disimpan, coba login ulang pakai WA yang sama persis (jangan minta OTP baru kalau sesi sebelumnya masih aktif).', 'error');
+                            this.showToast('Nomor WA ini sudah terdaftar sebagai toko lain.', 'error');
                         } else {
                             this.showToast('Gagal menyimpan profil lapak: ' + err.message, 'error');
                         }
                     } finally {
                         this.loading = false;
+                    }
+                },
+
+                // --- PROSES FILE DARI KAMERA/HP ---
+                handleFileChange(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.fotoFile = file;
+                        this.previewFotoUrl = URL.createObjectURL(file);
+                    } else {
+                        this.fotoFile = null;
+                        this.previewFotoUrl = '';
                     }
                 },
 
@@ -677,33 +697,47 @@
 
                     this.loading = true;
                     try {
+                        let finalGambarUrl = this.produk.gambar_url;
+
+                        // 1. Jika mode Upload File / Kamera HP
+                        if (this.fotoMode === 'file') {
+                            if (this.fotoFile) {
+                                this.uploadingFoto = true;
+                                const ext = this.fotoFile.name.split('.').pop() || 'jpg';
+                                const fileName = `produk_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+
+                                const { data: uploadData, error: uploadError } = await db.storage
+                                    .from('produk')
+                                    .upload(fileName, this.fotoFile);
+
+                                if (uploadError) throw new Error('Gagal mengunggah foto produk: ' + uploadError.message);
+
+                                const { data: publicUrlData } = db.storage
+                                    .from('produk')
+                                    .getPublicUrl(fileName);
+
+                                finalGambarUrl = publicUrlData.publicUrl;
+                                this.uploadingFoto = false;
+                            } else if (!this.editingProdukId && !finalGambarUrl) {
+                                throw new Error('Silakan jepret foto pakai kamera HP atau upload file terlebih dahulu!');
+                            }
+                        }
+
+                        if (!finalGambarUrl) {
+                            finalGambarUrl = 'https://placehold.co/400x400/020617/F59E0B?text=BICH+Mart';
+                        }
+
                         const payload = {
-                            toko_id: this.toko.id, // RLS akan menolak kalau toko_id ini bukan milik auth.uid()
+                            toko_id: this.toko.id,
                             nama_produk: this.produk.nama_produk,
-                            // DIPERBAIKI: sebelumnya harga/stok mentah dari input tanpa
-                            // penjagaan (bisa negatif/NaN kalau ada yang usil di DevTools).
-                            // Math.max(0, ...) menutup kemungkinan itu di sisi UI. Stok
-                            // SENGAJA dibolehkan 0 (bukan minimum 1) - itu representasi
-                            // wajar untuk "barang habis", bukan hal yang harus dicegah.
-                            // CATATAN: ini validasi client-side untuk UX saja - penjagaan
-                            // yang sesungguhnya harus ada di level database lewat CHECK
-                            // constraint (harga >= 0 AND stok >= 0), karena orang yang
-                            // manggil API langsung (bukan lewat form ini) tetap bisa
-                            // mengirim angka negatif kalau DB sendiri tidak menolaknya.
                             harga: Math.max(0, parseInt(this.produk.harga) || 0),
                             stok: Math.max(0, parseInt(this.produk.stok) || 0),
                             kategori: this.produk.kategori,
                             lokasi: this.produk.lokasi,
-                            gambar_url: this.produk.gambar_url || 'https://placehold.co/400x400/020617/F59E0B?text=BICH+Mart',
+                            gambar_url: finalGambarUrl,
                             video_demo_url: this.produk.video_demo_url || null,
                         };
 
-                        // DITAMBAHKAN: cabang UPDATE kalau sedang mode edit (editingProdukId
-                        // terisi), selain cabang INSERT untuk produk baru yang sudah ada.
-                        // .eq('toko_id', this.toko.id) di cabang update itu bukan sekadar
-                        // jaga-jaga - itu lapis pertahanan tambahan di SISI KLIEN supaya
-                        // permintaan update tidak pernah menyasar toko lain sama sekali,
-                        // di ATAS proteksi RLS yang sudah ada di database.
                         if (this.editingProdukId) {
                             const { error } = await db
                                 .from('bich_produk')
@@ -718,19 +752,17 @@
                             this.showToast('Produk berhasil dipajang di BICH Mart! 🔥');
                         }
 
-                        this.batalEditProduk(); // reset form & mode edit
+                        this.batalEditProduk();
                         await this.muatProdukSaya();
 
                     } catch (err) {
-                        this.showToast('Gagal memajang produk: ' + err.message, 'error');
+                        this.showToast(err.message, 'error');
                     } finally {
                         this.loading = false;
+                        this.uploadingFoto = false;
                     }
                 },
 
-                // DITAMBAHKAN: kelola daftar produk (muat/edit/hapus) - sebelumnya
-                // seller cuma bisa nambah produk lewat form, tidak ada cara melihat/
-                // mengubah/menghapus produk yang sudah dipajang sama sekali.
                 async muatProdukSaya() {
                     this.loadingProduk = true;
                     try {
@@ -751,6 +783,9 @@
 
                 mulaiEditProduk(p) {
                     this.editingProdukId = p.id;
+                    this.fotoMode = 'url';
+                    this.fotoFile = null;
+                    this.previewFotoUrl = p.gambar_url;
                     this.produk = {
                         nama_produk: p.nama_produk,
                         harga: p.harga,
@@ -760,13 +795,17 @@
                         gambar_url: p.gambar_url === 'https://placehold.co/400x400/020617/F59E0B?text=BICH+Mart' ? '' : p.gambar_url,
                         video_demo_url: p.video_demo_url || '',
                     };
-                    // Bawa pengguna ke form-nya - di HP form ini biasanya sudah di luar
-                    // layar karena mereka baru scroll ke daftar produk di bawah.
                     document.querySelector('#form-produk')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 },
 
                 batalEditProduk() {
                     this.editingProdukId = null;
+                    this.fotoMode = 'file';
+                    this.fotoFile = null;
+                    this.previewFotoUrl = '';
+                    const fileInput = document.getElementById('inputFotoFile');
+                    if (fileInput) fileInput.value = '';
+
                     this.produk = {
                         nama_produk: '',
                         harga: '',
@@ -778,10 +817,6 @@
                     };
                 },
 
-                // --- PESANAN MASUK: muat semua baris bich_pesanan (anak) milik toko ini ---
-                // RLS di database (migration_rls_pesanan_grup.sql) sudah membatasi ini ke
-                // toko_id milik auth.uid() saat ini - .eq('toko_id', this.toko.id) di
-                // bawah ini lapis pertahanan tambahan sisi klien, bukan satu-satunya.
                 async muatPesananSaya() {
                     this.loadingPesanan = true;
                     try {
@@ -801,10 +836,6 @@
                     }
                 },
 
-                // Update status pesanan satu tingkat maju saja (diproses -> dikirim ->
-                // selesai). Trigger DB (trg_cegah_seller_ubah_kolom_terlarang) menolak
-                // lompat status atau mundur, jadi validasi di sini murni untuk UX cepat -
-                // bukan satu-satunya lapis keamanan.
                 async updateStatusPesanan(p, statusBaru) {
                     this.updatingPesananId = p.id;
                     try {
@@ -824,17 +855,10 @@
                 },
 
                 async hapusProduk(p) {
-                    // window.confirm() sederhana tapi efektif - mencegah kehapus tidak
-                    // sengaja gara-gara salah pencet di HP.
                     if (!window.confirm('Hapus produk "' + p.nama_produk + '"? Tindakan ini tidak bisa dibatalkan.')) return;
 
                     this.loading = true;
                     try {
-                        // .eq('toko_id', this.toko.id) di sini bukan sekadar jaga-jaga -
-                        // itu lapis pertahanan tambahan di SISI KLIEN, di ATAS RLS yang
-                        // sudah ada di database (Penjual hapus produk sendiri), supaya
-                        // permintaan hapus tidak pernah menyasar produk toko lain sama
-                        // sekali walau ada bug di tempat lain.
                         const { error } = await db
                             .from('bich_produk')
                             .delete()
@@ -843,8 +867,6 @@
                         if (error) throw error;
 
                         this.showToast('Produk "' + p.nama_produk + '" dihapus.');
-                        // Kalau kebetulan lagi mode edit produk yang baru dihapus ini,
-                        // batalkan mode edit-nya juga supaya tidak ada form "hantu".
                         if (this.editingProdukId === p.id) this.batalEditProduk();
                         await this.muatProdukSaya();
                     } catch (err) {

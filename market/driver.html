@@ -167,11 +167,117 @@
                     <p x-show="profil.status_verifikasi === 'TERVERIFIKASI'" x-cloak class="text-[11px] text-emerald-300">Kamu aktif jadi kurir lokal BICH di <span x-text="profil.kota_domisili"></span>.</p>
                 </div>
 
-                <!-- FITUR OPERASIONAL - JUJUR BELUM ADA, BUKAN DEKORASI PALSU -->
-                <div class="bg-slate-900/40 border border-dashed border-slate-700 rounded-2xl p-5 text-center space-y-1.5">
-                    <p class="text-xs text-slate-400 font-bold">📦 Antrean Pengiriman & 💰 Dompet Komisi</p>
-                    <p class="text-[11px] text-slate-500">Fitur ini menyusul setelah sistem penugasan order otomatis aktif. Untuk sekarang, pesanan dikoordinasikan tim BICH lewat WhatsApp.</p>
-                </div>
+                <!-- DASHBOARD KURIR (khusus yang sudah TERVERIFIKASI) -->
+                <template x-if="profil.status_verifikasi === 'TERVERIFIKASI'">
+                    <div class="space-y-4">
+
+                        <!-- TOMBOL ONLINE/OFFLINE - kayak Grab/Gojek, order pool cuma
+                             didengar kalau kurir lagi ONLINE. Offline = tidak dapat notifikasi
+                             sama sekali, biar kurir bisa istirahat tanpa diganggu. -->
+                        <button @click="toggleAktif()" :disabled="togglingAktif"
+                                class="w-full flex items-center justify-between p-4 rounded-2xl border transition"
+                                :class="profil.sedang_aktif ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-slate-900/60 border-slate-800'">
+                            <div class="flex items-center gap-3">
+                                <span class="w-3 h-3 rounded-full" :class="profil.sedang_aktif ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'"></span>
+                                <span class="text-sm font-black" :class="profil.sedang_aktif ? 'text-emerald-300' : 'text-slate-400'"
+                                      x-text="profil.sedang_aktif ? 'ONLINE — Siap terima order' : 'OFFLINE — Ketuk untuk mulai'"></span>
+                            </div>
+                            <i class="fa-solid" :class="togglingAktif ? 'fa-spinner fa-spin text-slate-500' : (profil.sedang_aktif ? 'fa-toggle-on text-emerald-400 text-lg' : 'fa-toggle-off text-slate-500 text-lg')"></i>
+                        </button>
+
+                        <!-- RINGKASAN KOMISI HARI INI -->
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-center">
+                                <p class="text-lg font-black text-amber-400" x-text="antaranSelesaiHariIni.length"></p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">Antar Selesai Hari Ini</p>
+                            </div>
+                            <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-center">
+                                <p class="text-lg font-black text-amber-400" x-text="formatRupiah(komisiHariIni)"></p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">Estimasi Komisi (80%)</p>
+                            </div>
+                        </div>
+
+                        <!-- ANTARAN AKTIF - tampil di paling atas & menonjol, karena ini
+                             yang paling butuh perhatian kurir saat ini juga. -->
+                        <template x-if="antaranAktif">
+                            <div class="bg-amber-500/5 border-2 border-amber-500/40 rounded-2xl p-4 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] font-black text-amber-400 uppercase tracking-wide"><i class="fa-solid fa-route"></i> Antaran Berlangsung</span>
+                                    <span class="text-[10px] font-mono text-slate-500" x-text="'#' + antaranAktif.id"></span>
+                                </div>
+
+                                <!-- Stepper 4 tahap -->
+                                <div class="flex items-center justify-between text-[9px] font-bold px-1">
+                                    <template x-for="(tahap, i) in tahapAntar" :key="tahap">
+                                        <div class="flex-1 flex flex-col items-center gap-1">
+                                            <div class="w-full h-1 rounded-full" :class="tahapIndex(antaranAktif) >= i ? 'bg-amber-500' : 'bg-slate-800'"></div>
+                                            <span :class="tahapIndex(antaranAktif) >= i ? 'text-amber-400' : 'text-slate-600'" x-text="tahap"></span>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <div class="bg-slate-950/60 rounded-xl p-3 space-y-2 text-[11px]">
+                                    <p class="text-slate-300"><i class="fa-solid fa-store text-amber-400 w-4"></i> <span x-text="antaranAktif.bich_toko?.nama_toko || 'Toko'"></span></p>
+                                    <p class="text-slate-300"><i class="fa-solid fa-location-dot text-cyan-400 w-4"></i> <span x-text="antaranAktif.alamat_lengkap || antaranAktif.kota_tujuan"></span></p>
+                                    <p class="text-slate-300"><i class="fa-solid fa-user text-slate-500 w-4"></i> <span x-text="antaranAktif.nama_pembeli"></span></p>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2">
+                                    <a :href="'https://wa.me/' + soloNomor(antaranAktif.wa_pembeli)" target="_blank"
+                                       class="text-center bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold py-2.5 rounded-xl">
+                                        <i class="fa-brands fa-whatsapp"></i> Chat Pembeli
+                                    </a>
+                                    <a :href="'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(antaranAktif.alamat_lengkap || antaranAktif.kota_tujuan)" target="_blank"
+                                       class="text-center bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-[11px] font-bold py-2.5 rounded-xl">
+                                        <i class="fa-solid fa-diamond-turn-right"></i> Buka Maps
+                                    </a>
+                                </div>
+
+                                <button @click="majukanStatusAntar()" :disabled="loadingAksiAntar"
+                                        class="w-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs py-3 rounded-xl transition disabled:opacity-50">
+                                    <span x-text="loadingAksiAntar ? 'Memproses...' : labelTombolLanjut(antaranAktif)"></span>
+                                </button>
+                            </div>
+                        </template>
+
+                        <!-- POOL ORDER MASUK - hanya muncul kalau ONLINE & belum ada antaran aktif -->
+                        <template x-if="profil.sedang_aktif && !antaranAktif">
+                            <div class="space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Order Masuk di Sekitarmu</h3>
+                                    <span class="text-[10px] font-mono text-slate-600" x-text="poolOrder.length + ' tersedia'"></span>
+                                </div>
+
+                                <p x-show="poolOrder.length === 0" class="text-center text-[11px] text-slate-500 py-8 border border-dashed border-slate-800 rounded-2xl">
+                                    <i class="fa-solid fa-satellite-dish"></i><br>Belum ada order masuk. Halaman ini otomatis update — gak perlu refresh.
+                                </p>
+
+                                <template x-for="o in poolOrder" :key="o.id">
+                                    <div class="bg-slate-900/80 border rounded-2xl p-3.5 space-y-2.5 transition"
+                                         :class="baruMasuk.has(o.id) ? 'border-amber-500 shadow-lg shadow-amber-500/10' : 'border-slate-800'">
+                                        <div class="flex items-start justify-between gap-2">
+                                            <div class="min-w-0">
+                                                <p class="text-[11px] font-bold text-slate-100" x-text="'#' + o.id"></p>
+                                                <p class="text-[10px] text-slate-500 truncate" x-text="(o.bich_toko?.nama_toko || 'Toko') + ' → ' + o.kota_tujuan"></p>
+                                            </div>
+                                            <span class="text-[10px] font-black text-amber-400 flex-shrink-0" x-text="formatRupiah((o.ongkir || 0) * 0.8)"></span>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button @click="ambilOrder(o)" :disabled="mengambilId === o.id"
+                                                    class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-black py-2.5 rounded-xl transition disabled:opacity-50">
+                                                <span x-text="mengambilId === o.id ? 'Mengambil...' : 'Ambil Order Ini'"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <p x-show="!profil.sedang_aktif" class="text-center text-[11px] text-slate-500 py-6 border border-dashed border-slate-800 rounded-2xl">
+                            Kamu sedang OFFLINE. Nyalakan status di atas untuk mulai terima order.
+                        </p>
+                    </div>
+                </template>
 
                 <!-- EDIT PROFIL -->
                 <details class="bg-slate-900/40 border border-slate-800 rounded-2xl overflow-hidden">
@@ -243,6 +349,225 @@
                     nama_bank: '', no_rekening: ''
                 },
 
+                // --- DASHBOARD KURIR (order real-time ala Grab/Gojek) ---
+                togglingAktif: false,
+                poolOrder: [],          // order menunggu diambil, kota cocok, kurir_id null
+                antaranAktif: null,     // order yang sudah diambil kurir ini & belum selesai
+                riwayatHariIni: [],     // order milik kurir ini yang Selesai hari ini
+                baruMasuk: new Set(),   // id order yang baru masuk <5 detik lalu (buat highlight)
+                mengambilId: null,
+                loadingAksiAntar: false,
+                pesananChannel: null,
+                tahapAntar: ['Jemput', 'Diambil', 'Antar', 'Selesai'],
+                _audioCtx: null,
+
+                // Harus PERSIS sama dengan KLASTER_KOTA_TERDEKAT di
+                // hitung-ongkir/index.ts - kalau backend nambah/ubah klaster,
+                // ini juga wajib diupdate manual (belum ada sumber tunggal
+                // bersama antara edge function & frontend untuk data ini).
+                KLASTER_KOTA_TERDEKAT: {
+                    'Banjarmasin': ['Banjarmasin', 'Banjarbaru', 'Martapura'],
+                    'Banjarbaru': ['Banjarmasin', 'Banjarbaru', 'Martapura'],
+                    'Martapura': ['Banjarmasin', 'Banjarbaru', 'Martapura'],
+                    'Samarinda': ['Samarinda', 'Balikpapan'],
+                    'Balikpapan': ['Samarinda', 'Balikpapan'],
+                    'Palangka Raya': ['Palangka Raya'],
+                    'Pontianak': ['Pontianak'],
+                    'Tarakan': ['Tarakan'],
+                },
+                // Kota-kota tujuan yang bisa dilayani kurir ini, berdasarkan
+                // domisilinya - bukan cuma kota yang sama persis.
+                get klasterSaya() {
+                    return this.KLASTER_KOTA_TERDEKAT[this.profil?.kota_domisili] || [this.profil?.kota_domisili];
+                },
+
+                get antaranSelesaiHariIni() { return this.riwayatHariIni; },
+                get komisiHariIni() {
+                    return this.riwayatHariIni.reduce((s, o) => s + (o.ongkir || 0) * 0.8, 0);
+                },
+
+                tahapIndex(o) {
+                    const urutan = ['Menuju Toko', 'Diambil', 'Menuju Pembeli', 'Selesai'];
+                    return urutan.indexOf(o.status_kurir);
+                },
+                labelTombolLanjut(o) {
+                    const label = { 'Menuju Toko': 'Sudah Sampai, Ambil Barang', 'Diambil': 'Mulai Antar ke Pembeli', 'Menuju Pembeli': 'Sudah Sampai, Selesaikan' };
+                    return label[o.status_kurir] || 'Lanjutkan';
+                },
+                soloNomor(wa) {
+                    return String(wa || '').replace(/[^\d]/g, '');
+                },
+
+                async toggleAktif() {
+                    this.togglingAktif = true;
+                    try {
+                        const nilaiBaru = !this.profil.sedang_aktif;
+                        const { error } = await supabaseClient
+                            .from('mitra_kurir')
+                            .update({ sedang_aktif: nilaiBaru })
+                            .eq('id', this.profil.id);
+                        if (error) throw error;
+                        this.profil.sedang_aktif = nilaiBaru;
+                        if (nilaiBaru) {
+                            await this.muatPoolOrder();
+                            this.pasangRealtimeOrder();
+                        } else {
+                            this.lepasRealtimeOrder();
+                            this.poolOrder = [];
+                        }
+                    } catch (err) {
+                        this.errorMsg = 'Gagal ubah status online: ' + err.message;
+                    } finally {
+                        this.togglingAktif = false;
+                    }
+                },
+
+                // Muat pool order yang belum ada kurirnya & kotanya cocok - RLS di
+                // database (migration_dispatch_kurir.sql) yang menjamin kurir cuma
+                // lihat pesanan kota domisilinya sendiri, ini query biasa di atasnya.
+                async muatPoolOrder() {
+                    const { data, error } = await supabaseClient
+                        .from('bich_pesanan')
+                        .select('*, bich_toko(nama_toko)')
+                        .is('kurir_id', null)
+                        .eq('status', 'Dikirim')
+                        .eq('metode_pengiriman', 'Kurir Instan BICH')
+                        .in('kota_tujuan', this.klasterSaya)
+                        .order('created_at', { ascending: true });
+                    if (!error && data) this.poolOrder = data;
+                    if (error) console.error('Gagal muat pool order:', error.message);
+
+                    // Cek juga kalau kurir ini sedang punya antaran aktif (mis. reload halaman di tengah antar)
+                    const { data: aktif } = await supabaseClient
+                        .from('bich_pesanan')
+                        .select('*, bich_toko(nama_toko)')
+                        .eq('kurir_id', this.profil.id)
+                        .neq('status_kurir', 'Selesai')
+                        .maybeSingle();
+                    if (aktif) this.antaranAktif = aktif;
+
+                    const hariIni = new Date().toISOString().slice(0, 10);
+                    const { data: riwayat } = await supabaseClient
+                        .from('bich_pesanan')
+                        .select('*')
+                        .eq('kurir_id', this.profil.id)
+                        .eq('status_kurir', 'Selesai')
+                        .gte('kurir_selesai_at', hariIni);
+                    if (riwayat) this.riwayatHariIni = riwayat;
+                },
+
+                // Dengar order baru masuk ke kota kurir ini secara real-time - INI
+                // yang menggantikan peran "notifikasi" Grab/Gojek: bunyi + getar +
+                // highlight kartu, tanpa perlu refresh atau polling manual.
+                pasangRealtimeOrder() {
+                    if (this.pesananChannel) return;
+                    // Filter realtime cuma bisa 1 kondisi equality - jadi di sini
+                    // difilter status "Dikirim" saja (mengecilkan noise event dari
+                    // order yang sudah Selesai/dibatalkan dsb), dan pencocokan
+                    // klaster kota + metode_pengiriman + kurir_id divalidasi manual
+                    // di _handleOrderBaru/_handleOrderUpdate, karena RLS pool juga
+                    // tidak menegakkan klaster (lihat catatan di migration).
+                    this.pesananChannel = supabaseClient
+                        .channel('pool-order-' + this.profil.id)
+                        .on('postgres_changes', {
+                            event: 'INSERT', schema: 'public', table: 'bich_pesanan',
+                            filter: `status=eq.Dikirim`,
+                        }, (payload) => this._handleOrderBaru(payload.new))
+                        .on('postgres_changes', {
+                            event: 'UPDATE', schema: 'public', table: 'bich_pesanan',
+                        }, (payload) => this._handleOrderUpdate(payload.new))
+                        .subscribe();
+                },
+                lepasRealtimeOrder() {
+                    if (this.pesananChannel) {
+                        supabaseClient.removeChannel(this.pesananChannel);
+                        this.pesananChannel = null;
+                    }
+                },
+                _handleOrderBaru(o) {
+                    // Validasi penuh di sini karena filter channel cuma bisa 1 kondisi:
+                    // harus belum ada kurir, metodenya Kurir Instan BICH, dan kota
+                    // tujuannya masuk klaster yang bisa dilayani kurir ini.
+                    if (o.status !== 'Dikirim' || o.kurir_id) return;
+                    if (o.metode_pengiriman !== 'Kurir Instan BICH') return;
+                    if (!this.klasterSaya.includes(o.kota_tujuan)) return;
+                    if (this.poolOrder.some(x => x.id === o.id)) return;
+                    this.poolOrder.unshift(o);
+                    this.baruMasuk.add(o.id);
+                    this._bunyikanNotifikasi();
+                    setTimeout(() => this.baruMasuk.delete(o.id), 5000);
+                },
+                _handleOrderUpdate(o) {
+                    // Order di pool diambil kurir lain duluan -> hilangkan dari daftar kita
+                    if (o.kurir_id && o.kurir_id !== this.profil.id) {
+                        this.poolOrder = this.poolOrder.filter(x => x.id !== o.id);
+                    }
+                },
+                // Bunyi notifikasi pendek pakai Web Audio API (tidak butuh file suara
+                // eksternal) + getar HP (didukung browser Android, Safari iOS abaikan
+                // vibrate secara diam-diam - tidak error).
+                _bunyikanNotifikasi() {
+                    try {
+                        if (!this._audioCtx) this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        const ctx = this._audioCtx;
+                        [0, 0.15].forEach((delay) => {
+                            const osc = ctx.createOscillator();
+                            const gain = ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.value = 880;
+                            gain.gain.setValueAtTime(0.25, ctx.currentTime + delay);
+                            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.12);
+                            osc.connect(gain).connect(ctx.destination);
+                            osc.start(ctx.currentTime + delay);
+                            osc.stop(ctx.currentTime + delay + 0.12);
+                        });
+                    } catch (err) { /* Audio diblokir browser sebelum ada interaksi user - abaikan */ }
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                },
+
+                async ambilOrder(o) {
+                    this.mengambilId = o.id;
+                    try {
+                        const { data, error } = await supabaseClient
+                            .rpc('klaim_pesanan_kurir', { p_pesanan_id: o.id, p_kurir_id: this.profil.id });
+                        if (error) throw error;
+                        if (!data || data.length === 0) {
+                            this.poolOrder = this.poolOrder.filter(x => x.id !== o.id);
+                            alert('Yah, order ini baru saja diambil kurir lain. Coba order lainnya.');
+                            return;
+                        }
+                        this.antaranAktif = { ...data[0], bich_toko: o.bich_toko };
+                        this.poolOrder = this.poolOrder.filter(x => x.id !== o.id);
+                    } catch (err) {
+                        alert('Gagal mengambil order: ' + err.message);
+                    } finally {
+                        this.mengambilId = null;
+                    }
+                },
+
+                async majukanStatusAntar() {
+                    if (!this.antaranAktif) return;
+                    const urutan = ['Menuju Toko', 'Diambil', 'Menuju Pembeli', 'Selesai'];
+                    const statusBaru = urutan[this.tahapIndex(this.antaranAktif) + 1];
+                    this.loadingAksiAntar = true;
+                    try {
+                        const { data, error } = await supabaseClient
+                            .rpc('update_status_kurir', { p_pesanan_id: this.antaranAktif.id, p_kurir_id: this.profil.id, p_status_baru: statusBaru });
+                        if (error) throw error;
+                        if (statusBaru === 'Selesai') {
+                            this.riwayatHariIni.unshift(this.antaranAktif);
+                            this.antaranAktif = null;
+                            await this.muatPoolOrder();
+                        } else {
+                            this.antaranAktif = { ...this.antaranAktif, status_kurir: statusBaru };
+                        }
+                    } catch (err) {
+                        alert('Gagal update status: ' + err.message);
+                    } finally {
+                        this.loadingAksiAntar = false;
+                    }
+                },
+
                 async init() {
                     const { data: { session } } = await supabaseClient.auth.getSession();
                     if (session) {
@@ -306,6 +631,7 @@
                 },
 
                 async logout() {
+                    this.lepasRealtimeOrder();
                     await supabaseClient.auth.signOut();
                     this.otpCode = '';
                     this.authPhone = '';
@@ -327,6 +653,12 @@
                                 kota_domisili: data.kota_domisili, radius_layanan_km: data.radius_layanan_km,
                                 nama_bank: data.nama_bank || '', no_rekening: data.no_rekening || ''
                             };
+                            // Kalau kurir reload halaman dalam keadaan sudah ONLINE,
+                            // sambungkan lagi ke pool order & realtime tanpa perlu toggle ulang.
+                            if (data.status_verifikasi === 'TERVERIFIKASI' && data.sedang_aktif) {
+                                await this.muatPoolOrder();
+                                this.pasangRealtimeOrder();
+                            }
                         }
                     } catch (err) {
                         console.error('Gagal memuat profil:', err.message);
