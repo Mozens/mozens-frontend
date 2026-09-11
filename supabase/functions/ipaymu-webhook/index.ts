@@ -130,8 +130,29 @@ Deno.serve(async (req) => {
 
     // Status resmi dari iPaymu (bukan dari body notify yang bisa dipalsukan)
     const dataObj = (checkData?.Data ?? {}) as Record<string, unknown>;
-    const statusResmi = String(dataObj.Status ?? dataObj.StatusDesc ?? "").toLowerCase();
-    const berhasilBayar = ["berhasil", "success", "1", "completed"].some((s) => statusResmi.includes(s));
+
+    // ‼️ PERBAIKAN: sebelumnya Status & StatusDesc digabung jadi satu string
+    // lalu dicek substring "1" - itu 2 masalah sekaligus:
+    //  (a) Status=7 (Escrow, dipakai iPaymu untuk VA/QRIS yang uangnya SUDAH
+    //      masuk tapi ditahan escrow) tidak pernah cocok ke "berhasil" atau
+    //      substring "1" ("7" tidak mengandung "1") - transaksi LUNAS malah
+    //      ditandai Gagal. Ini yang bikin pesanan macet padahal sudah dibayar.
+    //  (b) substring "1" itu sendiri rawan salah tangkap - status "10" atau
+    //      "21" pun akan ke-match "1" padahal maknanya beda.
+    // Sekarang Status dibandingkan sebagai ANGKA (bukan cocok-cocokan
+    // substring), dan PaidStatus dicek terpisah sebagai sinyal tambahan.
+    const statusNum = Number(dataObj.Status);
+    const statusDesc = String(dataObj.StatusDesc ?? "").toLowerCase();
+    const paidStatus = String(dataObj.PaidStatus ?? "").toLowerCase();
+
+    // 1=Success, 6=Settlement, 7=Escrow (VA/QRIS - uang sudah diterima,
+    // ditahan escrow sampai pesanan selesai - ini TETAP dihitung LUNAS dari
+    // sisi kita, karena uangnya sudah benar-benar masuk).
+    const STATUS_LUNAS = new Set([1, 6, 7]);
+    const berhasilBayar =
+      paidStatus === "paid" ||
+      (Number.isFinite(statusNum) && STATUS_LUNAS.has(statusNum)) ||
+      ["berhasil", "success", "completed"].some((s) => statusDesc.includes(s));
 
     // ------------------------------------------------------------------
     // VALIDASI SILANG referenceId — WAJIB, jangan dilewati.
