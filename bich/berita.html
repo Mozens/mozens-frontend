@@ -199,7 +199,9 @@
         const SUPABASE_URL = 'https://gehbuhuevfxfjyytmrht.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_yPGSsXXIoc_wfn_Kkq8xzA_lGi7zEEn';
 
-        const BERITA_KATEGORI_VALUE = 'Berita';
+        // Kategori Kapuas yang sebenarnya (cek bridge_kapuas.py kategori_scope) -
+        // bridge bisa nulis salah satu dari 3 nilai ini, bukan cuma 'Berita'.
+        const BERITA_KATEGORI_VALUES = ['Berita Harian', 'Berita', 'Umum'];
         const PAGE_SIZE = 12;
 
         let currentPage = 1;
@@ -228,9 +230,17 @@
             const offset = (page - 1) * PAGE_SIZE;
             const params = new URLSearchParams({
                 select: '*',
-                kategori: `eq.${BERITA_KATEGORI_VALUE}`,
-                status: 'eq.Ready',
-                status_verifikasi: 'eq.TERVERIFIKASI',
+                kategori: `in.(${BERITA_KATEGORI_VALUES.join(',')})`,
+                // ‼️ PERBAIKAN: sebelumnya cuma nerima status='Ready' +
+                // status_verifikasi='TERVERIFIKASI' - itu flag sistem
+                // redaksi LAMA (publish manual). Pipeline 13-gate yang
+                // sekarang jalan (bich_bridge_engine.py) tidak pernah
+                // menulis kolom 'status' sama sekali, dan artikel yang
+                // lolos gate ditandai 'SINTESIS_DATA_PUBLIK', bukan
+                // 'TERVERIFIKASI'. Dua nilai status_verifikasi diterima
+                // sekaligus supaya artikel LAMA (manual) dan BARU
+                // (otomatis via gate) sama-sama tampil.
+                status_verifikasi: 'in.(SINTESIS_DATA_PUBLIK,TERVERIFIKASI)',
                 order: 'created_at.desc',
                 limit: String(PAGE_SIZE),
                 offset: String(offset),

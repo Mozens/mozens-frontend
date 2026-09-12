@@ -298,7 +298,9 @@
         const SUPABASE_URL = 'https://gehbuhuevfxfjyytmrht.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_yPGSsXXIoc_wfn_Kkq8xzA_lGi7zEEn';
 
-        const BERITA_KATEGORI_VALUE = 'Politik';
+        // Kategori Kahayan yang sebenarnya (cek bridge_kahayan.py kategori_scope) -
+        // bridge bisa nulis Politik, Hukum, ATAU Geopolitik, bukan cuma 'Politik'.
+        const BERITA_KATEGORI_VALUES = ['Politik', 'Hukum', 'Geopolitik'];
         const PAGE_SIZE = 12;
 
         let currentPage = 1;
@@ -327,9 +329,19 @@
             const offset = (page - 1) * PAGE_SIZE;
             const params = new URLSearchParams({
                 select: '*',
-                kategori: `eq.${BERITA_KATEGORI_VALUE}`,
-                status: 'eq.Ready',
-                status_verifikasi: 'eq.TERVERIFIKASI',
+                kategori: `in.(${BERITA_KATEGORI_VALUES.join(',')})`,
+                // ‼️ PERBAIKAN: sebelumnya cuma nerima status='Ready' +
+                // status_verifikasi='TERVERIFIKASI' - itu flag sistem
+                // redaksi LAMA (publish manual). Pipeline 13-gate
+                // (bich_bridge_engine.py, KAHAYAN_BRIDGE) tidak pernah
+                // menulis kolom 'status' sama sekali. Kahayan butuh
+                // approval manual redaksi (butuh_persetujuan_redaksi=True)
+                // - begitu di-approve lewat Meja Redaksi Mendalam,
+                // redaksi_server.py juga menulis 'SINTESIS_DATA_PUBLIK',
+                // BUKAN 'TERVERIFIKASI'. Dua nilai diterima sekaligus
+                // supaya artikel LAMA (manual) dan BARU (via gate+approval)
+                // sama-sama tampil.
+                status_verifikasi: 'in.(SINTESIS_DATA_PUBLIK,TERVERIFIKASI)',
                 artikel_ai: 'not.is.null',
                 order: 'created_at.desc',
                 limit: String(PAGE_SIZE),

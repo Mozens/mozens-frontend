@@ -333,8 +333,16 @@
             const params = new URLSearchParams({
                 select: '*',
                 kategori: `eq.${BERITA_KATEGORI_VALUE}`,
-                status: 'eq.Ready',
-                status_verifikasi: 'eq.TERVERIFIKASI',
+                // ‼️ PERBAIKAN: sebelumnya cuma nerima status='Ready' +
+                // status_verifikasi='TERVERIFIKASI' - itu flag sistem
+                // redaksi LAMA (publish manual). Pipeline 13-gate
+                // (bich_bridge_engine.py, MAHAKAM_BRIDGE) tidak pernah
+                // menulis kolom 'status' sama sekali, dan artikel yang
+                // lolos gate ditandai 'SINTESIS_DATA_PUBLIK', bukan
+                // 'TERVERIFIKASI'. Dua nilai status_verifikasi diterima
+                // sekaligus supaya artikel LAMA (manual) dan BARU
+                // (otomatis via gate) sama-sama tampil.
+                status_verifikasi: 'in.(SINTESIS_DATA_PUBLIK,TERVERIFIKASI)',
                 artikel_ai: 'not.is.null',
                 order: 'created_at.desc',
                 limit: String(PAGE_SIZE),
