@@ -75,7 +75,7 @@
     </script>
 
     <style>
-        :root{--bg:#f6f4ef;--paper:#fffdf9;--ink:#16201e;--muted:#68736f;--line:#e5e1d8;--green:#126b52;--green-soft:#eaf3ee;--gold:#b58a3a;--dark:#0c1714;--serif:'Playfair Display',Georgia,serif;--sans:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace}
+        :root{--bg:#f6f4ef;--paper:#fffdf9;--ink:#16201e;--muted:#68736f;--line:#e5e1d8;--green:#a87818;--green-soft:#f4ecd9;--gold:#b58a3a;--dark:#203128;--serif:'Playfair Display',Georgia,serif;--sans:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace}
         *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.65}a{color:inherit}.font-serif{font-family:var(--serif)}.font-mono{font-family:var(--mono)}
         .gold-gradient{background:linear-gradient(120deg,#8b6a2c,#c39b50 48%,#7b5a22);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
         .site-shell{max-width:1180px;margin:auto;padding:0 34px}.topbar{position:sticky;top:0;z-index:50;background:rgba(246,244,239,.92);backdrop-filter:blur(18px);border-bottom:1px solid rgba(20,40,34,.10)}
@@ -110,6 +110,14 @@
             .closing a{margin-top:22px}
         }
         .custom-scrollbar::-webkit-scrollbar{width:6px}.custom-scrollbar::-webkit-scrollbar-track{background:#f3f1ec}.custom-scrollbar::-webkit-scrollbar-thumb{background:#c8c5bd;border-radius:10px}.custom-scrollbar::-webkit-scrollbar-thumb:hover{background:#9ca79f}
+        /* Sistem 4-lapisan (FAKTA/ANALISIS/KESIMPULAN/OPINI) - seragam dengan ekonomi.html */
+        .layer-box{border-radius:16px;padding:16px 18px;border:1px solid var(--line);background:#fff;margin-top:16px}
+        .layer-fact{border-left:3px solid #87938a}
+        .layer-analysis{border-left:3px solid #b4872d;background:#fbf7ed}
+        .layer-conclusion{border-left:3px solid #4f7a63;background:#f3f8f5}
+        .layer-opinion{border-left:3px solid #8b5f65;background:#faf4f5}
+        .layer-title{font:700 9px var(--mono);text-transform:uppercase;letter-spacing:.11em;color:#58645b;margin-bottom:6px}
+        .layer-box p{font-size:12.5px;line-height:1.75;color:#3f4b43;margin:0}
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -169,18 +177,22 @@
                 <p id="modal-author" class="font-mono font-bold text-[10px] text-[#126b52] tracking-wider mt-2.5"></p>
             </div>
 
-            <!-- Meta & Konten Artikel -->
+            <!-- Meta & 4 Lapisan Artikel (FAKTA/ANALISIS/KESIMPULAN/OPINI) -->
             <div id="modal-meta" class="font-mono font-medium text-[10px] text-[#8a928e] flex flex-wrap gap-2"></div>
-            <div id="modal-content" class="font-serif text-[13.5px] sm:text-base leading-relaxed text-[#38443f] space-y-4"></div>
-            
-            <!-- Box Analisis Editorial BICH -->
-            <div class="bg-[#eaf3ee] border border-[#d1e4da] rounded-xl p-4 sm:p-5 my-4">
-                <h5 class="font-mono font-bold text-[10px] text-[#126b52] tracking-widest mb-2">ANALISIS BICH</h5>
+            <div class="layer-box layer-fact"><div class="layer-title">Lapisan 01 · Fakta</div><div id="modal-p-fakta"></div></div>
+            <div class="layer-box layer-analysis"><div class="layer-title">Lapisan 02 · Analisis BICH</div><div id="modal-p-analisis"></div></div>
+            <div class="layer-box layer-conclusion"><div class="layer-title">Lapisan 03 · Kesimpulan</div><div id="modal-p-kesimpulan"></div></div>
+            <div class="layer-box layer-opinion"><div class="layer-title">Lapisan 04 · Opini &amp; Rekomendasi BICH</div><div id="modal-p-opini"></div></div>
+            <div id="modal-content" class="hidden font-serif text-[13.5px] sm:text-base leading-relaxed text-[#38443f] space-y-4"></div>
+
+            <!-- Bahan Sumber Tambahan -->
+            <div class="layer-box" style="border-left:3px solid #c9c3ad;background:#faf9f4">
+                <div class="layer-title">Bahan sumber tambahan</div>
                 <p id="modal-insight" class="text-xs sm:text-sm leading-relaxed text-[#52635c]"></p>
             </div>
             
             <!-- Catatan Sumber -->
-            <p id="modal-source-note" class="font-mono font-medium text-[10px] leading-relaxed text-[#7b8580] border-t border-[#e5e1d8] pt-3"></p>
+            <p id="modal-source-note" class="font-mono font-medium text-[10px] leading-relaxed text-[#7b8580] border-t border-[#e5e1d8] pt-3 mt-4"></p>
         </div>
 
         <!-- Footer Tombol Selesai (Tetap Diam di Bawah) -->
@@ -213,6 +225,43 @@
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
             return div.innerHTML;
+        }
+
+        // Backend SELALU menghasilkan tepat 4 paragraf terurut: FAKTA, ANALISA,
+        // KESIMPULAN, OPINI - identik dengan fungsi yang sama di ekonomi.html
+        // dan politik.html, sengaja disamakan biar 3 desk konsisten.
+        function pisahkanArtikelBerlapis(fullText) {
+            const paras = (fullText || '').split(/\n\s*\n+/).map(p => p.trim()).filter(Boolean);
+            if (paras.length === 4) {
+                return { fakta: paras[0], analisis: paras[1], kesimpulan: paras[2], opini: paras[3], utuh: null };
+            }
+            return { fakta: null, analisis: null, kesimpulan: null, opini: null, utuh: paras };
+        }
+
+        function isiKontenBerlapis(fullText) {
+            const hasil = pisahkanArtikelBerlapis(fullText);
+            const boxFakta = document.getElementById('modal-p-fakta');
+            const boxAnalisis = document.getElementById('modal-p-analisis');
+            const boxKesimpulan = document.getElementById('modal-p-kesimpulan');
+            const boxOpini = document.getElementById('modal-p-opini');
+            const fallback = document.getElementById('modal-content');
+            const kotakLapisan = [boxFakta, boxAnalisis, boxKesimpulan, boxOpini]
+                .map(el => el && el.closest('.layer-box'))
+                .filter(Boolean);
+
+            if (hasil.utuh) {
+                kotakLapisan.forEach(el => el.style.display = 'none');
+                fallback.classList.remove('hidden');
+                fallback.innerHTML = hasil.utuh.map(p => `<p class="mb-4 leading-relaxed">${escapeHtml(p)}</p>`).join('');
+            } else {
+                kotakLapisan.forEach(el => el.style.display = '');
+                fallback.classList.add('hidden');
+                fallback.innerHTML = '';
+                boxFakta.innerHTML = `<p>${escapeHtml(hasil.fakta)}</p>`;
+                boxAnalisis.innerHTML = `<p>${escapeHtml(hasil.analisis)}</p>`;
+                boxKesimpulan.innerHTML = `<p>${escapeHtml(hasil.kesimpulan)}</p>`;
+                boxOpini.innerHTML = `<p>${escapeHtml(hasil.opini)}</p>`;
+            }
         }
 
         function timeAgo(dateStr) {
@@ -386,23 +435,37 @@
             `;
 
             document.getElementById('modal-title').textContent = item.judul || 'Sintesis BICH Banua';
-            document.getElementById('modal-author').textContent = `Oleh: Tim Analis Senior BICH (${item.penyelenggara_perusahaan || 'Mozens Inc.'})`;
+            document.getElementById('modal-author').textContent = 'Oleh: Analis BICH';
+
+            // ‼️ FIX: sebelumnya byline nyampur "Tim Analis Senior BICH"
+            // dengan nama sumber ANTARA dalam 1 baris (seolah ANTARA bagian
+            // dari tim BICH), dan label status statis "Terverifikasi SOP
+            // BICH" ditampilkan TANPA PEDULI status_verifikasi aslinya di
+            // database. Sekarang penulis & sumber dipisah jelas, dan label
+            // status mengikuti nilai asli dari database.
+            const labelStatus = item.status_verifikasi === 'SINTESIS_DATA_PUBLIK'
+                ? 'Sintesis Data Publik BICH'
+                : (item.status_verifikasi || 'Status tidak diketahui');
 
             document.getElementById('modal-meta').innerHTML = `
                 <span>🗓️ Diposting: ${timeAgo(item.created_at)}</span>
                 <span>•</span>
-                <span>Status: Terverifikasi SOP BICH</span>
+                <span>Status: ${escapeHtml(labelStatus)}</span>
                 <span>•</span>
-                <span>Motto: Perhatikan, Analisa, Eksekusi.</span>
+                <span>Sumber fakta: ${escapeHtml(item.penyelenggara_perusahaan || 'Tidak tercatat')}</span>
             `;
 
             const fullText = item.artikel_ai || item.info_tambahan || 'Isi laporan narasi belum tersedia.';
-            const rawParagraphs = fullText.split(/\n+/).map(p => p.trim()).filter(Boolean);
-            const formattedContent = rawParagraphs.map(p => `<p class="leading-relaxed mb-4">${escapeHtml(p)}</p>`).join('');
-            document.getElementById('modal-content').innerHTML = formattedContent;
+            isiKontenBerlapis(fullText);
 
-            const defaultInsight = "Pengembangan kawasan ini wajib mengedepankan asas keberlanjutan lingkungan (ESG) serta pelibatan aktif putra daerah agar menciptakan pertumbuhan ekonomi yang sehat tanpa mengorbankan paru-paru dunia.";
-            document.getElementById('modal-insight').textContent = item.info_tambahan && item.artikel_ai ? item.info_tambahan.slice(0, 200) : defaultInsight;
+            // ‼️ FIX: defaultInsight ESG (template placeholder lama yang
+            // gak nyambung sama topik artikel apapun) dihapus - fallback
+            // sekarang jujur bilang datanya gak ada, bukan nyamar jadi
+            // konten yang kelihatan valid tapi asal.
+            const insightRaw = (item.info_tambahan || '').trim();
+            document.getElementById('modal-insight').textContent = insightRaw.length > 20
+                ? (insightRaw.length > 200 ? insightRaw.slice(0, 200).trim() + '…' : insightRaw)
+                : 'Ringkasan sumber tambahan tidak tersedia untuk artikel ini.';
 
             const sourceNote = document.getElementById('modal-source-note');
             sourceNote.innerHTML = `<strong>Catatan editorial BICH:</strong> Materi ini disusun melalui proses pengumpulan informasi, sintesis, dan analisis. BICH menyajikannya untuk membantu pembaca memahami konteks; pembaca dapat menelusuri informasi sumber dan menilai kemungkinan langkah lanjut secara mandiri.`;

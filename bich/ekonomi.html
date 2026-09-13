@@ -170,6 +170,7 @@
         .premium-economy .layer-box{border-radius:18px;padding:18px 20px;border:1px solid var(--line);background:#fff}
         .premium-economy .layer-fact{border-left:3px solid #87938a}
         .premium-economy .layer-analysis{border-left:3px solid #b4872d;background:#fbf7ed}
+        .premium-economy .layer-conclusion{border-left:3px solid #4f7a63;background:#f3f8f5}
         .premium-economy .layer-opinion{border-left:3px solid #8b5f65;background:#faf4f5}
         .premium-economy .layer-title{font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.11em;font-size:9px;font-weight:700;color:#58645b;margin-bottom:6px}
         .premium-economy .layer-box p{font-size:11px;line-height:1.75;color:#3f4b43;margin:0}
@@ -280,10 +281,12 @@
         </div>
         <div class="modal-body p-6 sm:p-10 overflow-y-auto custom-scrollbar">
           <div class="max-w-[700px] mx-auto"><div id="modal-meta" class="flex flex-wrap gap-3 text-[10px] text-[#8a918b] border-b border-[#e5e4dc] pb-5"></div>
-            <div class="mt-8 mb-8 layer-box layer-fact"><div class="layer-title">Lapisan 01 · Fakta & bahan</div><p>Bagian berikut merupakan sintesis dari materi yang tersedia pada konten BICH. Ia bukan transkrip mentah seluruh sumber.</p></div>
-            <div id="modal-content" class="reading-copy"></div>
-            <div class="mt-9 layer-box layer-analysis"><div class="layer-title">Lapisan 03 · Analisis BICH</div><p class="mb-3">Ini adalah pembacaan analitis—bukan fakta baru dan bukan rekomendasi investasi.</p><p id="modal-insight"></p></div>
-            <div class="mt-5 layer-box layer-opinion"><div class="layer-title">Lapisan opini</div><p>Halaman ini tidak mengubah analisis menjadi opini. Jika sebuah tulisan memuat sikap normatif, penilaian, atau keberpihakan penulis, hal itu harus dinyatakan secara eksplisit sebagai opini.</p></div>
+            <div class="mt-8 layer-box layer-fact"><div class="layer-title">Lapisan 01 · Fakta</div><div id="modal-p-fakta" class="reading-copy"></div></div>
+            <div class="mt-5 layer-box layer-analysis"><div class="layer-title">Lapisan 02 · Analisis BICH</div><div id="modal-p-analisis" class="reading-copy"></div></div>
+            <div class="mt-5 layer-box layer-conclusion"><div class="layer-title">Lapisan 03 · Kesimpulan</div><div id="modal-p-kesimpulan" class="reading-copy"></div></div>
+            <div class="mt-5 layer-box layer-opinion"><div class="layer-title">Lapisan 04 · Opini &amp; Rekomendasi BICH</div><div id="modal-p-opini" class="reading-copy"></div></div>
+            <div id="modal-content" class="hidden"></div>
+            <div class="mt-6 layer-box" style="border-left:3px solid #c9c3ad;background:#faf9f4"><div class="layer-title">Bahan sumber tambahan</div><p id="modal-insight" class="text-[11px] leading-relaxed text-[#5c665e]"></p></div>
             <div class="mt-8 pt-6 border-t border-[#e5e4dc]"><p id="modal-source-note" class="text-[10px] leading-6 text-[#7d857e]"></p></div>
           </div>
         </div>
@@ -315,6 +318,53 @@
             const div = document.createElement('div');
             div.textContent = str == null ? '' : String(str);
             return div.innerHTML;
+        }
+
+        // Backend SELALU menghasilkan tepat 4 paragraf terurut: FAKTA, ANALISA,
+        // KESIMPULAN, OPINI (lihat SYSTEM_PROMPT_TEMPLATE di
+        // bich_bridge_engine.py - P1=FAKTA, P2=ANALISA, P3=KESIMPULAN,
+        // P4=OPINI/REKOMENDASI, digabung "\n\n".join(paragraphs)). Kalau
+        // artikel berstatus SINTESIS_DATA_PUBLIK, splitting ini akan selalu
+        // tepat 4 bagian.
+        function pisahkanArtikelBerlapis(fullText) {
+            const paras = (fullText || '').split(/\n\s*\n+/).map(p => p.trim()).filter(Boolean);
+            if (paras.length === 4) {
+                return { fakta: paras[0], analisis: paras[1], kesimpulan: paras[2], opini: paras[3], utuh: null };
+            }
+            // Fallback: data lama (TERVERIFIKASI manual) mungkin tidak
+            // mengikuti struktur 4-paragraf ini - tampilkan apa adanya
+            // tanpa memaksakan label yang mungkin keliru.
+            return { fakta: null, analisis: null, kesimpulan: null, opini: null, utuh: paras };
+        }
+
+        function isiKontenBerlapis(fullText) {
+            const hasil = pisahkanArtikelBerlapis(fullText);
+            const boxFakta = document.getElementById('modal-p-fakta');
+            const boxAnalisis = document.getElementById('modal-p-analisis');
+            const boxKesimpulan = document.getElementById('modal-p-kesimpulan');
+            const boxOpini = document.getElementById('modal-p-opini');
+            const fallback = document.getElementById('modal-content');
+            const kotakLapisan = [boxFakta, boxAnalisis, boxKesimpulan, boxOpini]
+                .map(el => el && el.closest('.layer-box'))
+                .filter(Boolean);
+
+            if (hasil.utuh) {
+                // Data lama tanpa struktur 4-paragraf - sembunyikan 4 kotak
+                // lapisan (biar gak ngasih label FAKTA/ANALISIS palsu ke
+                // konten yang gak jelas strukturnya), tampilkan sebagai
+                // artikel polos.
+                kotakLapisan.forEach(el => el.style.display = 'none');
+                fallback.classList.remove('hidden');
+                fallback.innerHTML = hasil.utuh.map(p => `<p class="mb-4 leading-relaxed">${escapeHtml(p)}</p>`).join('');
+            } else {
+                kotakLapisan.forEach(el => el.style.display = '');
+                fallback.classList.add('hidden');
+                fallback.innerHTML = '';
+                boxFakta.innerHTML = `<p>${escapeHtml(hasil.fakta)}</p>`;
+                boxAnalisis.innerHTML = `<p>${escapeHtml(hasil.analisis)}</p>`;
+                boxKesimpulan.innerHTML = `<p>${escapeHtml(hasil.kesimpulan)}</p>`;
+                boxOpini.innerHTML = `<p>${escapeHtml(hasil.opini)}</p>`;
+            }
         }
 
         function timeAgo(dateStr) {
@@ -482,30 +532,34 @@
             `;
 
             document.getElementById('modal-title').textContent = item.judul || 'Buletin Ekonomi & Komoditas';
-            document.getElementById('modal-author').textContent = `Sintesis & analisis · Tim Ekonomi BICH (${item.penyelenggara_perusahaan || 'Mozens Inc.'})`;
+            document.getElementById('modal-author').textContent = 'Sintesis & analisis · Tim Ekonomi BICH';
 
+            // ‼️ FIX: byline sebelumnya nyampur "Tim Ekonomi BICH" dengan
+            // nama sumber (mis. ANTARA) dalam 1 baris, dan status
+            // ditampilkan statis "Terverifikasi" tanpa peduli nilai asli
+            // status_verifikasi di database. Sekarang dipisah & dinamis.
+            const labelStatus = item.status_verifikasi === 'SINTESIS_DATA_PUBLIK'
+                ? 'Sintesis Data Publik BICH'
+                : (item.status_verifikasi || 'Status tidak diketahui');
             document.getElementById('modal-meta').innerHTML = `
-                <span>Terbit: ${timeAgo(item.created_at)}</span><span>·</span><span>Konten: Ekonomi</span><span>·</span><span>Status: Terverifikasi</span>
+                <span>Terbit: ${timeAgo(item.created_at)}</span><span>·</span><span>Konten: Ekonomi</span><span>·</span><span>Status: ${escapeHtml(labelStatus)}</span><span>·</span><span>Sumber fakta: ${escapeHtml(item.penyelenggara_perusahaan || 'Tidak tercatat')}</span>
             `;
 
             // 1. Ambil artikel AI utuh
             const fullText = item.artikel_ai || 'Isi buletin ekonomi BICH belum tersedia atau masih dalam proses verifikasi redaksi.';
 
-            // 2. Format Paragraf Rapi & Berjarak (Tailwind Spacing)
-            const paragraphs = fullText
-                .split(/\n\s*\n/)
-                .filter(p => p.trim() !== '')
-                .map(p => `<p class="mb-4 leading-relaxed text-[#26332b]">${escapeHtml(p.trim())}</p>`)
-                .join('');
-
-            document.getElementById('modal-content').innerHTML = paragraphs;
+            // 2. Pisahkan jadi 4 lapisan asli (FAKTA/ANALISIS/KESIMPULAN/OPINI)
+            //    - lihat definisi isiKontenBerlapis() untuk penjelasan lengkap.
+            isiKontenBerlapis(fullText);
 
             // 3. Set Insight Ringkas Eksekutif
-            const defaultInsight = "Pengembangan kawasan ekonomi ini wajib mengedepankan asas keberlanjutan lingkungan (ESG) serta pelibatan aktif putra daerah agar menciptakan pertumbuhan ekonomi yang sehat tanpa mengorbankan paru-paru dunia.";
-            const hasValidInsight = item.info_tambahan && item.artikel_ai && item.info_tambahan.length > 20;
-            document.getElementById('modal-insight').textContent = hasValidInsight 
-                ? (item.info_tambahan.length > 200 ? item.info_tambahan.slice(0, 200).trim() + '…' : item.info_tambahan)
-                : defaultInsight;
+            // ‼️ FIX: defaultInsight ESG (template placeholder generik yang
+            // gak nyambung sama topik artikel apapun) dihapus - fallback
+            // sekarang jujur bilang datanya gak ada.
+            const insightRaw = (item.info_tambahan || '').trim();
+            document.getElementById('modal-insight').textContent = insightRaw.length > 20
+                ? (insightRaw.length > 200 ? insightRaw.slice(0, 200).trim() + '…' : insightRaw)
+                : 'Ringkasan sumber tambahan tidak tersedia untuk artikel ini.';
 
             // 4. Catatan Sumber / Legal Disclaimer BICH
             const sourceNote = document.getElementById('modal-source-note');
